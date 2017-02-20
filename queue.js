@@ -17,7 +17,7 @@ class Queue {
 	}
 	
 	/**
-	 *
+	 * Add a creep to the queue.
 	 * @param baseCost Base cost of the task.
 	 * @param creepWeight Creep weight.
 	 * @param remote Whether or not this is for a remote room.
@@ -26,8 +26,9 @@ class Queue {
 	 */
 	add(baseCost, creepWeight, remote, targetDistance, creepInformation) {
 		let cost = baseCost;
-		cost += creepWeight; // lighter creeps spawn first
-		cost += remote ? targetDistance * 50 : targetDistance; // creeps closer to target spawn first
+		cost += creepWeight || 0; // lighter creeps spawn first
+		if (remote) cost += 200; // remote creeps spawn last
+		cost += (remote ? targetDistance * 50 : targetDistance) || 0; // creeps closer to target spawn first
 		this.room.memory.queue.push({cost, creepInformation}); // add the object to memory
 		this.room.memory.queue = _.sortBy(this.room.memory.queue, 'cost'); // sort the queue by cost
 	}
