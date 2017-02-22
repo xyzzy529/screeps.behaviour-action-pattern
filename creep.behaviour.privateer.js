@@ -4,7 +4,7 @@ mod.name = 'privateer';
 mod.run = function(creep) {
     // Assign next Action
     let oldTargetId = creep.data.targetId;
-    if( creep.action == null  || creep.action.name == 'idle' ) {
+    if( creep.action === null  || creep.action.name == 'idle' ) {
         if( creep.data.destiny && creep.data.destiny.task && Task[creep.data.destiny.task] && Task[creep.data.destiny.task].nextAction )
         Task[creep.data.destiny.task].nextAction(creep);
                     
@@ -20,9 +20,8 @@ mod.run = function(creep) {
     if( creep.hits < creep.hitsMax ) { // creep injured. move to next owned room
         if (!creep.data.nearestHome || !Game.rooms[creep.data.nearestHome]) creep.data.nearestHome = Room.bestSpawnRoomFor(creep.pos.roomName);
         if (creep.data.nearestHome) {
-            let c = Game.rooms[creep.data.nearestHome].controller;
-            let range = creep.pos.getRangeTo(c);
-            if (range > 1) creep.travelTo( c.pos );
+            Creep.action.travelling.assignRoom(creep, creep.data.homeRoom);
+            return;
         }
     }
 };
@@ -77,7 +76,7 @@ mod.nextAction = function(creep){
             // get some energy
             if( creep.sum < creep.carryCapacity*0.4 ) {
                 // sources depleted
-                if( creep.room.sourceEnergyAvailable == 0 ){
+                if( creep.room.sourceEnergyAvailable === 0 ){
                     // cloak flag
                     creep.flag.cloaking = _.max([creep.room.ticksToNextRegeneration-20,0]); // approach a bit earlier
                     // travelling
@@ -118,7 +117,7 @@ mod.nextAction = function(creep){
                         return;
                 }
                 Population.registerCreepFlag(creep, null);
-                Creep.action.travelling.assign(creep, Game.rooms[creep.data.homeRoom].controller);
+                Creep.action.travelling.assignRoom(creep, creep.data.homeRoom);
                 return;
             }
         }
@@ -142,7 +141,7 @@ mod.exploitNextRoom = function(creep){
         // new flag found
         if( flag ) {
             // travelling
-            if( Creep.action.travelling.assign(creep, flag) ) {
+            if( Creep.action.travelling.assignRoom(creep, flag.pos.roomName) ) {
                 Population.registerCreepFlag(creep, flag);
                 return true;
             }
@@ -151,7 +150,27 @@ mod.exploitNextRoom = function(creep){
     // no new flag
     // go home
     Population.registerCreepFlag(creep, null);
-    creep.data.travelRoom = creep.data.homeRoom;
-    Creep.action.travelling.assign(creep, creep);
+    if (creep.room.name !== creep.data.homeRoom) {
+        Creep.action.travelling.assignRoom(creep, creep.data.homeRoom);
+    }
     return false;
+};
+mod.strategies = {
+    defaultStrategy: {
+        name: `default-${mod.name}`,
+        moveOptions: function(options) {
+            // allow routing in and through hostile rooms
+            if (_.isUndefined(options.allowHostile)) options.allowHostile = true;
+            return options;
+        }
+    },
+    withdrawing: {
+        name: `withdrawing-${mod.name}`,
+        isValidAction: function(creep) {
+            return false;
+        },
+    },
+};
+mod.selectStrategies = function(actionName) {
+    return [mod.strategies.defaultStrategy, mod.strategies[actionName]];
 };

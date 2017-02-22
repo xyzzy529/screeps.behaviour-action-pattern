@@ -62,7 +62,7 @@ let Action = function(actionName){
             }
         }
         if( creep.target )
-            creep.travelTo(creep.target.pos, {range: this.reachedRange});
+            creep.travelTo(creep.target, {range: this.reachedRange});
     };
     // order for the creep to execute when at target
     this.work = function(creep){
@@ -85,9 +85,9 @@ let Action = function(actionName){
     // optionally predefine a fixed target
     this.assign = function(creep, target){
         if( target === undefined ) target = this.newTarget(creep);
-        if( target != null ) {
+        if( target && this.isAddableTarget(target, creep)) {
             if( DEBUG && TRACE ) trace('Action', {creepName:creep.name, assign:this.name, target:!target || target.name || target.id, Action:'assign'});
-            if( creep.action == null || creep.action.name != this.name || creep.target == null || creep.target.id != target.id ) {
+            if( !creep.action || creep.action.name != this.name || !creep.target || creep.target.id !== target.id || creep.target.name != target.name ) {
                 Population.registerAction(creep, this, target);
                 this.onAssignment(creep, target);
             }
@@ -100,7 +100,10 @@ let Action = function(actionName){
     this.onAssignment = (creep, target) => {};
     // empty default strategy
     this.defaultStrategy = {
-        name: `default-${actionName}`
+        name: `default-${actionName}`,
+        moveOptions: function(options) {
+            return options || {};
+        }
     };
     // strategy accessor
     this.selectStrategies = function() {

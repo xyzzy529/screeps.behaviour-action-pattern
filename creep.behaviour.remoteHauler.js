@@ -57,9 +57,15 @@ mod.nextAction = function(creep){
         if( this.assign(creep, Creep.action.uncharging) ) return;
         // if( this.assign(creep, Creep.action.robbing) ) return;
         if( this.assign(creep, Creep.action.picking) ) return;
-        // carrier full or everything picked
-        this.goHome(creep);
-        return;
+        // wait
+        if ( creep.sum === 0 ) {
+            let source = creep.pos.findClosestByRange(creep.room.sources);
+            if (creep.room && source && creep.pos.getRangeTo(source) > 3) {
+                creep.data.travelRange = 3;
+                return Creep.action.travelling.assign(creep, source);
+            }
+        }
+        return this.assign(creep, Creep.action.idle);
     }
     // somewhere
     else {
@@ -84,8 +90,9 @@ mod.assign = function(creep, action, target){
     return (action.isValidAction(creep) && action.isAddableAction(creep) && action.assign(creep, target));
 };
 mod.gotoTargetRoom = function(creep){
-    return Creep.action.travelling.assign(creep, Game.flags[creep.data.destiny.targetName]);
+    const targetFlag = creep.data.destiny ? Game.flags[creep.data.destiny.targetName] : null;
+    if (targetFlag) return Creep.action.travelling.assignRoom(creep, targetFlag.pos.roomName);
 };
 mod.goHome = function(creep){
-    return Creep.action.travelling.assign(creep, Game.rooms[creep.data.homeRoom].controller);
+    return Creep.action.travelling.assignRoom(creep, creep.data.homeRoom);
 };
