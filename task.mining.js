@@ -185,13 +185,14 @@ mod.checkForRequiredCreeps = (flag) => {
         if( DEBUG && TRACE ) trace('Task', {Task:mod.name, room:roomName, minerCount,
             minerTTLs: _.map(_.map(memory.running.remoteMiner, n=>Game.creeps[n]), "ticksToLive"), [mod.name]:'minerCount'});
 
+        const miner = Room.isCenterNineRoom(roomName) ? Task.mining.creep.skMiner : Task.mining.creep.miner;
         for(let i = minerCount; i < sourceCount; i++) {
             Task.spawn(
-                Room.isCenterNineRoom(roomName) ? Task.mining.creep.skMiner : Task.mining.creep.miner, // creepDefinition
+                miner, // creepDefinition
                 { // destiny
                     task: mod.name, // taskName
                     targetName: flag.name, // targetName
-                    type: Task.mining.creep.miner.behaviour // custom
+                    type: miner.behaviour // custom
                 }, 
                 { // spawn room selection params
                     targetRoom: roomName,
@@ -351,7 +352,7 @@ mod.creep = {
     },
     skMiner: {
         fixedBody: [MOVE, WORK, WORK, WORK, WORK, WORK],
-        multiBody: [MOVE, MOVE, MOVE, WORK, WORK, WORK, CARRY],
+        multiBody: [MOVE, MOVE, WORK, WORK, MOVE, WORK, WORK, MOVE, WORK, CARRY],
         maxMulti: 1,
         behaviour: 'remoteMiner',
         queue: 'Medium' // not much point in hauling or working without a miner, and they're a cheap spawn.
