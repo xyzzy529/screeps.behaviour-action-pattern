@@ -187,7 +187,7 @@ mod.checkForRequiredCreeps = (flag) => {
 
         for(let i = minerCount; i < sourceCount; i++) {
             Task.spawn(
-                Room.isSKRoom(roomName) ? Task.mining.creep.skMiner : Task.mining.creep.miner, // creepDefinition
+                Room.isCenterNineRoom(roomName) ? Task.mining.creep.skMiner : Task.mining.creep.miner, // creepDefinition
                 { // destiny
                     task: mod.name, // taskName
                     targetName: flag.name, // targetName
@@ -462,10 +462,10 @@ mod.strategies = {
             const travel = routeRange(miningRoom, homeRoom.name);
             let ept = 10;
             if( room ) {
-                let eachSource = Room.isSKRoom(miningRoom) ? 14 : 10;
+                let eachSource = Room.isCenterNineRoom(miningRoom) ? 14 : 10;
                 ept =  eachSource * room.sources.length;
             } else if( travel > 3 ) {
-                ept = Room.isSKRoom(miningRoom) ? 42 : 20; // assume profitable
+                ept = Room.isCenterNineRoom(miningRoom) ? 42 : 20; // assume profitable
             }
             // carry = ept * travel * 2 * 50 / 50
             let validHaulers = _.filter(existingHaulers, c => !Task.mining.needsReplacement(c));
