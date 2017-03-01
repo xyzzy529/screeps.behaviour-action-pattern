@@ -1,4 +1,4 @@
-let action = new Creep.Action('attackController');
+const action = new Creep.Action('attackController');
 module.exports = action;
 action.isValidAction = function(creep){ return true; }; 
 action.isValidTarget = function(target){  return target && (!target.reservation ) };
@@ -8,10 +8,10 @@ action.isAddableTarget = function(){ return target &&
 };
 action.newTarget = function(creep){
     let validColor = flagEntry => (
-        (flagEntry.color == FLAG_COLOR.invade.attackController.color && flagEntry.secondaryColor == FLAG_COLOR.invade.attackController.secondaryColor)
+        (flagEntry.color === FLAG_COLOR.invade.attackController.color && flagEntry.secondaryColor === FLAG_COLOR.invade.attackController.secondaryColor)
     );
 
-    var flag;
+    let flag;
     if( creep.data.destiny ) flag = Game.flags[creep.data.destiny.flagName];
     if ( !flag ) flag = FlagDir.find(validColor, creep.pos, false, FlagDir.reserveMod, creep.name);
     
@@ -21,7 +21,7 @@ action.newTarget = function(creep){
     else return null;
 
     // not there, go to flagged room
-    if( !creep.flag.room || creep.flag.pos.roomName != creep.pos.roomName){
+    if( !creep.flag.room || creep.flag.pos.roomName !== creep.pos.roomName){
         return creep.flag;
     }
 
@@ -31,7 +31,7 @@ action.newTarget = function(creep){
 action.step = function(creep){
     if(CHATTY) creep.say(this.name, SAY_PUBLIC);
     if( creep.target.color ){
-        if( creep.flag.pos.roomName == creep.pos.roomName )
+        if( creep.flag.pos.roomName === creep.pos.roomName )
             creep.data.targetId = null;
         creep.drive( creep.target.pos, 0, 1, Infinity );
         return;
@@ -39,15 +39,15 @@ action.step = function(creep){
 
     let range = creep.pos.getRangeTo(creep.target);
     if( range <= this.targetRange ) {
-        var workResult = this.work(creep);
-        if( workResult != OK ) {
+        const workResult = this.work(creep);
+        if( workResult !== OK ) {
             creep.handleError({errorCode:workResult,action,target:creep.target,range,creep});
         }
     }
     creep.drive( creep.target.pos, this.reachedRange, this.targetRange, range );
 };
 action.work = function(creep){
-    var workResult;
+    let workResult;
 
     creep.controllerSign();
 

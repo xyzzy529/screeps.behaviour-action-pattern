@@ -1,5 +1,5 @@
 // base class for every action
-let Action = function(actionName){
+const Action = function(actionName){
     // action name
     this.name = actionName;
     // max allowed creeps per target
@@ -29,7 +29,7 @@ let Action = function(actionName){
     // determines, if a target is (still) valid. Gets validated each tick. 
     // check possible override in derived action
     this.isValidTarget = function(target, creep){
-        return (target != null);
+        return (target !== null);
     };
     // determines, if an action is valid. Gets validated only once upon assignment. 
     // check possible override in derived action
@@ -51,8 +51,8 @@ let Action = function(actionName){
         if(CHATTY) creep.say(this.name, SAY_PUBLIC);
         let range = creep.pos.getRangeTo(creep.target);
         if( range <= this.targetRange ) {
-            var workResult = this.work(creep);
-            if( workResult != OK ) {
+            const workResult = this.work(creep);
+            if( workResult !== OK ) {
                 const tryAction = creep.action;
                 const tryTarget = creep.target;
                 creep.action = null;
@@ -87,9 +87,9 @@ let Action = function(actionName){
     // optionally predefine a fixed target
     this.assign = function(creep, target){
         if( target === undefined ) target = this.newTarget(creep);
-        if( target != null ) {
+        if( target !== null ) {
             if( DEBUG && TRACE ) trace('Action', {creepName:creep.name, assign:this.name, target:!target || target.name || target.id, Action:'assign'});
-            if( creep.action == null || creep.action.name != this.name || creep.target == null || creep.target.id != target.id || creep.target.name != target.name ) {
+            if( creep.action === null || creep.action.name !== this.name || creep.target === null || creep.target.id !== target.id || creep.target.name !== target.name ) {
                 Population.registerAction(creep, this, target);
                 this.onAssignment(creep, target);
             }

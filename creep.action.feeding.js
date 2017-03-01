@@ -1,4 +1,4 @@
-let action = new Creep.Action('feeding');
+const action = new Creep.Action('feeding');
 module.exports = action;
 action.maxPerTarget = 1;
 action.isValidAction = function(creep){
@@ -15,18 +15,18 @@ action.isAddableTarget = function(target){
         (!target.targetOf || _.filter(target.targetOf, {'actionName':'feeding'}).length < this.maxPerTarget));
 };
 action.newTarget = function(creep){
-    var that = this;
+    const that = this;
     return creep.pos.findClosestByRange(creep.room.structures.all, {
         filter: (structure) => {
-            return ((structure.structureType == STRUCTURE_EXTENSION ||
-                structure.structureType == STRUCTURE_SPAWN )
+            return ((structure.structureType === STRUCTURE_EXTENSION ||
+                structure.structureType === STRUCTURE_SPAWN )
                 && that.isValidTarget(structure) && that.isAddableTarget(structure, creep));
         }
     });
 };
 action.work = function(creep){
-    let result = creep.transfer(creep.target, RESOURCE_ENERGY);
-    if (result == OK && creep.carry.energy > creep.target.energyCapacity-creep.target.energy) {
+    const result = creep.transfer(creep.target, RESOURCE_ENERGY);
+    if (result === OK && creep.carry.energy > creep.target.energyCapacity-creep.target.energy) {
         creep.target = null;
         this.assign(creep);
     }

@@ -1,4 +1,4 @@
-let action = new Creep.Action('idle');
+const action = new Creep.Action('idle');
 module.exports = action;
 action.targetRange = 3;
 action.isValidAction = function(creep){ return true; };

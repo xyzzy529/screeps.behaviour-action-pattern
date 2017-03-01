@@ -14,15 +14,15 @@ action.newTarget = function(creep){
     let flag = FlagDir.find(FLAG_COLOR.destroy.dismantle, creep.pos, true);
     if( flag ){
         if( flag.room !== undefined ){ // room is visible
-            var targets = flag.room.lookForAt(LOOK_STRUCTURES, flag.pos.x, flag.pos.y);
+            const targets = flag.room.lookForAt(LOOK_STRUCTURES, flag.pos.x, flag.pos.y);
             if( targets && targets.length > 0)
                 return targets[0];
             else { // remove flag. try next flag
-                let oldName = flag.name;
+                const oldName = flag.name;
                 FlagDir.removeFromDir(flag.name);
                 flag.remove();
 
-                let otherFlagMod = (range, flagItem, args) => {
+                const otherFlagMod = (range, flagItem, args) => {
                     if(flagItem.name == args) return Infinity;
                     return range;
                 };
@@ -30,7 +30,7 @@ action.newTarget = function(creep){
                 if( oldName == flag.name ) logError('Removed flag found again in dismantling.newTarget!');
                 if( flag ){
                     if( flag.room !== undefined ){ // room is visible
-                        var targets = flag.room.lookForAt(LOOK_STRUCTURES, flag.pos.x, flag.pos.y);
+                        const targets = flag.room.lookForAt(LOOK_STRUCTURES, flag.pos.x, flag.pos.y);
                         if( targets && targets.length > 0)
                             return targets[0];
                         else { // remove flag. try next flag

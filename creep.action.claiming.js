@@ -1,4 +1,4 @@
-let action = new Creep.Action('claiming');
+const action = new Creep.Action('claiming');
 module.exports = action;
 action.isValidAction = function(creep){ return true; };
 action.isValidTarget = function(target){ return !target.room || !target.owner; }; // no sight or not owned
@@ -24,7 +24,7 @@ action.newTarget = function(creep){
         // TODO: only if no spawn or spawn-constructionSite present
         creep.flag.setColor(FLAG_COLOR.claim.spawn.color, FLAG_COLOR.claim.spawn.secondaryColor);
         // TODO: remove exploit flags
-        let remove = f => Game.flags[f.name].remove();
+        const remove = f => Game.flags[f.name].remove();
         _.forEach(FlagDir.filter(FLAG_COLOR.invade.exploit, creep.flag.pos, true), remove);
         // no valid target for claimer
         return null;
@@ -38,16 +38,16 @@ action.newTarget = function(creep){
 action.step = function(creep){
     if(CHATTY) creep.say(this.name, SAY_PUBLIC);
     if( creep.target.color ){
-        if( creep.flag.pos.roomName == creep.pos.roomName )
+        if( creep.flag.pos.roomName === creep.pos.roomName )
             creep.data.targetId = null;
         creep.drive( creep.target.pos, 0, 1, Infinity );
         return;
     }
 
-    let range = creep.pos.getRangeTo(creep.target);
+    const range = creep.pos.getRangeTo(creep.target);
     if( range <= this.targetRange ) {
-        var workResult = this.work(creep);
-        if( workResult != OK ) {
+        const workResult = this.work(creep);
+        if( workResult !== OK ) {
             creep.handleError({errorCode: workResult, action: this, target: creep.target, range, creep});
         }
     }
@@ -56,7 +56,7 @@ action.step = function(creep){
 action.work = function(creep){
     creep.controllerSign();
 
-    return creep.claimController(creep.target)
+    return creep.claimController(creep.target);
     /*
     var workResult;
         workResult = creep.claimController(creep.target);

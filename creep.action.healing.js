@@ -1,10 +1,10 @@
-let action = new Creep.Action('healing');
+const action = new Creep.Action('healing');
 module.exports = action;
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
 action.isValidTarget = function(target){
-    return ( target != null &&
-        target.hits != null &&
+    return ( target !== null &&
+        target.hits !== null &&
         target.hits < target.hitsMax &&
         target.my );
 };

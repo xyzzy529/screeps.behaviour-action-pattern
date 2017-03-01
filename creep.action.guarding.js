@@ -1,9 +1,9 @@
-let action = new Creep.Action('guarding');
+const action = new Creep.Action('guarding');
 module.exports = action;
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
 action.newTarget = function(creep){
-    var flag;
+    let flag;
     if( creep.data.destiny ) flag = Game.flags[creep.data.destiny.flagName];
     if ( !flag ) {
         flag = FlagDir.find(FLAG_COLOR.defense, creep.pos, false, FlagDir.rangeMod, {
@@ -12,7 +12,7 @@ action.newTarget = function(creep){
         });
     }
 
-    if( creep.action && creep.action.name == 'guarding' && creep.flag )
+    if( creep.action && creep.action.name === 'guarding' && creep.flag )
         return creep.flag;
     if( flag ) Population.registerCreepFlag(creep, flag);
     return flag;

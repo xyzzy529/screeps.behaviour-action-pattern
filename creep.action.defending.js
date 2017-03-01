@@ -1,4 +1,4 @@
-let action = new Creep.Action('defending');
+const action = new Creep.Action('defending');
 module.exports = action;
 action.isValidAction = function(creep){ return creep.room.hostiles.length > 0; };
 action.isAddableAction = function(){ return true; };
@@ -6,12 +6,12 @@ action.isAddableTarget = function(){ return true; };
 action.isValidTarget = function(target){
     return (
         target &&
-        target.hits != null &&
+        target.hits !== null &&
         target.hits > 0 &&
-        target.my == false );
+        target.my === false );
 };
 action.newTarget = function(creep){
-    var closestHostile = creep.pos.findClosestByRange(creep.room.hostiles, {
+    let closestHostile = creep.pos.findClosestByRange(creep.room.hostiles, {
         function(hostile){ return _.some(hostile.body, {'type': HEAL}); }
     });
     if(!closestHostile) {
@@ -25,45 +25,45 @@ action.step = function(creep){
 };
 action.run = {
     ranger: function(creep) {
-        let range = creep.pos.getRangeTo(creep.target);
+        const range = creep.pos.getRangeTo(creep.target);
         if( !creep.flee ){
             if( range > 3 ){
-                let path = creep.room.findPath(creep.pos, creep.target.pos, {ignoreCreeps: false});
+                const path = creep.room.findPath(creep.pos, creep.target.pos, {ignoreCreeps: false});
                 if( path && path.length > 0 ) {
-                    let isRampart = COMBAT_CREEPS_RESPECT_RAMPARTS && _.some( creep.room.lookForAt(LOOK_STRUCTURES, path[0].x, path[0].y), {'structureType': STRUCTURE_RAMPART });
+                    const isRampart = COMBAT_CREEPS_RESPECT_RAMPARTS && _.some( creep.room.lookForAt(LOOK_STRUCTURES, path[0].x, path[0].y), {'structureType': STRUCTURE_RAMPART });
                     if(!isRampart){
                         creep.move(path[0].direction);
                     }
                 } else {
                     // no path -> try to move by direction
-                    let direction = creep.pos.getDirectionTo(creep.target);
+                    const direction = creep.pos.getDirectionTo(creep.target);
                     if( direction ) creep.move(direction);
                 }
             }
             if( range < 3 ){
-                let direction = creep.target.pos.getDirectionTo(creep);
+                const direction = creep.target.pos.getDirectionTo(creep);
                 if( direction ) creep.move(direction);
             }
         }
 
         // attack ranged
-        let targets = creep.pos.findInRange(creep.room.hostiles, 3);
+        const targets = creep.pos.findInRange(creep.room.hostiles, 3);
         if(targets.length > 2) { // TODO: precalc damage dealt
             if(CHATTY) creep.say('MassAttack');
-            creep.attackingRanged = creep.rangedMassAttack() == OK;
+            creep.attackingRanged = creep.rangedMassAttack() === OK;
             return;
         }
         if( range < 4 ) {
-            creep.attackingRanged = creep.rangedAttack(creep.target) == OK;
+            creep.attackingRanged = creep.rangedAttack(creep.target) === OK;
             return;
         }
         if(targets.length > 0){
-            creep.attackingRanged = creep.rangedAttack(targets[0]) == OK;
+            creep.attackingRanged = creep.rangedAttack(targets[0]) === OK;
         }
     },
     melee: function(creep) {
         if( !creep.flee ){
-            let path = creep.room.findPath(creep.pos, creep.target.pos);
+            const path = creep.room.findPath(creep.pos, creep.target.pos);
             // not standing in rampart or next step is rampart as well
             if( path && path.length > 0 && (
                 !COMBAT_CREEPS_RESPECT_RAMPARTS ||
@@ -78,8 +78,8 @@ action.run = {
         if( attacking == ERR_NOT_IN_RANGE ) {
             let targets = creep.pos.findInRange(creep.room.hostiles, 1);
             if( targets.length > 0)
-                creep.attacking = creep.attack(targets[0]) == OK;
-        } else creep.attacking = attacking == OK;
+                creep.attacking = creep.attack(targets[0]) === OK;
+        } else creep.attacking = attacking === OK;
     }
 };
 action.onAssignment = function(creep, target) {

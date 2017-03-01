@@ -1,4 +1,4 @@
-let action = new Creep.Action('fortifying');
+const action = new Creep.Action('fortifying');
 module.exports = action;
 action.maxPerTarget = 1;
 action.maxPerAction = 1;
@@ -7,11 +7,11 @@ action.isValidAction = function(creep){
     return (creep.carry.energy > 0 && ( !creep.room.storage || creep.room.storage.charge > 1 ));
 };
 action.isValidTarget = function(target){
-    return ( target != null && target.hits && target.hits < target.hitsMax);
+    return ( target !== null && target.hits && target.hits < target.hitsMax);
 };
 action.newTarget = function(creep){
-    var that = this;
-    var isAddable = target => that.isAddableTarget(target, creep);
+    const that = this;
+    const isAddable = target => that.isAddableTarget(target, creep);
     return _.find(creep.room.structures.fortifyable, isAddable);
 };
 action.work = function(creep){

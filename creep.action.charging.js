@@ -1,4 +1,4 @@
-let action = new Creep.Action('charging'); // store into container
+const action = new Creep.Action('charging'); // store into container
 module.exports = action;
 action.renewTarget = false;
 action.isValidAction = function(creep){ return creep.carry.energy > 0; }
@@ -8,7 +8,7 @@ action.isValidTarget = function(target){
     if( target.structureType == 'link' ){
         return target.energy < target.storeCapacity * 0.85;
     } else if( target.structureType == 'container' ) {
-        return target.sum < ((target.source === true && target.controller == true) ? target.storeCapacity * MANAGED_CONTAINER_TRIGGER : target.storeCapacity);
+        return target.sum < ((target.source === true && target.controller === true) ? target.storeCapacity * MANAGED_CONTAINER_TRIGGER : target.storeCapacity);
     }
     return false;
 };
@@ -19,15 +19,15 @@ action.isAddableTarget = function(target, creep){
             (!creep.room.controller ||
                 (
                     (!creep.room.controller.owner || creep.room.controller.my) &&
-                    (!creep.room.controller.reservation || creep.room.controller.reservation.username == creep.owner.username)
+                    (!creep.room.controller.reservation || creep.room.controller.reservation.username === creep.owner.username)
                 )
             )
         )
     ) && (
-        (target.structureType == 'container' && (target.storeCapacity - target.sum) > Math.min(creep.carry.energy, 500)) ||
-        ( target.structureType == 'link' )
+        (target.structureType === 'container' && (target.storeCapacity - target.sum) > Math.min(creep.carry.energy, 500)) ||
+        ( target.structureType === 'link' )
     ) && (
-        target.structureType != 'container' || !target.controller || creep.carry.energy == creep.sum // don't put minerals in upgrader container
+        target.structureType !== 'container' || !target.controller || creep.carry.energy === creep.sum // don't put minerals in upgrader container
     );
 };
 action.newTarget = function(creep){
@@ -41,13 +41,13 @@ action.newTarget = function(creep){
         }
     }
 
-    var that = this;
+    const that = this;
     if( creep.room.structures.container.out.length > 0 ) {
         let target = null;
         let maxFree = 0;
-        var emptyest = o => {
+        const emptyest = o => {
             if( that.isValidTarget(o, creep) && that.isAddableTarget(o, creep) ) {
-                let free = o.storeCapacity - o.sum;
+                const free = o.storeCapacity - o.sum;
                 if( free > maxFree ){
                     maxFree = free;
                     target = o;
@@ -60,13 +60,13 @@ action.newTarget = function(creep){
 };
 action.work = function(creep){
     let workResult;
-    if( creep.target.source === true && creep.target.controller == true ) {
+    if( creep.target.source === true && creep.target.controller === true ) {
         // don't overfill managed container'
-        let max = (creep.target.storeCapacity * MANAGED_CONTAINER_TRIGGER) - creep.target.sum;
+        const max = (creep.target.storeCapacity * MANAGED_CONTAINER_TRIGGER) - creep.target.sum;
         
         if( max < 1) workResult = ERR_FULL;
         else {
-            let amount = _.min([creep.carry.energy, max]);
+            const amount = _.min([creep.carry.energy, max]);
             workResult = creep.transfer(creep.target, RESOURCE_ENERGY, amount);
             creep.target._sum += amount;
         }

@@ -1,4 +1,4 @@
-let action = new Creep.Action('harvesting');
+const action = new Creep.Action('harvesting');
 module.exports = action;
 action.renewTarget = false;
 action.isValidAction = function(creep){
@@ -20,7 +20,7 @@ action.isAddableTarget = function(target, creep){
         (!creep.room.controller ||
             (
                 (!creep.room.controller.owner || creep.room.controller.my) && // my room or not owned
-                (!creep.room.controller.reservation || creep.room.controller.reservation.username == creep.owner.username) // my reservation or none
+                (!creep.room.controller.reservation || creep.room.controller.reservation.username === creep.owner.username) // my reservation or none
             )
         )
     ) && ( target.targetOf === undefined || target.targetOf.length < target.accessibleFields );
@@ -28,17 +28,17 @@ action.isAddableTarget = function(target, creep){
 action.newTarget = function(creep){
     let target = null;
     let sourceGuests = 999;
-    var roomSources = _.sortBy(creep.room.sources, s => creep.pos.getRangeTo(s));
-    for( var iSource = 0; iSource < roomSources.length; iSource++ ){
-        let source = roomSources[iSource];
+    const roomSources = _.sortBy(creep.room.sources, s => creep.pos.getRangeTo(s));
+    for( let iSource = 0; iSource < roomSources.length; iSource++ ){
+        const source = roomSources[iSource];
         if( this.isValidTarget(source) && this.isAddableTarget(source, creep) ){
             if( source.targetOf === undefined ) {
                 sourceGuests = 0;
                 target = source;
                 break;
             } else {
-                let guests = _.countBy(source.targetOf, 'creepType');
-                let count = guests[creep.data.creepType];
+                const guests = _.countBy(source.targetOf, 'creepType');
+                const count = guests[creep.data.creepType];
                 if( !count ) {
                     sourceGuests = 0;
                     target = source;

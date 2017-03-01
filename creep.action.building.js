@@ -1,4 +1,4 @@
-let action = new Creep.Action('building');
+const action = new Creep.Action('building');
 module.exports = action;
 action.maxPerTarget = 3;
 action.targetRange = 3;
@@ -17,8 +17,8 @@ action.isAddableTarget = function(target) {
     return target && target.my && (!target.targetOf || target.targetOf.length < this.maxPerTarget);
 };
 action.newTarget = function(creep){
-    var that = this;
-    var isAddable = target => that.isAddableTarget(target, creep);
+    const that = this;
+    const isAddable = target => that.isAddableTarget(target, creep);
     return creep.room.getBestConstructionSiteFor(creep.pos, isAddable);
 };
 action.work = function(creep){

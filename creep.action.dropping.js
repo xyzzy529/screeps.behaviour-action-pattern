@@ -1,4 +1,4 @@
-let action = new Creep.Action('dropping');
+const action = new Creep.Action('dropping');
 module.exports = action;
 action.targetRange = 1;
 action.reachedRange = 0;
@@ -18,9 +18,9 @@ action.newTarget = function(creep) {
 };
 action.work = function(creep) {
     let ret = OK;
-    let isSpawnFlag = f => f && f.color === FLAG_COLOR.claim.spawn.color && f.secondaryColor === FLAG_COLOR.claim.spawn.secondaryColor;
+    const isSpawnFlag = f => f && f.color === FLAG_COLOR.claim.spawn.color && f.secondaryColor === FLAG_COLOR.claim.spawn.secondaryColor;
     if (!(creep.target instanceof StructureSpawn || isSpawnFlag(creep.target))) {
-        let range = creep.pos.getRangeTo(creep.target);
+        const range = creep.pos.getRangeTo(creep.target);
         if( range > action.reachedRange && creep.data.lastPos && creep.data.path
             && !_.eq(creep.pos, creep.data.lastPos) ) {
             // move ok, don't drop early
