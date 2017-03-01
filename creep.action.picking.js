@@ -1,4 +1,4 @@
-let action = new Creep.Action('picking');
+const action = new Creep.Action('picking');
 module.exports = action;
 action.maxPerAction = 4;
 action.maxPerTarget = 2;
@@ -6,7 +6,7 @@ action.isValidAction = function(creep){
     return ( creep.sum < creep.carryCapacity );
 };
 action.isValidTarget = function(target){
-    return (target != null && target.amount != null && target.amount > 0);
+    return (target !== null && target.amount !== null && target.amount > 0);
 };
 action.isAddableAction = function(creep){
     if( creep.data.creepType.indexOf('remote') > 0 ) return true;
@@ -16,7 +16,7 @@ action.isAddableTarget = function(target, creep){
     let max;
     if( creep.data.creepType.indexOf('remote') > 0 ) max = Infinity;
     else max =  this.maxPerTarget;
-    let pickers = target.targetOf ? _.filter(target.targetOf, {actionName: 'picking'}) : [];
+    const pickers = target.targetOf ? _.filter(target.targetOf, {actionName: 'picking'}) : [];
     return (!target.targetOf || !pickers.length || ((pickers.length < max) && target.amount > _.sum( pickers.map( t => t.carryCapacityLeft))));
 };
 action.newTarget = function(creep){
@@ -44,8 +44,8 @@ action.newTarget = function(creep){
     return target;
 };
 action.work = function(creep){
-    var result = creep.pickup(creep.target);
-    if( result == OK ){
+    const result = creep.pickup(creep.target);
+    if( result === OK ){
         if( creep.sum < creep.carryCapacity*0.8 ) {
             // is there another in range?
             let loot = creep.pos.findInRange(creep.room.droppedResources, 1, {
@@ -61,7 +61,7 @@ action.work = function(creep){
         }
         // Check for containers to uncharge
         if( creep.sum < creep.carryCapacity) {
-            let containers = creep.pos.findInRange(creep.room.structures.container.in, 2, {
+            const containers = creep.pos.findInRange(creep.room.structures.container.in, 2, {
                filter: (o) => Creep.action.uncharging.isValidTarget(o, creep)
             });
             if ( containers && containers.length > 0 ) {
