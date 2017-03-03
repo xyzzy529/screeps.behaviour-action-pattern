@@ -315,16 +315,19 @@ mod.extend = function(){
         }
         let store = 0;
         let space = 0;
+        let cap = 0;
         if (resourceType == RESOURCE_ENERGY) {
             store = this.energy;
             space = this.energyCapacity-this.energy;
+            cap = this.energyCapacity;
         } else {
             if (this.mineralType == resourceType) store = this.mineralAmount;
             space = this.mineralCapacity-this.mineralAmount;
+            cap = this.mineralCapacity;
         }
-        if( store < loadTarget / 2 ) return Math.min( loadTarget-store,space );
+        if( store < Math.min(loadTarget,cap) / 2 ) return Math.min( loadTarget-store,space );
         if( containerData && containerData.reactionState === 'idle' && store > unloadTarget ) return unloadTarget-store;
-        if( store > unloadTarget + ( this.energyCapacity - Math.min(unloadTarget,this.energyCapacity) ) / 2 ) return unloadTarget-store;
+        if( store > unloadTarget + ( cap - Math.min(unloadTarget,cap) ) / 2 ) return unloadTarget-store;
         return 0;
     };
     StructurePowerSpawn.prototype.getNeeds = function(resourceType) {
