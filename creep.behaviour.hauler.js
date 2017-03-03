@@ -28,7 +28,8 @@ mod.nextAction = function(creep){
         let potentialFuelTarget = Creep.action.fueling.newTarget(creep);
         let potentialChargeTarget = Creep.action.charging.newTarget(creep);
         if( creep.data.lastAction !== 'storing' || !creep.room.storage || creep.data.lastTarget !== creep.room.storage.id ||
-            creep.room.relativeEnergyAvailable < 1.0 || potentialFuelTarget !== null || (potentialChargeTarget && (potentialChargeTarget.structureType === STRUCTURE_LINK) ? potentialChargeTarget.storeCapacity - potentialChargeTarget.sum >  Math.min( creep.carryCapacity, 500 ) : true ) ) {
+            creep.room.relativeEnergyAvailable < 1.0 || potentialFuelTarget !== null ||
+                ( potentialChargeTarget && ( (potentialChargeTarget.structureType === STRUCTURE_LINK) ? true : ( potentialChargeTarget.storeCapacity - potentialChargeTarget.sum ) >  Math.min( creep.carryCapacity, 500 ) ) ) ) {
             priority.push(Creep.action.withdrawing);
         }
         priority.push(Creep.action.reallocating);
