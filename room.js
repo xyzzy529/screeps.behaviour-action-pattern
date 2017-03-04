@@ -2072,7 +2072,11 @@ mod.execute = function() {
 };
 mod.cleanup = function() {
     // flush changes to the pathfinderCache but wait until load
-    if (mod.pathfinderCacheDirty && mod.pathfinderCacheLoaded) {           
+    if (!_.isUndefined(Memory.pathfinder)) {
+        OCSMemory.saveSegment(SEGMENTS.COSTMATRIX_CACHE, Memory.pathfinder)
+        delete Memory.pathfinder;
+    }
+    if (mod.pathfinderCacheDirty && mod.pathfinderCacheLoaded) {
         // store our updated cache in the memory segment
         let encodedCache = {};
         for (const key in mod.pathfinderCache) {
