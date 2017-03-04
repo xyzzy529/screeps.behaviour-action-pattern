@@ -218,7 +218,7 @@ global.install = () => {
     FlagDir.extend();
 
     // reload cached data from memory segment
-    OCSMemory.activateSegment(SEGMENTS.COSTMATRIX_CACHE);
+    OCSMemory.activateSegment(MEM_SEGMENTS.COSTMATRIX_CACHE);
     // custom extend
     if( global.mainInjection.extend ) global.mainInjection.extend();
 };

@@ -1,6 +1,7 @@
 let mod = {};
 module.exports = mod;
 mod.segmentsChanged = true;
+mod.numSaved = 0;
 mod.activateSegments = () => {
 	if (_.isUndefined(Memory.activeSegments)) Memory.activeSegments = {};
 	let activeSegments = [];
@@ -26,14 +27,13 @@ mod.deactivateSegment = (id) => {
 	mod.segmentsChanged = true;
 };
 mod.processSegments = () => {
-    const costMatrixCache = RawMemory.segments[SEGMENTS.COSTMATRIX_CACHE];
+    const costMatrixCache = RawMemory.segments[MEM_SEGMENTS.COSTMATRIX_CACHE];
     if (costMatrixCache) {
     	if (DEBUG) logSystem('RawMemory', 'loading pathfinder cache..');
         Room.loadCostMatrixCache(JSON.parse(costMatrixCache));
-        mod.deactivateSegment(SEGMENTS.COSTMATRIX_CACHE);
+        mod.deactivateSegment(MEM_SEGMENTS.COSTMATRIX_CACHE);
     }
 };
-mod.numSaved = 0;
 mod.saveSegment = (id, data) => {
 	const numActive = _.size(Memory.activeSegments);
 	if (Memory.activeSegments[id] || numActive + mod.numSaved < 10) {
