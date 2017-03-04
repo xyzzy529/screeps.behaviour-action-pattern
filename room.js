@@ -3,7 +3,9 @@ let find = Room.prototype.find;
 
 let mod = {};
 module.exports = mod;
-
+mod.pathfinderCache = {};
+mod.pathfinderCacheDirty = false;
+mod.pathfinderCacheLoaded = false;
 mod.extend = function(){
     let Container = function(room){
         this.room = room;
@@ -767,17 +769,17 @@ mod.extend = function(){
         'costMatrix': {
             configurable: true,
             get: function () {
-                if( _.isUndefined(Memory.pathfinder)) Memory.pathfinder = {};
-                if( _.isUndefined(Memory.pathfinder[this.name])) Memory.pathfinder[this.name] = {};
+                if( _.isUndefined(mod.pathfinderCache)) mod.pathfinderCache = {};
+                if( _.isUndefined(mod.pathfinderCache[this.name])) mod.pathfinderCache[this.name] = {};
 
-                const ttl = Game.time - Memory.pathfinder[this.name].updated;
-                if( Memory.pathfinder[this.name].costMatrix && ttl < COST_MATRIX_VALIDITY) {
+                const ttl = Game.time - mod.pathfinderCache[this.name].updated;
+                if( mod.pathfinderCache[this.name].costMatrix && ttl < COST_MATRIX_VALIDITY) {
                     if( DEBUG && TRACE ) trace('PathFinder', {roomName:this.name, ttl, PathFinder:'CostMatrix'}, 'cached costmatrix');
-                    return PathFinder.CostMatrix.deserialize(Memory.pathfinder[this.name].costMatrix);
+                    return mod.pathfinderCache[this.name].costMatrix;
                 }
 
-                if( DEBUG ) logSystem(this.name, 'Calulating cost matrix');
-                var costMatrix = new PathFinder.CostMatrix;
+                if( DEBUG ) logSystem(this.name, 'Calculating cost matrix');
+                var costMatrix = new PathFinder.CostMatrix();
                 let setCosts = structure => {
                     if(structure.structureType == STRUCTURE_ROAD) {
                         costMatrix.set(structure.pos.x, structure.pos.y, 1);
@@ -787,9 +789,10 @@ mod.extend = function(){
                 };
                 this.structures.all.forEach(setCosts);
 
-                const prevTime = Memory.pathfinder[this.name].updated;
-                Memory.pathfinder[this.name].costMatrix = costMatrix.serialize();
-                Memory.pathfinder[this.name].updated = Game.time;
+                const prevTime = mod.pathfinderCache[this.name].updated;
+                mod.pathfinderCache[this.name].costMatrix = costMatrix;
+                mod.pathfinderCache[this.name].updated = Game.time;
+                mod.pathfinderCacheDirty = true;
                 if( DEBUG && TRACE ) trace('PathFinder', {roomName:this.name, prevTime, structures:this.structures.all.length, PathFinder:'CostMatrix'}, 'updated costmatrix');
                 return costMatrix;
             }
@@ -2067,7 +2070,21 @@ mod.execute = function() {
     };
     _.forEach(Memory.rooms, run);
 };
-
+mod.cleanup = function() {
+    // flush changes to the pathfinderCache but wait until load
+    if (mod.pathfinderCacheDirty && mod.pathfinderCacheLoaded) {           
+        // store our updated cache in the memory segment
+        let encodedCache = {};
+        for (const key in mod.pathfinderCache) {
+            encodedCache[key] = {
+                costMatrix: mod.pathfinderCache[key].costMatrix.serialize(),
+                updated: mod.pathfinderCache[key].updated,
+            };
+        }
+        OCSMemory.saveSegment(SEGMENTS.COSTMATRIX_CACHE, encodedCache);
+        mod.pathfinderCacheDirty = false;
+    }
+};
 mod.bestSpawnRoomFor = function(targetRoomName) {
     var range = room => room.my ? routeRange(room.name, targetRoomName) : Infinity;
     return _.min(Game.rooms, range);
@@ -2184,6 +2201,17 @@ mod.getCostMatrix = function(roomName) {
     var room = Game.rooms[roomName];
     if(!room) return;
     return room.costMatrix;
+};
+mod.loadCostMatrixCache = function(cache) {
+    let newCache = {};
+    for (const key in cache) {
+        newCache[key] = {
+            costMatrix: PathFinder.CostMatrix.deserialize(cache[key].costMatrix),
+            updated: cache[key].updated,
+        };
+    }
+    mod.pathfinderCache = newCache;
+    mod.pathfinderCacheLoaded = true;
 };
 mod.validFields = function(roomName, minX, maxX, minY, maxY, checkWalkable = false, where = null) {
     let look;

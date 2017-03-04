@@ -178,6 +178,9 @@ mod.LAB_REACTIONS = {
     [RESOURCE_CATALYZED_GHODIUM_ACID]: [RESOURCE_GHODIUM_ACID, RESOURCE_CATALYST],
     [RESOURCE_CATALYZED_GHODIUM_ALKALIDE]: [RESOURCE_GHODIUM_ALKALIDE, RESOURCE_CATALYST],
 };
+mod.SEGMENTS = {
+    COSTMATRIX_CACHE: 0,
+};
 // used to log something meaningful instead of numbers
 mod.translateErrorCode = function(code){
     var codes = {

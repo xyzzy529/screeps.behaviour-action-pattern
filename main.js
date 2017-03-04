@@ -133,6 +133,7 @@ global.install = () => {
         Events: load('events'),
         Grafana: GRAFANA ? load('grafana') : undefined,
         Visuals: ROOM_VISUALS && !Memory.CPU_CRITICAL ? load('visuals') : undefined,
+        OCSMemory: load('ocsMemory'),
     });
     _.assign(global.Task, {
         guard: load("task.guard"),
@@ -215,6 +216,9 @@ global.install = () => {
     Room.extend();
     Spawn.extend();
     FlagDir.extend();
+
+    // reload cached data from memory segment
+    OCSMemory.activateSegment(SEGMENTS.COSTMATRIX_CACHE);
     // custom extend
     if( global.mainInjection.extend ) global.mainInjection.extend();
 };
@@ -241,6 +245,8 @@ module.exports.loop = function () {
     if (Memory.cloaked === undefined) {
         Memory.cloaked = {};
     }
+    // process loaded memory segments
+    OCSMemory.processSegments();
 
     // ensure up to date parameters
     _.assign(global, load("parameter"));
@@ -285,6 +291,8 @@ module.exports.loop = function () {
     processReports();
     FlagDir.cleanup();
     Population.cleanup();
+    Room.cleanup(); 
+    OCSMemory.cleanup(); // must come last
     // custom cleanup
     if( global.mainInjection.cleanup ) global.mainInjection.cleanup();
 
