@@ -331,7 +331,6 @@ mod.extend = function(){
         return 0;
     };
     StructurePowerSpawn.prototype.getNeeds = function(resourceType) {
-        if (!this.room.memory.resources || !this.room.memory.resources.powerSpawn) return 0;
         // if parameter is enabled then autofill powerSpawns
         if( FILL_POWERSPAWN ) {
             if( resourceType == RESOURCE_ENERGY && this.energy < this.energyCapacity * 0.75 ) {
@@ -342,6 +341,7 @@ mod.extend = function(){
             }
             return 0;
         }
+        if (!this.room.memory.resources || !this.room.memory.resources.powerSpawn) return 0;
         let loadTarget = 0;
         let unloadTarget = 0;
 
