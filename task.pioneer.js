@@ -17,6 +17,12 @@ mod.register = () => {
     Room.collapsed.on( room => Task.pioneer.handleRoomDied(room) );
 };
 mod.handleRoomDied = room => {
+    const recoveryType = 'collapseWorker';
+
+    if (room.population.typeCount[recoveryType]) {
+        return;
+    }
+
     // try to spawn a worker
     let pioneer = true;
     if( room.energyAvailable > 199 ) {
@@ -25,7 +31,7 @@ mod.handleRoomDied = room => {
         pioneer = !Task.spawn(
             Task.pioneer.creep.worker, // creepDefinition
             { // destiny
-                task: 'pioneer', // taskName
+                task: recoveryType, // taskName
                 targetName: room.name // targetName
             }, 
             { // spawn room selection params
