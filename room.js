@@ -1477,6 +1477,11 @@ mod.extend = function(){
             let order = targetRoom.memory.resources.orders.find((o)=>{ return o.id==offer.id && o.type==offer.type; });
             if (!order) continue;
             let targetOfferIdx = order.offers.findIndex((o)=>{ return o.room==this.name; });
+            if (targetOfferIdx == -1) {
+                logSystem(this.name, "Orphaned offer found and deleted");
+                offers.splice(i--,1);
+                continue;
+            }
 
             let store = this.terminal.store[offer.type]||0;
             let onOrder = 0;
@@ -1674,6 +1679,21 @@ mod.extend = function(){
             }
         }
     };
+<<<<<<< Updated upstream
+=======
+    Room.prototype.processPower = function() {
+        // run lab reactions WOO!
+        let powerSpawns = this.find(FIND_MY_STRUCTURES, { filter: (s) => { return s.structureType == STRUCTURE_POWER_SPAWN; } } );
+        for (var i=0;i<powerSpawns.length;i++) {
+            // see if the reaction is possible
+            let powerSpawn = powerSpawns[i];
+            if (powerSpawn.energy > 0 && powerSpawn.power > POWER_SPAWN_ENERGY_RATIO) {
+                if (DEBUG && TRACE) trace('Room', { roomName: this.name, actionName: 'processPower' });
+                powerSpawn.processPower();
+            }
+        }
+    };
+>>>>>>> Stashed changes
     Room.prototype.findContainerWith = function(resourceType, amountMin) {
         if (!amountMin) amountMin = 1;
         //if (!RESOURCES_ALL.find((r)=>{r==resourceType;})) return null;
