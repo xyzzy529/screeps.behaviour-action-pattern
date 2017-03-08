@@ -336,7 +336,7 @@ action.newTargetTerminal = function(creep) {
             if (amount > 0) {
                 // found a needed resource so check lower priority containers
                 if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, structureId: terminal.id, resourceType: type, needs: amount });
-                if (room.storage && room.storage.store[RESOURCE_ENERGY] && !(type==RESOURCE_ENERGY && room.storage.store[RESOURCE_ENERGY] > MIN_STORAGE_ENERGY[room.controller.level])) {
+                if (room.storage && room.storage.store[RESOURCE_ENERGY] && !(type==RESOURCE_ENERGY && room.storage.store[RESOURCE_ENERGY] < MIN_STORAGE_ENERGY[room.controller.level])) {
                     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: room.terminal.id, resourceType: type, targetNeeds: room.terminal.store[type] });
                     return room.storage;
                 }
