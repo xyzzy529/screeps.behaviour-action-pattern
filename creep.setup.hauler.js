@@ -18,8 +18,8 @@ setup.maxCount = function(room){
     let workers = (room.population.typeCount['worker']||0);
     let mineralMiners = (room.population.typeCount['mineralMiner']||0);
     let cont = room.structures.container.in.length + room.structures.links.storage.length;
-    if( miners > 0  || ( cont > 0 && workers > Creep.setup.worker._maxCount(room)) ) {
-        count += Creep.setup.upgrader._maxCount(room);
+    if( miners > 0  || ( cont > 0 && workers > Creep.setup.worker.maxCount(room)) ) {
+        count += Creep.setup.upgrader.maxCount(room);
         if( room.structures.links.all.length < 3 ||
            (room.storage && room.storage.charge > 1 &&
             room.structures.container.controller && _.sum(room.structures.container.controller, 'store.energy') == 0 )) count++;
