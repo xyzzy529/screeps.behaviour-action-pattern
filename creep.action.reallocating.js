@@ -628,7 +628,8 @@ action.loadPowerSpawn = function(creep) {
     var workResult = null;
     var resource = null;
     var amount = 0;
-    // drop off at lab
+    // drop off at powerSpawn
+    if (room.memory.resources && room.memory.resources.powerSpawn === undefined) room.memory.resources.powerSpawn = [];
     amount = target.getNeeds(RESOURCE_ENERGY);
     if (amount > 0 && (creep.carry.energy||0) > 0) {
         resource = RESOURCE_ENERGY;
