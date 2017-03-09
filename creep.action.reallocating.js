@@ -106,15 +106,18 @@ action.newTargetLab = function(creep) {
                     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, structureId: lab.id, resourceType: lab.mineralType, needs: amount });
                     if (room.storage && room.storage.store[lab.mineralType]) {
                         if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: room.storage.id, resourceType: lab.mineralType, targetNeeds: room.storage.store[lab.mineralType] });
+                        creep.data.destiny.reallocating = lab.mineralType;
                         return room.storage;
                     }
                     if (room.terminal && room.terminal.getNeeds(lab.mineralType) < 0) {
                         if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: room.terminal.id, resourceType: lab.mineralType, targetNeeds: room.terminal.store[lab.mineralType] });
+                        creep.data.destiny.reallocating = lab.mineralType;
                         return room.terminal;
                     }
                     let ret = room.findContainerWith(lab.mineralType);
                     if (ret) {
                         if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: ret.structure.id, resourceType: lab.mineralType, targetNeeds: ret.amount });
+                        creep.data.destiny.reallocating = lab.mineralType;
                         return ret.structure;
                     }
                     if (ROOM_TRADING && !(lab.mineralType == RESOURCE_ENERGY || lab.mineralType == room.mineralType)) {
@@ -132,15 +135,18 @@ action.newTargetLab = function(creep) {
                     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, structureId: lab.id, resourceType: resourceType, needs: amount });
                     if (room.storage && room.storage.store[resourceType]) {
                         if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: room.storage.id, resourceType: resourceType, targetNeeds: room.storage.store[resourceType] });
+                        creep.data.destiny.reallocating = resourceType;
                         return room.storage;
                     }
                     if (room.terminal && room.terminal.getNeeds(resourceType) < 0) {
                         if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: room.terminal.id, resourceType: resourceType, targetNeeds: room.terminal.store[resourceType] });
+                        creep.data.destiny.reallocating = resourceType;
                         return room.terminal;
                     }
                     let ret = room.findContainerWith(resourceType);
                     if (ret) {
                         if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: ret.structure.id, resourceType: resourceType, targetNeeds: ret.amount });
+                        creep.data.destiny.reallocating = resourceType;
                         return ret.structure;
                     }
                     if (ROOM_TRADING && !(resourceType == RESOURCE_ENERGY || resourceType == room.mineralType)) {
@@ -163,15 +169,18 @@ action.newTargetLab = function(creep) {
                 if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, structureId: lab.id, resourceType: RESOURCE_ENERGY, needs: amount });
                 if (room.storage && room.storage.charge > 0.5) {
                     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: room.storage.id, resourceType: RESOURCE_ENERGY, targetNeeds: room.storage.store[RESOURCE_ENERGY] });
+                    creep.data.destiny.reallocating = RESOURCE_ENERGY;
                     return room.storage;
                 }
                 if (room.terminal && room.terminal.getNeeds(RESOURCE_ENERGY) < 0) {
                     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: room.terminal.id, resourceType: RESOURCE_ENERGY, targetNeeds: room.terminal.store[RESOURCE_ENERGY] });
+                    creep.data.destiny.reallocating = RESOURCE_ENERGY;
                     return room.terminal;
                 }
                 let ret = room.findContainerWith(RESOURCE_ENERGY);
                 if (ret) {
                     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: ret.structure.id, resourceType: RESOURCE_ENERGY, targetNeeds: ret.amount });
+                    creep.data.destiny.reallocating = RESOURCE_ENERGY;
                     return ret.structure;
                 }
             }
@@ -195,15 +204,18 @@ action.newTargetPowerSpawn = function(creep) {
                 if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, structureId: powerSpawn.id, resourceType: RESOURCE_ENERGY, needs: amount });
                 if (room.storage && room.storage.charge > 0.5) {
                     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: room.storage.id, resourceType: RESOURCE_ENERGY, targetNeeds: room.storage.store[RESOURCE_ENERGY] });
+                    creep.data.destiny.reallocating = RESOURCE_ENERGY;
                     return room.storage;
                 }
                 if (room.terminal && room.terminal.getNeeds(RESOURCE_ENERGY) < 0) {
                     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: room.terminal.id, resourceType: RESOURCE_ENERGY, targetNeeds: room.terminal.store[RESOURCE_ENERGY] });
+                    creep.data.destiny.reallocating = RESOURCE_ENERGY;
                     return room.terminal;
                 }
                 let ret = room.findContainerWith(RESOURCE_ENERGY);
                 if (ret) {
                     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: ret.structure.id, resourceType: RESOURCE_ENERGY, targetNeeds: ret.amount });
+                    creep.data.destiny.reallocating = RESOURCE_ENERGY;
                     return ret.structure;
                 }
             }
@@ -213,15 +225,18 @@ action.newTargetPowerSpawn = function(creep) {
                 if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, structureId: powerSpawn.id, resourceType: RESOURCE_POWER, needs: amount });
                 if (room.storage && room.storage.store[RESOURCE_POWER]) {
                     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: room.storage.id, resourceType: RESOURCE_POWER, targetNeeds: room.storage.store[RESOURCE_POWER] });
+                    creep.data.destiny.reallocating = RESOURCE_POWER;
                     return room.storage;
                 }
                 if (room.terminal && room.terminal.getNeeds(RESOURCE_POWER) < 0) {
                     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: room.terminal.id, resourceType: RESOURCE_POWER, targetNeeds: room.terminal.store[RESOURCE_POWER] });
+                    creep.data.destiny.reallocating = RESOURCE_POWER;
                     return room.terminal;
                 }
                 let ret = room.findContainerWith(RESOURCE_POWER);
                 if (ret) {
                     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: ret.structure.id, resourceType: RESOURCE_POWER, targetNeeds: ret.amount });
+                    creep.data.destiny.reallocating = RESOURCE_POWER;
                     return ret.structure;
                 }
             }
@@ -247,6 +262,7 @@ action.newTargetContainer = function(creep) {
                         var needing = this.findNeeding(room, resource);
                         if (needing) {
                             if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: needing.structure.id, resourceType: resource, targetNeeds: needing.amount });
+                            creep.data.destiny.reallocating = resource;
                             return container;
                         }
                     }
@@ -264,10 +280,12 @@ action.newTargetContainer = function(creep) {
                                 if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, structureId: container.id, resourceType: resource, needs: amount });
                                 if (room.storage && room.storage.store[type] && !(type == RESOURCE_ENERGY && room.storage.charge < 0.5)) {
                                     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: room.storage.id, resourceType: resource, targetNeeds: room.storage.store[resource] });
+                                    creep.data.destiny.reallocating = resource;
                                     return room.storage;
                                 }
                                 if (room.terminal && room.terminal.getNeeds(type) < 0) {
                                     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: room.terminal.id, resourceType: resource, targetNeeds: room.terminal.store[resource] });
+                                    creep.data.destiny.reallocating = resource;
                                     return room.terminal;
                                 }
                             }
@@ -296,6 +314,7 @@ action.newTargetTerminal = function(creep) {
                     let dest = this.findNeeding(room, resource, 1, terminal.id);
                     if (dest && dest.structure.id != terminal.id) {
                         if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: dest.structure.id, resourceType: resource, targetNeeds: dest.amount });
+                        creep.data.destiny.reallocating = resource;
                         return terminal;
                     }
                 }
@@ -320,6 +339,7 @@ action.newTargetTerminal = function(creep) {
                 if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, structureId: terminal.id, resourceType: type, needs: amount });
                 if (room.storage && room.storage.store[RESOURCE_ENERGY] && !(type==RESOURCE_ENERGY && room.storage.charge < 0.5)) {
                     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: room.terminal.id, resourceType: type, targetNeeds: room.terminal.store[type] });
+                    creep.data.destiny.reallocating = type;
                     return room.storage;
                 }
             }
@@ -341,6 +361,7 @@ action.newTargetStorage = function(creep) {
                 let dest = this.findNeeding(room, resource, 1, storage.id);
                 if (dest) {
                     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: dest.structure.id, resourceType: resource, targetNeeds: dest.amount });
+                    creep.data.destiny.reallocating = resource;
                     return storage;
                 }
             }
