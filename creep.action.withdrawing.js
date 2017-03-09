@@ -26,7 +26,7 @@ action.debounce = function(creep, outflowActions, callback, thisArg) {
     let shouldCall = false;
     if (creep.data.lastAction === 'storing' && creep.data.lastTarget === creep.room.storage.id) {
         // cycle detected
-        shouldCall = _.chain(outflowActions).invoke('newTarget', creep).some().value(); // cycle broken if valid target
+        shouldCall = _.some(outflowActions, a => a.isValidAction(creep) && a.isAddableAction(creep) && a.newTarget(creep));
     } else {
         shouldCall = true;
     }
