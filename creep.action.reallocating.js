@@ -407,7 +407,7 @@ action.loadStructure = function(creep, target, resource, amount) {
         // update order
         let data = null;
         if (room.memory.resources) data = room.memory.resources[target.structureType].find((s)=>s.id==target.id);
-        if (data) {
+        if (data && data.orders) {
             let order = data.orders.find(o=>o.type==resource);
             if (order && order.orderRemaining > 0) {
                 order.orderRemaining -= amt;
