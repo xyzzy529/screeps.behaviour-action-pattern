@@ -1651,9 +1651,11 @@ mod.extend = function(){
         this.memory.hostileIds = this.hostileIds;
     };
     Room.prototype.processLabs = function() {
-        // run lab reactions WOO!
+        // only process labs every 10 turns and avoid room tick
+        if (Game.time % 10 !== 5) return;
         let labs = this.find(FIND_MY_STRUCTURES, { filter: (s) => { return s.structureType == STRUCTURE_LAB; } } );
         if (!this.memory.resources) return;
+        // run lab reactions WOO!
         let master_labs = labs.filter( (l) => {
             let data = this.memory.resources.lab.find( (s) => s.id == l.id );
             return data ? (data.slave_a && data.slave_b) : false;
