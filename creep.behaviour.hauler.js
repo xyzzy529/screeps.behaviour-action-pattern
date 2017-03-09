@@ -20,28 +20,27 @@ mod.nextAction = function(creep){
         Creep.action.travelling.assign(creep, Game.rooms[creep.data.homeRoom].controller);
         return;
     }
-    let priority;
-    if( creep.sum < creep.carryCapacity/2 ) {
+    const outflowPriority = [
+        Creep.action.feeding,
+        Creep.action.charging,
+        Creep.action.fueling,
+    ];
+    let priority = outflowPriority;
+    if( creep.sum * 2 < creep.carryCapacity ) {
         priority = [
             Creep.action.uncharging,
-            Creep.action.picking];
-        let potentialFuelTarget = Creep.action.fueling.newTarget(creep);
-        let potentialChargeTarget = Creep.action.charging.newTarget(creep);
-        if( creep.data.lastAction !== 'storing' || !creep.room.storage || creep.data.lastTarget !== creep.room.storage.id ||
-            creep.room.relativeEnergyAvailable < 1.0 || potentialFuelTarget !== null ||
-                ( potentialChargeTarget && ( (potentialChargeTarget.structureType === STRUCTURE_LINK) ? true : ( potentialChargeTarget.storeCapacity - potentialChargeTarget.sum ) >  Math.min( creep.carryCapacity, 500 ) ) ) ) {
-            priority.push(Creep.action.withdrawing);
-        }
+            Creep.action.picking,
+        ];
+        Creep.action.withdrawing.debounce(creep, outflowPriority, function(withdrawing) {
+            priority.push(withdrawing);
+        });
         priority.push(Creep.action.reallocating);
         priority.push(Creep.action.idle);
-    }
-    else {
-        priority = [
-            Creep.action.feeding,
-            Creep.action.charging,
-            Creep.action.fueling,
+    } else {
+        priority = outflowPriority.concat([
             Creep.action.storing,
-            Creep.action.idle];
+            Creep.action.idle,
+        ]);
         if ( creep.sum > creep.carry.energy ||
             ( !creep.room.situation.invasion
             && SPAWN_DEFENSE_ON_ATTACK
