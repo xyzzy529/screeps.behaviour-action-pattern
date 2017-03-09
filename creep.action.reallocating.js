@@ -161,7 +161,7 @@ action.newTargetLab = function(creep) {
             if (amount > 0) {
                 // lab needs energy so find a lower priority container with some
                 if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, structureId: lab.id, resourceType: RESOURCE_ENERGY, needs: amount });
-                if (room.storage && room.storage.store[RESOURCE_ENERGY] > MIN_STORAGE_ENERGY[room.controller.level]) {
+                if (room.storage && room.storage.store[RESOURCE_ENERGY] > room.storage.charge * 0.5) {
                     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: room.storage.id, resourceType: RESOURCE_ENERGY, targetNeeds: room.storage.store[RESOURCE_ENERGY] });
                     return room.storage;
                 }
@@ -190,19 +190,10 @@ action.newTargetPowerSpawn = function(creep) {
             if (!powerSpawn) continue;
             var amount = 0;
             amount = powerSpawn.getNeeds(RESOURCE_ENERGY);
-            if (false&& amount < 0) {
-                // powerSpawn has extra energy (I guess ...)
-                if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, structureId: powerSpawn.id, resourceType: RESOURCE_ENERGY, needs: amount });
-                var needing = this.findNeeding(room, RESOURCE_ENERGY);
-                if (needing) {
-                    if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: needing.structure.id, resourceType: RESOURCE_ENERGY, targetNeeds: needing.amount });
-                    return powerSpawn;
-                }
-            }
             if (amount > 0) {
                 // powerSpawn needs energy so find a lower priority container with some
                 if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, structureId: powerSpawn.id, resourceType: RESOURCE_ENERGY, needs: amount });
-                if (room.storage && room.storage.store[RESOURCE_ENERGY] > MIN_STORAGE_ENERGY[room.controller.level]) {
+                if (room.storage && room.storage.store[RESOURCE_ENERGY] > room.storage.charge * 0.5) {
                     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: room.storage.id, resourceType: RESOURCE_ENERGY, targetNeeds: room.storage.store[RESOURCE_ENERGY] });
                     return room.storage;
                 }
@@ -217,15 +208,6 @@ action.newTargetPowerSpawn = function(creep) {
                 }
             }
             amount = powerSpawn.getNeeds(RESOURCE_POWER);
-            if (false&& amount < 0) {
-                // powerSpawn has extra energy (I guess ...)
-                if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, structureId: powerSpawn.id, resourceType: RESOURCE_POWER, needs: amount });
-                var needing = this.findNeeding(room, RESOURCE_POWER);
-                if (needing) {
-                    if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: needing.structure.id, resourceType: RESOURCE_POWER, targetNeeds: needing.amount });
-                    return powerSpawn;
-                }
-            }
             if (amount > 0) {
                 // powerSpawn needs energy so find a lower priority container with some
                 if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, structureId: powerSpawn.id, resourceType: RESOURCE_POWER, needs: amount });
@@ -280,7 +262,7 @@ action.newTargetContainer = function(creep) {
                             if (amount > 0) {
                                 // found a needed resource so check lower priority containers
                                 if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, structureId: container.id, resourceType: resource, needs: amount });
-                                if (room.storage && room.storage.store[type] && !(type == RESOURCE_ENERGY && room.storage.store[type] < MIN_STORAGE_ENERGY[room.controller.level])) {
+                                if (room.storage && room.storage.store[type] && !(type == RESOURCE_ENERGY && room.storage.store[type] < room.storage.charge * 0.5)) {
                                     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: room.storage.id, resourceType: resource, targetNeeds: room.storage.store[resource] });
                                     return room.storage;
                                 }
@@ -336,7 +318,7 @@ action.newTargetTerminal = function(creep) {
             if (amount > 0) {
                 // found a needed resource so check lower priority containers
                 if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, structureId: terminal.id, resourceType: type, needs: amount });
-                if (room.storage && room.storage.store[RESOURCE_ENERGY] && !(type==RESOURCE_ENERGY && room.storage.store[RESOURCE_ENERGY] < MIN_STORAGE_ENERGY[room.controller.level])) {
+                if (room.storage && room.storage.store[RESOURCE_ENERGY] && !(type==RESOURCE_ENERGY && room.storage.store[RESOURCE_ENERGY] < room.storage.charge * 0.5)) {
                     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: room.terminal.id, resourceType: type, targetNeeds: room.terminal.store[type] });
                     return room.storage;
                 }
