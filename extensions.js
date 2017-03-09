@@ -326,8 +326,11 @@ mod.extend = function(){
             cap = this.mineralCapacity;
         }
         if( store < Math.min(loadTarget,cap) / 2 ) return Math.min( loadTarget-store,space );
-        if( containerData && containerData.reactionState === 'idle' && store > unloadTarget ) return unloadTarget-store;
-        if( store > unloadTarget + ( cap - Math.min(unloadTarget,cap) ) / 2 ) return unloadTarget-store;
+        if( containerData && containerData.reactionType === this.mineralType ) {
+            if( store > unloadTarget + ( cap - Math.min(unloadTarget,cap) ) / 2 ) return unloadTarget-store;
+        } else {
+            if( store > unloadTarget ) return unloadTarget-store;
+        }
         return 0;
     };
     StructurePowerSpawn.prototype.getNeeds = function(resourceType) {
