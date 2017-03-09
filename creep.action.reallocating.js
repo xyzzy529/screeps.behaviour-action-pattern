@@ -491,9 +491,18 @@ action.unloadContainer = function(creep) {
     var resource = null;
     var amount = 0;
     // identify resource and load up from store
-    for (var res in target.store) {
+    let store = Object.keys(target.store);
+    if (creep.data.destiny.reallocating) {
+        store.unshift(creep.data.destiny.reallocating);
+        delete creep.data.destiny.reallocating;
+    }
+    for (let i=0;i<store.length;i++) {
+        let res = store[i];
         amount = -target.getNeeds(res);
-        if (amount > 0 && (target.structureType == STRUCTURE_LAB || target.getNeeds(res) < 0)) { resource = res; break; }
+        if (amount > 0 && (target.structureType == STRUCTURE_LAB || target.getNeeds(res) < 0)) {
+            resource = res;
+            break;
+        }
     }
     if (resource) {
         workResult = this.unloadStructure(creep, target, resource, amount);
@@ -511,7 +520,13 @@ action.unloadTerminal = function(creep) {
     var resource = null;
     var amount = 0;
     // identify resource and load up from store
-    for (var res in target.store) {
+    let store = Object.keys(target.store);
+    if (creep.data.destiny.reallocating) {
+        store.unshift(creep.data.destiny.reallocating);
+        delete creep.data.destiny.reallocating;
+    }
+    for (let i=0;i<store.length;i++) {
+        let res = store[i];
         if (res && target.store[res] > 0 && (target.structureType == STRUCTURE_LAB || target.getNeeds(res) < 0)) {
             let dat = this.findNeeding(room, res, 1, target.id);
             //if (dat && dat.structure.id == target.id) dat = null;
@@ -546,9 +561,15 @@ action.unloadStorage = function(creep) {
     var resource = null;
     var amount = 0;
     // check for other container's needs and local excess
-    for (var res in target.store) {
+    let store = Object.keys(target.store);
+    if (creep.data.destiny.reallocating) {
+        store.unshift(creep.data.destiny.reallocating);
+        delete creep.data.destiny.reallocating;
+    }
+    for (let i=0;i<store.length;i++) {
+        let res = store[i];
         if (res && target.store[res] > 0) {
-            if (res == RESOURCE_ENERGY && target.store[res] < MIN_STORAGE_ENERGY[room.controller.level]) continue;
+            if (res == RESOURCE_ENERGY && target.charge < 0.5) continue;
             let dat = this.findNeeding(room, res);
             if (dat && dat.structure.id == target.id) dat = null;
             if (dat) {
