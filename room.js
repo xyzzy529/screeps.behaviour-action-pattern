@@ -2243,7 +2243,10 @@ mod.extend = function(){
                 this.placeOrder(data.reactions.seed_a, component_a, amt);
                 this.placeOrder(data.reactions.seed_b, component_b, amt);
             }
+            data.reactions.reactorMode = mode;
         }
+        
+        return OK;
     };
     Room.prototype.placeReactionOrder = function(orderId, resourceType, amount, mode = REACTOR_MODE_BURST) {
         if (amount <= 0) return OK;
