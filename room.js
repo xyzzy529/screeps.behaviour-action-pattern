@@ -1712,21 +1712,27 @@ mod.extend = function(){
             this.placeOrder(data.seed_b, component_b, order.amount - ( data_b_order ? data_b_order.orderAmount : 0 ) );
         }
 
-        if ( seed_a.mineralType !== component_a || seed_b.mineralType !== component_b ) return;
-        let maxReactions = Math.floor( Math.min( seed_a.mineralAmount, seed_b.mineralAmount, order.amount ) / LAB_REACTION_AMOUNT );
-        if ( maxReactions === 0 ) return;
-
-        // find idle labs and run reactions
+        // find and configure idle labs
         let labs = this.find(FIND_MY_STRUCTURES, { filter: (s) => { return s.structureType == STRUCTURE_LAB; } } );
         let reactors = labs.filter ( l => {
             let data = this.memory.resources.lab.find( s => s.id === l.id );
             return data ? data.reactionState === LAB_IDLE : true;
         } );
-        let burstReactors = 0;
         for (let i=0;i<reactors.length;i++) {
             let reactor = reactors[i];
             let data = this.memory.resources.lab.find( s => s.id === reactor.id );
             if ( data ) data.reactionType = order.type;
+        }
+
+        // verify ability to run reactor
+        if ( seed_a.mineralType !== component_a || seed_b.mineralType !== component_b ) return;
+        let maxReactions = Math.floor( Math.min( seed_a.mineralAmount, seed_b.mineralAmount, order.amount ) / LAB_REACTION_AMOUNT );
+        if ( maxReactions === 0 ) return;
+
+        // run reactions
+        let burstReactors = 0;
+        for (let i=0;i<reactors.length;i++) {
+            let reactor = reactors[i];
             if ( reactor.mineralAmount === 0 || ( reactor.mineralType === order.type && reactor.mineralAmount <= reactor.mineralCapacity - LAB_REACTION_AMOUNT && burstReactors < maxReactions ) ) {
                 burstReactors++;
                 // FU - SION - HA !
