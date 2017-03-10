@@ -2238,8 +2238,8 @@ mod.extend = function(){
             }
             if ( amount > amt ) {
                 amt = amount - amt;
-                let component_a = LAB_REACTIONS[order.type][0];
-                let component_b = LAB_REACTIONS[order.type][1];
+                let component_a = LAB_REACTIONS[resourceType][0];
+                let component_b = LAB_REACTIONS[resourceType][1];
                 this.placeOrder(data.reactions.seed_a, component_a, amt);
                 this.placeOrder(data.reactions.seed_b, component_b, amt);
             }
