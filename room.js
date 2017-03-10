@@ -1650,9 +1650,56 @@ mod.extend = function(){
 
         this.memory.hostileIds = this.hostileIds;
     };
+    Room.prototype.processReactorFlowerBurst = function() {
+        let data = this.memory.resources.reactions;
+        if ( !data || data.reactorType !== REACTOR_TYPE_FLOWER || data.reactorMode !== REACTOR_MODE_BURST ) return;
+
+        // find and qualify reaction order
+        for (let i=0;i<data.orders.length;i++) {
+            if (data.orders[i].amount < LAB_REACTION_AMOUNT ) {
+                data.orders.splice( i--, 1 );
+            } else {
+                break;
+            }
+        }
+        if ( data.orders.length === 0 ) return;
+        let order = data.orders[0];
+        let component_a = LAB_REACTIONS[order.type][0];
+        let component_b = LAB_REACTIONS[order.type][1];
+        let seed_a = Game.getObjectById(data.seed_a);
+        let seed_b = Game.getObjectById(data.seed_b);
+        if ( !seed_a || !seed_b ) return;
+        if ( seed_a.mineralType !== component_a || seed_b.mineralType !== component_b ) return;
+
+        // find idle labs and run reactions
+        let labs = this.find(FIND_MY_STRUCTURES, { filter: (s) => { return s.structureType == STRUCTURE_LAB; } } );
+        let reactors = labs.filter ( l => {
+            let data = this.memory.resources.lab.find( s => s.id === l.id );
+            return data.reactionState === LAB_IDLE;
+        } );
+        for (let i=0;i<reactors.length;i++) {
+            let reactor = reactors[i];
+            // FU - SION - HA !
+            if ( reactor.runReaction( seed_a, seed_b ) === OK ) {
+                order.amount -= LAB_REACTION_AMOUNT;
+                if( DEBUG && TRACE ) trace("Room", { roomName: this.name, actionName: "processLabs", labId: reactor.id, resourceType: order.type, amountRemaining: order.amount } );
+            }
+        }
+    };
+    Room.prototype.processReactorFlower = function() {
+        let data = this.memory.resources.reactions;
+        if ( !data || data.reactorType !== REACTOR_TYPE_FLOWER ) return;
+        switch ( data.reactorMode ) {
+            case REACTOR_MODE_BURST:
+                this.processReactorFlowerBurst();
+                break;
+            default:
+                break;
+        }
+    };
     Room.prototype.processLabs = function() {
         // only process labs every 10 turns and avoid room tick
-        if (Game.time % 10 !== 5) return;
+        if (Game.time % LAB_COOLDOWN !== 5) return;
         let labs = this.find(FIND_MY_STRUCTURES, { filter: (s) => { return s.structureType == STRUCTURE_LAB; } } );
         if (!this.memory.resources) return;
         // run basic reactions
@@ -1673,14 +1720,24 @@ mod.extend = function(){
             if (!slave_a || slave_a.mineralType != LAB_REACTIONS[compound][0] || !slave_b || slave_b.mineralType != LAB_REACTIONS[compound][1]) continue;
 
             if (master.runReaction(slave_a, slave_b) == OK) {
-                data.reactionAmount -= 5;
+                data.reactionAmount -= LAB_REACTION_AMOUNT;
                 if( DEBUG && TRACE ) trace("Room", { roomName: this.name, actionName: "processLabs", labId: master.id, resourceType: compound, amountRemaining: data.reactionAmount } );
                 if (data.reactionAmount <= 0) {
                     this.cancelReactionOrder(master.id);
                 }
             }
         }
-        // run burst mode reactions
+
+        // run reactors
+        let data = this.memory.resources.reactions;
+        if ( !data ) return;
+        switch ( data.reactorType ) {
+            case REACTOR_TYPE_FLOWER:
+                this.processReactorFlower();
+                break;
+            default:
+                break;
+        }
     };
     Room.prototype.processPower = function() {
         // run lab reactions WOO!
@@ -1794,7 +1851,7 @@ mod.extend = function(){
                 existingOrder.orderRemaining += amount;
             } else {
                 let containerStore = 0;
-                if (container.structureType == STRUCTURE_LAB) {
+                if ( container.structureType === STRUCTURE_LAB ) {
                     containerStore = (container.mineralType==resourceType) ? container.mineralAmount : 0;
                 } else {
                     containerStore = (container.store[resourceType]||0);
@@ -1805,6 +1862,9 @@ mod.extend = function(){
                     orderRemaining: amount - containerStore,
                     storeAmount: 0
                 });
+                if ( container.structureType === STRUCTURE_LAB ) {
+                    containerData.reactionType = resourceType;
+                }
             }
         }
         return OK;
@@ -2113,7 +2173,52 @@ mod.extend = function(){
         //console.log(lab_master,"found slave labs",lab_slave_a,"for",component_a,"and",lab_slave_b,"for",component_b);
         return OK;
     }
-    Room.prototype.placeReactionOrder = function(orderId, resourceType, amount, tier = 1) {
+    Room.prototype.placeFlowerReactionOrder = function(orderId, resourceType, amount, mode = REACTOR_MODE_BURST) {
+        if (amount <= 0) return OK;
+        if (!LAB_REACTIONS.hasOwnProperty(resourceType)) {
+            return ERR_INVALID_ARGS;
+        }
+        if (this.memory.resources === undefined) {
+            this.memory.resources = {
+                lab: [],
+                container: [],
+                terminal: [],
+                storage: []
+            };
+        }
+        if (this.memory.resources.powerSpawn === undefined) this.memory.resources.powerSpawn = [];
+
+        let data = this.memory.resources;
+        let amt = 0;
+        if ( data.reactions ) {
+            // create reaction order
+            let existingOrder = data.reactions.orders.find((o)=>{ return o.id==orderId && o.type==resourceType; });
+            if ( existingOrder ) {
+                amt = existingOrder.amount;
+                // update existing order
+                if (DEBUG && TRACE) trace("Room", { roomName: this.name, actionName: 'placeReactionOrder', subAction: 'update', orderId: orderId, resourceType: resourceType, amount: amount })
+                existingOrder.mode = mode;
+                existingOrder.amount = amount;
+            } else {
+                // create new order
+                if (DEBUG && TRACE) trace("Room", { roomName: this.name, actionName: 'placeReactionOrder', subAction: 'new', orderId: orderId, resourceType: resourceType, amount: amount })
+                data.reactions.orders.push({
+                    id: orderId,
+                    type: resourceType,
+                    mode: mode,
+                    amount: amount,
+                });
+            }
+            if ( amount > amt ) {
+                amt = amount - amt;
+                let component_a = LAB_REACTIONS[order.type][0];
+                let component_b = LAB_REACTIONS[order.type][1];
+                this.placeOrder(data.reactions.seed_a, component_a, amt);
+                this.placeOrder(data.reactions.seed_b, component_b, amt);
+            }
+        }
+    };
+    Room.prototype.placeReactionOrder = function(orderId, resourceType, amount, mode = REACTOR_MODE_BURST) {
         if (amount <= 0) return OK;
         if (!LAB_REACTIONS.hasOwnProperty(resourceType)) {
             return ERR_INVALID_ARGS;
@@ -2129,9 +2234,50 @@ mod.extend = function(){
         if (this.memory.resources.powerSpawn === undefined) this.memory.resources.powerSpawn = [];
 
         let lab_master = Game.getObjectById(labId);
-        if ( lab_master && lab_master.structureType === STRUCTURE_LAB ) return this.placeBasicReactionOrder(orderId, resourceType, amount, tier);
+        if ( lab_master && lab_master.structureType === STRUCTURE_LAB ) {
+            return this.placeBasicReactionOrder(orderId, resourceType, amount, 1);
+        }
+
+        let data = this.memory.resources;
+        if ( data.reactions ) {
+            let reactorType = data.reactions.reactorType;
+            switch ( data.reactions.reactorType ) {
+                case REACTOR_TYPE_FLOWER:
+                    placeFlowerReactionOrder(orderId, resourceType, amount, mode);
+                    break;
+                default:
+                    break;
+            }
+        } else {
+            if (DEBUG && TRACE) trace("Room", { roomName: this.name, actionName: 'placeRoomOrder', subAction: 'no_reactor' })
+            return ERR_INVALID_TARGET;
+        }
 
         return OK;
+    };
+    Room.prototype.registerReactorFlower = function(seed_a_id, seed_b_id) {
+        if ( this.memory.resources === undefined ) {
+            this.memory.resources = {
+                lab: [],
+                container: [],
+                terminal: [],
+                storage: []
+            };
+        }
+        if ( this.memory.resources.powerSpawn === undefined ) this.memory.resources.powerSpawn = [];
+
+        let seed_a = Game.getObjectById(data.seed_a);
+        let seed_b = Game.getObjectById(data.seed_b);
+        if ( !seed_a || !seed_b || seed_a.structureType !== STRUCTURE_LAB || seed_b.structureType !== STRUCTURE_LAB ) return ERR_INVALID_TARGET;
+
+        let data = this.memory.resources;
+        if ( data.reactions === undefined ) data.reactions = {
+            orders: [],
+        };
+        data.reactions.reactorType = REACTOR_TYPE_FLOWER;
+        data.reactions.reactorMode = REACTOR_MODE_IDLE;
+        data.reactions.seed_a = seed_a_id;
+        data.reactions.seed_b = seed_b_id;
     };
 };
 mod.flush = function(){
