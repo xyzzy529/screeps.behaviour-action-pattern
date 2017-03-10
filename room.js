@@ -1655,7 +1655,7 @@ mod.extend = function(){
         if (Game.time % 10 !== 5) return;
         let labs = this.find(FIND_MY_STRUCTURES, { filter: (s) => { return s.structureType == STRUCTURE_LAB; } } );
         if (!this.memory.resources) return;
-        // run lab reactions WOO!
+        // run basic reactions
         let master_labs = labs.filter( (l) => {
             let data = this.memory.resources.lab.find( (s) => s.id == l.id );
             return data ? (data.slave_a && data.slave_b) : false;
@@ -1680,6 +1680,7 @@ mod.extend = function(){
                 }
             }
         }
+        // run burst mode reactions
     };
     Room.prototype.processPower = function() {
         // run lab reactions WOO!
@@ -1831,7 +1832,7 @@ mod.extend = function(){
         }
         return OK;
     };
-    Room.prototype.cancelRoomOrder = function(orderId, resourceType = null) {
+    Room.prototype.cancelRoomOrder = function(orderId = null, resourceType = null) {
         if (this.memory.resources === undefined) {
             this.memory.resources = {
                 lab: [],
@@ -1845,17 +1846,25 @@ mod.extend = function(){
             this.memory.resources.orders = [];
         }
         let orders = this.memory.resources.orders;
-        if ( resourceType ) {
+        if ( orderId && resourceType ) {
             let existingOrder = orders.find((o)=>{ return o.id==orderId && o.type==resourceType; });
             if (existingOrder) {
                 // delete existing order
                 if (DEBUG && TRACE) trace("Room", { roomName: this.name, actionName: 'cancelRoomOrder', orderId: orderId, resourceType: resourceType })
                 orders.splice( orders.indexOf(existingOrder), 1 );
             }
-        } else {
-            // delete all of structures orders
+        } else if ( orderId ) {
+            // delete all orders matching orderId
             if (DEBUG && TRACE) trace("Room", { roomName: this.name, actionName: 'cancelRoomOrder', orderId: orderId, resourceType: 'all' })
-            orders = [];
+            for (let i=0;i<orders.length;i++) {
+                let order = orders[i];
+                if ( order.id === orderId ) {
+                    orders.splice( i--, 1 );
+                }
+            }
+        } else {
+            // delete all orders associated with this room
+            this.memory.resources.orders = [];
         }
 
         return OK;
@@ -1964,9 +1973,8 @@ mod.extend = function(){
 
         return OK;
     };
-    Room.prototype.placeReactionOrder = function(labId, resourceType, amount, tier = 1) {
+    Room.prototype.placeBasicReactionOrder = function(labId, resourceType, amount, tier = 1) {
         if (amount <= 0) return OK;
-        let lab_master = Game.getObjectById(labId);
         if (!LAB_REACTIONS.hasOwnProperty(resourceType)) {
             return ERR_INVALID_ARGS;
         }
@@ -1978,6 +1986,8 @@ mod.extend = function(){
                 storage: []
             };
         }
+        if (this.memory.resources.powerSpawn === undefined) this.memory.resources.powerSpawn = [];
+        let lab_master = Game.getObjectById(labId);
         let component_a = LAB_REACTIONS[resourceType][0];
         let component_b = LAB_REACTIONS[resourceType][1];
         let lab_slave_a = null;
@@ -2101,6 +2111,26 @@ mod.extend = function(){
         }
 
         //console.log(lab_master,"found slave labs",lab_slave_a,"for",component_a,"and",lab_slave_b,"for",component_b);
+        return OK;
+    }
+    Room.prototype.placeReactionOrder = function(orderId, resourceType, amount, tier = 1) {
+        if (amount <= 0) return OK;
+        if (!LAB_REACTIONS.hasOwnProperty(resourceType)) {
+            return ERR_INVALID_ARGS;
+        }
+        if (this.memory.resources === undefined) {
+            this.memory.resources = {
+                lab: [],
+                container: [],
+                terminal: [],
+                storage: []
+            };
+        }
+        if (this.memory.resources.powerSpawn === undefined) this.memory.resources.powerSpawn = [];
+
+        let lab_master = Game.getObjectById(labId);
+        if ( lab_master && lab_master.structureType === STRUCTURE_LAB ) return this.placeBasicReactionOrder(orderId, resourceType, amount, tier);
+
         return OK;
     };
 };
