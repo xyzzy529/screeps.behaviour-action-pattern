@@ -1703,8 +1703,8 @@ mod.extend = function(){
             data_b.reactionType = component_b;
         }
         if ( !data_a || !data_b ) return;
-        let data_a_order = data_a.orders.find( o => o.type === order.type );
-        let data_b_order = data_b.orders.find( o => o.type === order.type );
+        let data_a_order = data_a.orders.find( o => o.type === component_a );
+        let data_b_order = data_b.orders.find( o => o.type === component_b );
         if ( !data_a_order || data_a_order.amount < order.amount ) {
             this.placeOrder(data.seed_a, component_a, order.amount - ( data_a_order ? data_a_order.orderAmount : 0 ) );
         }
