@@ -2233,7 +2233,7 @@ mod.extend = function(){
         }
         if (this.memory.resources.powerSpawn === undefined) this.memory.resources.powerSpawn = [];
 
-        let lab_master = Game.getObjectById(labId);
+        let lab_master = Game.getObjectById(orderId);
         if ( lab_master && lab_master.structureType === STRUCTURE_LAB ) {
             return this.placeBasicReactionOrder(orderId, resourceType, amount, 1);
         }
@@ -2278,6 +2278,8 @@ mod.extend = function(){
         data.reactions.reactorMode = REACTOR_MODE_IDLE;
         data.reactions.seed_a = seed_a_id;
         data.reactions.seed_b = seed_b_id;
+        
+        return OK;
     };
 };
 mod.flush = function(){
