@@ -1727,7 +1727,7 @@ mod.extend = function(){
             let reactor = reactors[i];
             let data = this.memory.resources.lab.find( s => s.id === reactor.id );
             if ( data ) data.reactionType = order.type;
-            if ( reactor.mineralType === order.type && reactor.mineralAmount <= reactor.mineralCapacity - LAB_REACTION_AMOUNT && burstReactors < maxReactions ) {
+            if ( reactor.mineralAmount === 0 || ( reactor.mineralType === order.type && reactor.mineralAmount <= reactor.mineralCapacity - LAB_REACTION_AMOUNT && burstReactors < maxReactions ) ) {
                 burstReactors++;
                 // FU - SION - HA !
                 if ( reactor.runReaction( seed_a, seed_b ) === OK ) {
