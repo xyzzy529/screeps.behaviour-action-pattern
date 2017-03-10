@@ -1715,10 +1715,10 @@ mod.extend = function(){
         let data_a_order = data_a.orders.find( o => o.type === order.type );
         let data_b_order = data_b.orders.find( o => o.type === order.type );
         if ( !data_a_order || data_a_order.amount < order.amount ) {
-            this.placeOrder(data.seed_a, component_a, order.amount - data_a_order.amount );
+            this.placeOrder(data.seed_a, component_a, order.amount - ( data_a_order ? data_a_order.amount : 0 ) );
         }
         if ( !data_b_order || data_b_order.amount < order.amount ) {
-            this.placeOrder(data.seed_b, component_b, order.amount - data_b_order.amount );
+            this.placeOrder(data.seed_b, component_b, order.amount - ( data_b_order ? data_b_order.amount : 0 ) );
         }
 
         let maxReactions = Math.floor( Math.min( seed_a.mineralAmount, seed_b.mineralAmount, order.amount ) / LAB_REACTION_AMOUNT );
