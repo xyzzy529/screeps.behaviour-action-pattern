@@ -2265,6 +2265,8 @@ mod.extend = function(){
             };
         }
         if ( this.memory.resources.powerSpawn === undefined ) this.memory.resources.powerSpawn = [];
+        
+        let data = this.memory.resources;
 
         let seed_a = Game.getObjectById(data.seed_a);
         let seed_b = Game.getObjectById(data.seed_b);
