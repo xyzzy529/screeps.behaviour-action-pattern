@@ -1679,32 +1679,10 @@ mod.extend = function(){
     };
     Room.prototype.processReactorFlowerBurst = function() {
         let data = this.memory.resources.reactions;
-        if ( !data || data.reactorType !== REACTOR_TYPE_FLOWER ) return;
+        if ( !data || data.reactorType !== REACTOR_TYPE_FLOWER || data.reactorMode !== REACTOR_MODE_BURST ) return;
 
-        // find and qualify reaction order
-        for (let i=0;i<data.orders.length;i++) {
-            if (data.orders[i].amount < LAB_REACTION_AMOUNT ) {
-                data.orders.splice( i--, 1 );
-            } else {
-                break;
-            }
-        }
-        if ( data.orders.length === 0 ) {
-            // reset labs so they get emptied
-            let labs = this.find(FIND_MY_STRUCTURES, { filter: (s) => { return s.structureType == STRUCTURE_LAB; } } );
-            for (let i=0;i<labs.length;i++) {
-                let lab = labs[i];
-                let data = this.memory.resources.lab.find( s => s.id === lab.id );
-                if ( data && ( data.reactionState === LAB_IDLE || data.reactionState === LAB_SEED ) ) {
-                    this.cancelReactionOrder(lab.id);
-                }
-            }
-            data.reactorMode = REACTOR_MODE_IDLE;
-            return;
-        }
         let order = data.orders[0];
         if ( order.mode !== REACTOR_MODE_BURST ) return;
-        data.reactorMode = REACTOR_MODE_BURST;
         let component_a = LAB_REACTIONS[order.type][0];
         let component_b = LAB_REACTIONS[order.type][1];
         let seed_a = Game.getObjectById(data.seed_a);
@@ -1762,6 +1740,31 @@ mod.extend = function(){
     Room.prototype.processReactorFlower = function() {
         let data = this.memory.resources.reactions;
         if ( !data || data.reactorType !== REACTOR_TYPE_FLOWER ) return;
+
+        // find and qualify reaction order
+        for (let i=0;i<data.orders.length;i++) {
+            if (data.orders[i].amount < LAB_REACTION_AMOUNT ) {
+                data.orders.splice( i--, 1 );
+            } else {
+                break;
+            }
+        }
+        if ( data.orders.length === 0 ) {
+            // reset labs so they get emptied
+            let labs = this.find(FIND_MY_STRUCTURES, { filter: (s) => { return s.structureType == STRUCTURE_LAB; } } );
+            for (let i=0;i<labs.length;i++) {
+                let lab = labs[i];
+                let data = this.memory.resources.lab.find( s => s.id === lab.id );
+                if ( data && ( data.reactionState === LAB_IDLE || data.reactionState === LAB_SEED ) ) {
+                    this.cancelReactionOrder(lab.id);
+                }
+            }
+            data.reactorMode = REACTOR_MODE_IDLE;
+            return;
+        }
+        let order = data.orders[0];
+        data.reactorMode = order.mode;
+
         switch ( data.reactorMode ) {
             case REACTOR_MODE_BURST:
                 this.processReactorFlowerBurst();
