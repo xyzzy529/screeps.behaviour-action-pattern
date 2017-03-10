@@ -1571,7 +1571,10 @@ mod.extend = function(){
         const POS = new RoomPosition(25, 25, this.name);
         const ARGS = [POS, true];
         const CONSTRUCT = (flag, type) => {
-            flag.pos.createConstructionSite(type);
+            const POS = flag.pos;
+            const structures = POS.lookFor(LOOK_STRUCTURES).filter(s => !(s instanceof StructureRoad || s instanceof StructureRampart));
+            if (structures && structures.length) return; // pre-existing structure here
+            POS.createConstructionSite(type);
             if (REMOVE_CONSTRUCTION_FLAG) flag.remove();
         };
         
