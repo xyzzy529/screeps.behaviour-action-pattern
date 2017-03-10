@@ -2266,10 +2266,8 @@ mod.extend = function(){
         }
         if ( this.memory.resources.powerSpawn === undefined ) this.memory.resources.powerSpawn = [];
         
-        let data = this.memory.resources;
-
-        let seed_a = Game.getObjectById(data.seed_a);
-        let seed_b = Game.getObjectById(data.seed_b);
+        let seed_a = Game.getObjectById(seed_a_id);
+        let seed_b = Game.getObjectById(seed_b_id);
         if ( !seed_a || !seed_b || seed_a.structureType !== STRUCTURE_LAB || seed_b.structureType !== STRUCTURE_LAB ) return ERR_INVALID_TARGET;
 
         let data = this.memory.resources;
