@@ -1695,7 +1695,7 @@ mod.extend = function(){
             for (let i=0;i<labs.length;i++) {
                 let lab = labs[i];
                 let data = this.memory.resources.lab.find( s => s.id === lab.id );
-                if ( data && data.reactionState === LAB_IDLE || data.reactionState === LAB_SEED ) {
+                if ( data && ( data.reactionState === LAB_IDLE || data.reactionState === LAB_SEED ) ) {
                     this.cancelReactionOrder(lab.id);
                 }
             }
