@@ -1688,31 +1688,31 @@ mod.extend = function(){
         let seed_a = Game.getObjectById(data.seed_a);
         let seed_b = Game.getObjectById(data.seed_b);
         if ( !seed_a || !seed_b ) return;
-        if ( seed_a.mineralType !== component_a || seed_b.mineralType !== component_b ) return;
 
         // order components for seeds
         let data_a = this.memory.resources.lab.find( l => l.id === data.seed_a );
         let data_b = this.memory.resources.lab.find( l => l.id === data.seed_b );
         if ( !data_a || data_a.reactionType !== component_a ) {
-            data_a.reactionType = component_a;
             this.placeOrder(data.seed_a, component_a, order.amount);
             data_a = this.memory.resources.lab.find( l => l.id === data.seed_a );
+            data_a.reactionType = component_a;
         }
         if ( !data_b || data_b.reactionType !== component_b ) {
-            data_b.reactionType = component_b;
             this.placeOrder(data.seed_b, component_b, order.amount);
             data_b = this.memory.resources.lab.find( l => l.id === data.seed_b );
+            data_b.reactionType = component_b;
         }
         if ( !data_a || !data_b ) return;
         let data_a_order = data_a.orders.find( o => o.type === order.type );
         let data_b_order = data_b.orders.find( o => o.type === order.type );
         if ( !data_a_order || data_a_order.amount < order.amount ) {
-            this.placeOrder(data.seed_a, component_a, order.amount - ( data_a_order ? data_a_order.amount : 0 ) );
+            this.placeOrder(data.seed_a, component_a, order.amount - ( data_a_order ? data_a_order.orderAmount : 0 ) );
         }
         if ( !data_b_order || data_b_order.amount < order.amount ) {
-            this.placeOrder(data.seed_b, component_b, order.amount - ( data_b_order ? data_b_order.amount : 0 ) );
+            this.placeOrder(data.seed_b, component_b, order.amount - ( data_b_order ? data_b_order.orderAmount : 0 ) );
         }
 
+        if ( seed_a.mineralType !== component_a || seed_b.mineralType !== component_b ) return;
         let maxReactions = Math.floor( Math.min( seed_a.mineralAmount, seed_b.mineralAmount, order.amount ) / LAB_REACTION_AMOUNT );
         if ( maxReactions === 0 ) return;
 
