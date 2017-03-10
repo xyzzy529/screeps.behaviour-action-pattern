@@ -1689,7 +1689,19 @@ mod.extend = function(){
                 break;
             }
         }
-        if ( data.orders.length === 0 ) return;
+        if ( data.orders.length === 0 ) {
+            // reset labs so they get emptied
+            let labs = this.find(FIND_MY_STRUCTURES, { filter: (s) => { return s.structureType == STRUCTURE_LAB; } } );
+            for (let i=0;i<labs.length;i++) {
+                let lab = labs[i];
+                let data = this.memory.resources.lab.find( s => s.id === lab.id );
+                if ( data && data.reactionState === LAB_IDLE || data.reactionState === LAB_SEED ) {
+                    this.cancelReactionOrder(lab.id);
+                }
+            }
+
+            return;
+        }
         let order = data.orders[0];
         let component_a = LAB_REACTIONS[order.type][0];
         let component_b = LAB_REACTIONS[order.type][1];
