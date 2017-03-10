@@ -2127,6 +2127,7 @@ mod.analyze = function(){
                 room.updateResourceOrders();
                 room.updateRoomOrders();
                 room.terminalBroker();
+                room.processConstructionFlags();
             }
             room.roadConstruction();
             room.linkDispatcher();
