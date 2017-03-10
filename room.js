@@ -1566,7 +1566,7 @@ mod.extend = function(){
         this.memory.hostileIds = this.hostileIds;
     };
     Room.prototype.processConstructionFlags = function() {
-        if (!this.my) return;
+        if (!this.my || !SEMI_AUTOMATIC_CONSTRUCTION) return;
         const LEVEL = this.controller.level;
         const POS = new RoomPosition(25, 25, this.name);
         const ARGS = [POS, true];
@@ -1574,8 +1574,8 @@ mod.extend = function(){
             const POS = flag.pos;
             const structures = POS.lookFor(LOOK_STRUCTURES).filter(s => !(s instanceof StructureRoad || s instanceof StructureRampart));
             if (structures && structures.length) return; // pre-existing structure here
-            POS.createConstructionSite(type);
-            if (REMOVE_CONSTRUCTION_FLAG) flag.remove();
+            const r = POS.createConstructionSite(type);
+            if (REMOVE_CONSTRUCTION_FLAG && r === OK) flag.remove();
         };
         
         // Extensions
