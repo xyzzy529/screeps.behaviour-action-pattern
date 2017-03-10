@@ -1757,6 +1757,27 @@ mod.extend = function(){
         }
         return OK;
     };
+    Room.prototype.cancelOrder = function(containerId, resourceType = null) {
+        let container = Game.getObjectById(containerId);
+        if (this.prepareResourceOrder(containerId, RESOURCE_ENERGY, 0) != OK) return ret;
+
+        let containerData = this.memory.resources[container.structureType].find( (s) => s.id == containerId );
+        if ( containerData ) {
+            if ( resourceType ) {
+                let existingOrder = containerData.orders.find( (r) => r.type == resourceType );
+                if ( existingOrder ) {
+                    // delete structure order
+                    if (DEBUG && TRACE) trace("Room", { roomName: this.name, actionName: 'cancelOrder', orderId: orderId, resourceType: resourceType })
+                    containerData.orders.splice( containerData.orders.indexOf(existingOrder), 1 );
+                }
+            } else {
+                // delete all of structure's orders
+                if (DEBUG && TRACE) trace("Room", { roomName: this.name, actionName: 'cancelOrder', orderId: orderId, resourceType: 'all' })
+                containerData.orders = [];
+            }
+        }
+        return OK;
+    };
     Room.prototype.placeOrder = function(containerId, resourceType, amount) {
         let container = Game.getObjectById(containerId);
         let ret = this.prepareResourceOrder(containerId, resourceType, amount);
@@ -1810,6 +1831,35 @@ mod.extend = function(){
         }
         return OK;
     };
+    Room.prototype.cancelRoomOrder = function(orderId, resourceType = null) {
+        if (this.memory.resources === undefined) {
+            this.memory.resources = {
+                lab: [],
+                container: [],
+                terminal: [],
+                storage: []
+            };
+        }
+        if (this.memory.resources.powerSpawn === undefined) this.memory.resources.powerSpawn = [];
+        if (this.memory.resources.orders === undefined) {
+            this.memory.resources.orders = [];
+        }
+        let orders = this.memory.resources.orders;
+        if ( resourceType ) {
+            let existingOrder = orders.find((o)=>{ return o.id==orderId && o.type==resourceType; });
+            if (existingOrder) {
+                // delete existing order
+                if (DEBUG && TRACE) trace("Room", { roomName: this.name, actionName: 'cancelRoomOrder', orderId: orderId, resourceType: resourceType })
+                orders.splice( orders.indexOf(existingOrder), 1 );
+            }
+        } else {
+            // delete all of structures orders
+            if (DEBUG && TRACE) trace("Room", { roomName: this.name, actionName: 'cancelRoomOrder', orderId: orderId, resourceType: 'all' })
+            orders = [];
+        }
+
+        return OK;
+    };
     Room.prototype.placeRoomOrder = function(orderId, resourceType, amount) {
         if (amount <= 0) return OK;
         if (this.memory.resources === undefined) {
@@ -1820,6 +1870,7 @@ mod.extend = function(){
                 storage: []
             };
         }
+        if (this.memory.resources.powerSpawn === undefined) this.memory.resources.powerSpawn = [];
         if (this.memory.resources.orders === undefined) {
             this.memory.resources.orders = [];
         }
