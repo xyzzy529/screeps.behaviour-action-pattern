@@ -1679,7 +1679,7 @@ mod.extend = function(){
     };
     Room.prototype.processReactorFlowerBurst = function() {
         let data = this.memory.resources.reactions;
-        if ( !data || data.reactorType !== REACTOR_TYPE_FLOWER || data.reactorMode !== REACTOR_MODE_BURST ) return;
+        if ( !data || data.reactorType !== REACTOR_TYPE_FLOWER ) return;
 
         // find and qualify reaction order
         for (let i=0;i<data.orders.length;i++) {
@@ -1699,10 +1699,12 @@ mod.extend = function(){
                     this.cancelReactionOrder(lab.id);
                 }
             }
-
+            data.reactorMode = REACTOR_MODE_IDLE;
             return;
         }
         let order = data.orders[0];
+        if ( order.mode !== REACTOR_MODE_BURST ) return;
+        data.reactorMode = REACTOR_MODE_BURST;
         let component_a = LAB_REACTIONS[order.type][0];
         let component_b = LAB_REACTIONS[order.type][1];
         let seed_a = Game.getObjectById(data.seed_a);
