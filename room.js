@@ -1197,7 +1197,7 @@ mod.extend = function(){
             let minerals = this.find(FIND_MINERALS);
             let source = cont.pos.findInRange(this.sources, 2);
             let mineral = cont.pos.findInRange(minerals, 2);
-            let isControllerContainer = cont.pos.getRangeTo(this.controller) <= 4;
+            let isControllerContainer = !!(this.my && cont.pos.getRangeTo(this.controller) <= 4);
             this.memory.container.push({
                 id: cont.id,
                 source: (source.length > 0),
@@ -1702,7 +1702,7 @@ mod.extend = function(){
         let labs = this.find(FIND_MY_STRUCTURES, { filter: (s) => { return s.structureType == STRUCTURE_LAB; } } );
         let reactors = labs.filter ( l => {
             let data = this.memory.resources.lab.find( s => s.id === l.id );
-            return data.reactionState === LAB_IDLE;
+            return data ? data.reactionState === LAB_IDLE : true;
         } );
         for (let i=0;i<reactors.length;i++) {
             let reactor = reactors[i];
