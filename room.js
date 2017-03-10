@@ -1752,7 +1752,7 @@ mod.extend = function(){
                 // FU - SION - HA !
                 if ( reactor.runReaction( seed_a, seed_b ) === OK ) {
                     order.amount -= LAB_REACTION_AMOUNT;
-                    if( DEBUG && TRACE ) trace("Room", { roomName: this.name, actionName: "processLabs", labId: reactor.id, resourceType: order.type, amountRemaining: order.amount } );
+                    if( DEBUG && TRACE ) trace("Room", { roomName: this.name, actionName: "processLabs", reactorType: REACTOR_TYPE_FLOWER, labId: reactor.id, resourceType: order.type, amountRemaining: order.amount } );
                 }
             }
         }
@@ -2042,7 +2042,8 @@ mod.extend = function(){
             if (labData.slave_b) this.cancelReactionOrder(labData.slave_b);
 
             // clear reaction orders
-            labData.reactionState = LAB_IDLE;
+            let basicStates = [ LAB_MASTER, LAB_SLAVE_1, LAB_SLAVE_2, LAB_SLAVE_3 ];
+            if ( basicStates.includes(labData.reactionState) ) labData.reactionState = LAB_IDLE;
             delete labData.reactionType;
             delete labData.reactionAmount;
             delete labData.master;
