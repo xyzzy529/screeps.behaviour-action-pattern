@@ -1698,18 +1698,50 @@ mod.extend = function(){
         if ( !seed_a || !seed_b ) return;
         if ( seed_a.mineralType !== component_a || seed_b.mineralType !== component_b ) return;
 
+        // order components for seeds
+        let data_a = this.memory.resources.lab.find( l => l.id === data.seed_a );
+        let data_b = this.memory.resources.lab.find( l => l.id === data.seed_b );
+        if ( !data_a || data_a.reactionType !== component_a ) {
+            data_a.reactionType = component_a;
+            this.placeOrder(data.seed_a, component_a, order.amount);
+            data_a = this.memory.resources.lab.find( l => l.id === data.seed_a );
+        }
+        if ( !data_b || data_b.reactionType !== component_b ) {
+            data_b.reactionType = component_b;
+            this.placeOrder(data.seed_b, component_b, order.amount);
+            data_b = this.memory.resources.lab.find( l => l.id === data.seed_b );
+        }
+        if ( !data_a || !data_b ) return;
+        let data_a_order = data_a.orders.find( o => o.type === order.type );
+        let data_b_order = data_b.orders.find( o => o.type === order.type );
+        if ( !data_a_order || data_a_order.amount < order.amount ) {
+            this.placeOrder(data.seed_a, component_a, order.amount - data_a_order.amount );
+        }
+        if ( !data_b_order || data_b_order.amount < order.amount ) {
+            this.placeOrder(data.seed_b, component_b, order.amount - data_b_order.amount );
+        }
+
+        let maxReactions = Math.floor( Math.min( seed_a.mineralAmount, seed_b.mineralAmount, order.amount ) / LAB_REACTION_AMOUNT );
+        if ( maxReactions === 0 ) return;
+
         // find idle labs and run reactions
         let labs = this.find(FIND_MY_STRUCTURES, { filter: (s) => { return s.structureType == STRUCTURE_LAB; } } );
         let reactors = labs.filter ( l => {
             let data = this.memory.resources.lab.find( s => s.id === l.id );
             return data ? data.reactionState === LAB_IDLE : true;
         } );
+        let burstReactors = 0;
         for (let i=0;i<reactors.length;i++) {
             let reactor = reactors[i];
-            // FU - SION - HA !
-            if ( reactor.runReaction( seed_a, seed_b ) === OK ) {
-                order.amount -= LAB_REACTION_AMOUNT;
-                if( DEBUG && TRACE ) trace("Room", { roomName: this.name, actionName: "processLabs", labId: reactor.id, resourceType: order.type, amountRemaining: order.amount } );
+            let data = this.memory.resources.lab.find( s => s.id === reactor.id );
+            if ( data ) data.reactionType = order.type;
+            if ( reactor.mineralType === order.type && reactor.mineralAmount <= reactor.mineralCapacity - LAB_REACTION_AMOUNT && burstReactors < maxReactions ) {
+                burstReactors++;
+                // FU - SION - HA !
+                if ( reactor.runReaction( seed_a, seed_b ) === OK ) {
+                    order.amount -= LAB_REACTION_AMOUNT;
+                    if( DEBUG && TRACE ) trace("Room", { roomName: this.name, actionName: "processLabs", labId: reactor.id, resourceType: order.type, amountRemaining: order.amount } );
+                }
             }
         }
     };
@@ -2216,12 +2248,10 @@ mod.extend = function(){
         if (this.memory.resources.powerSpawn === undefined) this.memory.resources.powerSpawn = [];
 
         let data = this.memory.resources;
-        let amt = 0;
         if ( data.reactions ) {
             // create reaction order
             let existingOrder = data.reactions.orders.find((o)=>{ return o.id==orderId && o.type==resourceType; });
             if ( existingOrder ) {
-                amt = existingOrder.amount;
                 // update existing order
                 if (DEBUG && TRACE) trace("Room", { roomName: this.name, actionName: 'placeReactionOrder', subAction: 'update', orderId: orderId, resourceType: resourceType, amount: amount })
                 existingOrder.mode = mode;
@@ -2235,13 +2265,6 @@ mod.extend = function(){
                     mode: mode,
                     amount: amount,
                 });
-            }
-            if ( amount > amt ) {
-                amt = amount - amt;
-                let component_a = LAB_REACTIONS[resourceType][0];
-                let component_b = LAB_REACTIONS[resourceType][1];
-                this.placeOrder(data.reactions.seed_a, component_a, amt);
-                this.placeOrder(data.reactions.seed_b, component_b, amt);
             }
             data.reactions.reactorMode = mode;
         }
