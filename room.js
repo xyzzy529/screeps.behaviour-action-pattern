@@ -1721,6 +1721,10 @@ mod.extend = function(){
         for (let i=0;i<reactors.length;i++) {
             let reactor = reactors[i];
             let data = this.memory.resources.lab.find( s => s.id === reactor.id );
+            if ( !data ) {
+                this.prepareReactionOrder(reactor.id, order.type, order.amount);
+                data = this.memory.resources.lab.find( s => s.id === reactor.id );
+            }
             if ( data ) data.reactionType = order.type;
         }
 
