@@ -5,7 +5,11 @@ mod.run = function(creep) {
     // Assign next Action
     let oldTargetId = creep.data.targetId;
     if( creep.action == null || creep.action.name == 'idle' ) {
-        this.nextAction(creep);
+        if( creep.data.destiny && creep.data.destiny.task && Task[creep.data.destiny.task] && Task[creep.data.destiny.task].nextAction ) {
+            Task[creep.data.destiny.task].nextAction(creep);
+        } else {
+            this.nextAction(creep);
+        }
     }
     
     // Do some work

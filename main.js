@@ -142,6 +142,7 @@ global.install = () => {
         reserve: load("task.reserve"),
         pioneer: load("task.pioneer"),
         attackController: load("task.attackController"),
+        labTech: load("task.courier"),
         robbing: load("task.robbing"),
         reputation: load("task.reputation"),
     });
