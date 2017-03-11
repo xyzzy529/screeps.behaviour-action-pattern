@@ -61,7 +61,18 @@ mod.FLAG_COLOR = {
             filter: {'color': COLOR_RED, 'secondaryColor': COLOR_CYAN },
         }
     },
-    //COLOR_PURPLE,
+    //COLOR_PURPLE - lab related
+    labs: { // could be used to define certain lab commands
+        color: COLOR_PURPLE,
+        secondaryColor: COLOR_PURPLE,
+        filter: {'color': COLOR_PURPLE, 'secondaryColor': COLOR_PURPLE },
+        labTech: { // spawn lab tech when required
+            color: COLOR_PURPLE,
+            secondaryColor: COLOR_WHITE,
+            filter: {'color': COLOR_PURPLE, 'secondaryColor': COLOR_WHITE }
+        }
+
+    },
     //COLOR_BLUE,
     //COLOR_CYAN - Reserved
     //COLOR_GREEN
