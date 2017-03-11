@@ -7,12 +7,12 @@ mod.flush = function () {
         Task.defense,
         Task.claim,
         Task.reserve,
+        Task.labTech,
         Task.mining,
         Task.pioneer,
         Task.attackController,
         Task.robbing,
         Task.reputation,
-        Task.labTech,
     ];
     for (let i = tasks.length - 1; i >= 0; i--) {
         if (tasks[i].flush) {
@@ -27,12 +27,12 @@ mod.register = function () {
         Task.defense,
         Task.claim,
         Task.reserve,
+        Task.labTech,
         Task.mining,
         Task.pioneer,
         Task.attackController,
         Task.robbing,
         Task.reputation,
-        Task.labTech,
     ];
     for (let i = tasks.length - 1; i >= 0; i--) {
         if (tasks[i].register) {
