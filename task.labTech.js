@@ -1,4 +1,4 @@
-// This task will react on labTech flags (invade/rob or red/yellow), sending 2 creeps to rob that room
+// This task will react on labTech flags purple/white
 let mod = {};
 module.exports = mod;
 // hook into events
@@ -198,7 +198,7 @@ mod.creep = {
         fixedBody: [WORK, CARRY, MOVE],
         multiBody: [CARRY, CARRY, MOVE],
         name: "labTech", 
-        behaviour: "hauler", 
+        behaviour: "labTech", 
         queue: 'Low'
     },
 };
