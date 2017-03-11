@@ -182,6 +182,7 @@ global.install = () => {
             claimer: load("creep.behaviour.claimer"),
             hauler: load("creep.behaviour.hauler"),
             healer: load("creep.behaviour.healer"),
+            labTech: load("creep.behaviour.labTech"),
             melee: load("creep.behaviour.melee"),
             miner: load("creep.behaviour.miner"),
             mineralMiner: load("creep.behaviour.mineralMiner"),
