@@ -1571,7 +1571,9 @@ mod.extend = function(){
         const POS = new RoomPosition(25, 25, this.name);
         const ARGS = [POS, true];
         const CONSTRUCT = (flag, type) => {
+            if (!flag) return;
             const POS = flag.pos;
+            if (!POS) return;
             const structures = POS.lookFor(LOOK_STRUCTURES).filter(s => !(s instanceof StructureRoad || s instanceof StructureRampart));
             if (structures && structures.length) return; // pre-existing structure here
             const r = POS.createConstructionSite(type);
