@@ -32,20 +32,33 @@ mod.extend = function(){
     // Check if a creep has body parts of a certain type anf if it is still active. 
     // Accepts a single part type (like RANGED_ATTACK) or an array of part types. 
     // Returns true, if there is at least any one part with a matching type present and active.
-    Creep.prototype.hasActiveBodyparts = function(partTypes){
-        if(Array.isArray(partTypes))
-            return (this.body.some((part) => ( partTypes.includes(part.type) && part.hits > 0 )));
-        else return (this.body.some((part) => ( part.type === partTypes && part.hits > 0 )));
+    Creep.prototype.hasActiveBodyparts = function(partTypes) {
+        return this.hasBodyparts(partTypes, this.body.length - Math.ceil(this.hits * 0.01));
+    };
+    Creep.prototype.hasBodyparts = function(partTypes, start = 0) {
+        const body = this.body;
+        const limit = body.length;
+        if (!Array.isArray(partTypes)) {
+            partTypes = [partTypes];
+        }
+        for (let i = start; i < limit; i++) {
+            if (partTypes.includes(body[i].type)) {
+                return true;
+            }
+        }
+        return false;
     };
     Creep.prototype.run = function(behaviour){
         if( !this.spawning ){
             if(!behaviour && this.data && this.data.creepType) {
                 behaviour = Creep.behaviour[this.data.creepType];
-                if ( Game.cpu.bucket < CRITICAL_BUCKET_LEVEL && !CRITICAL_ROLES.includes(this.data.creepType) ) {
+                if ( Memory.CPU_CRITICAL && !CRITICAL_ROLES.includes(this.data.creepType) ) {
                     return;
                 }
             }
-            this.repairNearby();
+            if (this.data && !_.contains(['remoteMiner', 'miner', 'upgrader'], this.data.creepType)) {
+                this.repairNearby();
+            }
             if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, Behaviour: behaviour && behaviour.name, Creep:'run'});
             if( behaviour ) behaviour.run(this);
             else if(!this.data){
@@ -97,6 +110,7 @@ mod.extend = function(){
             }
             if( this.flee ) {
                 this.fleeMove();
+                Creep.behaviour.ranger.heal(this);
                 if( SAY_ASSIGNMENT ) this.say(String.fromCharCode(10133), SAY_PUBLIC);
             }
         }
@@ -286,9 +300,13 @@ mod.extend = function(){
         if( here && here.length > 0 ) {
             let path;
             if( !this.data.idlePath || this.data.idlePath.length < 2 || this.data.idlePath[0].x != this.pos.x || this.data.idlePath[0].y != this.pos.y || this.data.idlePath[0].roomName != this.pos.roomName ) {
-                let goals = _.map(this.room.structures.all, function(o) {
+                let goals = this.room.structures.all.map(function(o) {
                     return { pos: o.pos, range: 1 };
-                });
+                }).concat(this.room.sources.map(function (s) {
+                    return { pos: s.pos, range: 2 };
+                })).concat(this.pos.findInRange(FIND_EXIT, 2).map(function (e) {
+                    return { pos: e, range: 1 };
+                }));
 
                 let ret = PathFinder.search(
                     this.pos, goals, {
@@ -315,9 +333,16 @@ mod.extend = function(){
                 this.move(this.pos.getDirectionTo(new RoomPosition(path[0].x,path[0].y,path[0].roomName)));
         }
     };
-    Creep.prototype.repairNearby = function( ) {
+    Creep.prototype.repairNearby = function() {
+        // only repair in rooms that we own, have reserved, or belong to our allies, also SK rooms and highways.
+        if (!(this.room.my ||
+            this.room.reserved ||
+            this.room.ally ||
+            Room.isCenterNineRoom(this.room.name) ||
+            Room.isHighwayRoom(this.room.name))) return;
+
         // if it has energy and a work part, remoteMiners do repairs once the source is exhausted.
-        if(this.carry.energy > 0 && this.hasActiveBodyparts(WORK) && this.data && this.data.creepType !== 'remoteMiner') {
+        if(this.carry.energy > 0 && this.hasActiveBodyparts(WORK)) {
             let nearby = this.pos.findInRange(this.room.structures.repairable, DRIVE_BY_REPAIR_RANGE);
             if( nearby && nearby.length ){
                 if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'repairing', Creep:'repairNearby'}, nearby[0].pos);
@@ -445,7 +470,7 @@ mod.extend = function(){
     Creep.prototype.customStrategy = function(actionName, behaviourName, taskName) {};
 };
 mod.execute = function(){
-    if ( DEBUG && Game.cpu.bucket < CRITICAL_BUCKET_LEVEL ) logSystem('system',`${Game.time}: CPU Bucket level is critical (${Game.cpu.bucket}). Skipping non critical creep roles.`);
+    if ( DEBUG && Memory.CPU_CRITICAL ) logSystem('system',`${Game.time}: CPU Bucket level is critical (${Game.cpu.bucket}). Skipping non critical creep roles.`);
     let run = creep => creep.run();
     _.forEach(Game.creeps, run);
 };
@@ -489,6 +514,7 @@ mod.partsComparator = function (a, b) {
 };
 // params: {minThreat, maxWeight, maxMulti}
 mod.compileBody = function (room, params, sort = true) {
+    if (params.sort !== undefined) sort = params.sort;
     let parts = [];
     let multi = Creep.multi(room, params);
     for (let iMulti = 0; iMulti < multi; iMulti++) {

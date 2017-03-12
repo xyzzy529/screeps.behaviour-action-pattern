@@ -1837,6 +1837,18 @@ mod.extend = function(){
             }
         }
     };
+    Room.prototype.processPower = function() {
+        // run lab reactions WOO!
+        let powerSpawns = this.find(FIND_MY_STRUCTURES, { filter: (s) => { return s.structureType == STRUCTURE_POWER_SPAWN; } } );
+        for (var i=0;i<powerSpawns.length;i++) {
+            // see if the reaction is possible
+            let powerSpawn = powerSpawns[i];
+            if (powerSpawn.energy >= POWER_SPAWN_ENERGY_RATIO && powerSpawn.power >= 1) {
+                if (DEBUG && TRACE) trace('Room', { roomName: this.name, actionName: 'processPower' });
+                powerSpawn.processPower();
+            }
+        }
+    };
     Room.prototype.findContainerWith = function(resourceType, amountMin) {
         if (!amountMin) amountMin = 1;
         //if (!RESOURCES_ALL.find((r)=>{r==resourceType;})) return null;
@@ -2479,6 +2491,46 @@ mod.extend = function(){
         }
         this.memory.observer.rooms = ROOMS;
     };
+    Room.prototype.exits = function(findExit, point) {
+        if (point === true) point = 0.5;
+        let positions;
+        if (findExit === 0) {
+            // portals
+            positions = _.chain(this.find(FIND_STRUCTURES)).filter(function(s) {
+                return s.structureType === STRUCTURE_PORTAL;
+            }).map('pos').value();
+        } else {
+            positions = this.find(findExit);
+        }
+
+        // assuming in-order
+        let maxX, maxY;
+        let map = {};
+        let limit = -1;
+        const ret = [];
+        for (let i = 0; i < positions.length; i++) {
+            const pos = positions[i];
+            if (!(_.get(map,[pos.x-1, pos.y]) || _.get(map,[pos.x,pos.y-1]))) {
+                if (point && limit !== -1) {
+                    ret[limit].x += Math.ceil(point * (maxX - ret[limit].x));
+                    ret[limit].y += Math.ceil(point * (maxY - ret[limit].y));
+                }
+                limit++;
+                ret[limit] = _.pick(pos, ['x','y']);
+                maxX = pos.x;
+                maxY = pos.y;
+                map = {};
+            }
+            _.set(map, [pos.x, pos.y], true);
+            maxX = Math.max(maxX, pos.x);
+            maxY = Math.max(maxY, pos.y);
+        }
+        if (point && limit !== -1) {
+            ret[limit].x += Math.ceil(point * (maxX - ret[limit].x));
+            ret[limit].y += Math.ceil(point * (maxY - ret[limit].y));
+        }
+        return ret;
+    }
 };
 mod.flush = function(){
     let clean = room => {
