@@ -219,6 +219,7 @@ global.install = () => {
 
     // reload cached data from memory segment
     OCSMemory.activateSegment(MEM_SEGMENTS.COSTMATRIX_CACHE);
+
     // custom extend
     if( global.mainInjection.extend ) global.mainInjection.extend();
 };

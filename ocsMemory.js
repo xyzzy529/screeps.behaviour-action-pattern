@@ -26,18 +26,28 @@ mod.deactivateSegment = (id) => {
 	delete Memory.activeSegments[id];
 	mod.segmentsChanged = true;
 };
+mod.cacheValid = (id) => {
+	return global.cacheValid[id] === Memory.cacheValid[id];
+};
+mod.processSegment = (id, process) => {
+	if (_.isUndefined(Memory.cacheValid[id])) Memory.cacheValid[id] = Game.time;
+	const segment = RawMemory.segments[id];
+	if (segment && !mod.cacheValid(id)) {
+		process(JSON.parse(segment));
+		global.cacheValid[id] = Memory.cacheValid[id];
+	}
+};
 mod.processSegments = () => {
-    const costMatrixCache = RawMemory.segments[MEM_SEGMENTS.COSTMATRIX_CACHE];
-    if (costMatrixCache) {
-    	if (DEBUG) logSystem('RawMemory', 'loading pathfinder cache..');
-        Room.loadCostMatrixCache(JSON.parse(costMatrixCache));
-        mod.deactivateSegment(MEM_SEGMENTS.COSTMATRIX_CACHE);
-    }
+	if (_.isUndefined(global.cacheValid)) global.cacheValid = {};
+	if (_.isUndefined(Memory.cacheValid)) Memory.cacheValid = {};
+
+	mod.processSegment(MEM_SEGMENTS.COSTMATRIX_CACHE, Room.loadCostMatrixCache);
 };
 mod.saveSegment = (id, data) => {
 	const numActive = _.size(Memory.activeSegments);
 	if (Memory.activeSegments[id] || numActive + mod.numSaved < 10) {
 		RawMemory.segments[id] = JSON.stringify(data);
+		Memory.cacheValid[id] = Game.time;
 		mod.numSaved++;
 	} else if (numActive >= 10) {
 		// TODO: also defer?
