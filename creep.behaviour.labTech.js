@@ -32,13 +32,13 @@ mod.nextAction = function(creep){
     let priority = outflowPriority;
     if( creep.sum * 2 < creep.carryCapacity ) {
         priority = [
+            Creep.action.reallocating,
             Creep.action.uncharging,
             Creep.action.picking,
         ];
         Creep.action.withdrawing.debounce(creep, outflowPriority, function(withdrawing) {
             priority.push(withdrawing);
         });
-        priority.push(Creep.action.reallocating);
         priority.push(Creep.action.idle);
     } else {
         priority = outflowPriority.concat([
