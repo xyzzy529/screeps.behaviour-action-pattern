@@ -25,7 +25,6 @@ mod.nextAction = function(creep){
         return;
     }
     const outflowPriority = [
-        Creep.action.reallocating,
         Creep.action.feeding,
         Creep.action.charging,
         Creep.action.fueling,
