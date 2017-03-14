@@ -766,41 +766,63 @@ mod.extend = function(){
                 return this.memory.mineralType;
             }
         },
-        'costMatrix': {
+        'structureMatrix': {
             configurable: true,
             get: function () {
-                if( _.isUndefined(mod.pathfinderCache)) mod.pathfinderCache = {};
-                if( _.isUndefined(mod.pathfinderCache[this.name])) mod.pathfinderCache[this.name] = {};
+                if (_.isUndefined(this._structureMatrix)) {
+                    const COSTMATRIX_CACHE_VERSION = 1; // change this to invalidate previously cached costmatrices
+                    const cacheValid = (roomName) => {
+                        if (_.isUndefined(mod.pathfinderCache)) {
+                            mod.pathfinderCache = {};
+                            mod.pathfinderCache[roomName] = {};
+                            return false;
+                        } else if (_.isUndefined(mod.pathfinderCache[roomName])) {
+                            mod.pathfinderCache[roomName] = {};
+                            return false;
+                        }
+                        const mem = mod.pathfinderCache[roomName];
+                        const ttl = Game.time - mem.updated;
+                        if (mem.version === COSTMATRIX_CACHE_VERSION && mem.costMatrix && ttl < COST_MATRIX_VALIDITY) {
+                            return true;
+                        }
+                        return false;
+                    };
 
-                const ttl = Game.time - mod.pathfinderCache[this.name].updated;
-                if( mod.pathfinderCache[this.name].costMatrix && ttl < COST_MATRIX_VALIDITY) {
-                    if( DEBUG && TRACE ) trace('PathFinder', {roomName:this.name, ttl, PathFinder:'CostMatrix'}, 'cached costmatrix');
-                    if (_.isUndefined(mod.pathfinderCache[this.name].serialized) || mod.pathfinderCache[this.name].serialized) {
-                        const deserialized = PathFinder.CostMatrix.deserialize(mod.pathfinderCache[this.name].costMatrix);
-                        mod.pathfinderCache[this.name].costMatrix = deserialized;
-                        mod.pathfinderCache[this.name].serialized = false;
+                    if (cacheValid(this.name)) {
+                        if (DEBUG && TRACE) trace('PathFinder', {roomName:this.name, ttl, PathFinder:'CostMatrix'}, 'cached costmatrix');
+                        let costMatrix = mod.pathfinderCache[this.name].costMatrix;
+                        if (!costMatrix.serialize) {
+                            costMatrix = PathFinder.CostMatrix.deserialize(costMatrix);
+                            mod.pathfinderCache[this.name].costMatrix = costMatrix;
+                        }
+                        this._structureMatrix = costMatrix;
+                    } else {
+                        if (DEBUG) logSystem(this.name, 'Calulating cost matrix');
+                        var costMatrix = new PathFinder.CostMatrix();
+                        let setCosts = structure => {
+                            const site = structure instanceof ConstructionSite;
+                            if (structure.structureType === STRUCTURE_ROAD) {
+                                if (!site || USE_UNBUILT_ROADS)
+                                    return costMatrix.set(structure.pos.x, structure.pos.y, 1);
+                            } else if (OBSTACLE_OBJECT_TYPES.includes(structure.structureType)) {
+                                if (!site || Task.reputation.allyOwner(structure))
+                                    costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
+                            } else if (structure.structureType === STRUCTURE_RAMPART && !(structure.my || structure.isPublic)) {
+                                costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
+                            }
+                        };
+                        this.structures.all.forEach(setCosts);
+                        this.constructionSites.forEach(setCosts);
+                        const prevTime = mod.pathfinderCache[this.name].updated;
+                        mod.pathfinderCache[this.name].costMatrix = costMatrix;
+                        mod.pathfinderCache[this.name].updated = Game.time;
+                        mod.pathfinderCache[this.name].version = COSTMATRIX_CACHE_VERSION;
+                        mod.pathfinderCacheDirty = true;
+                        if( DEBUG && TRACE ) trace('PathFinder', {roomName:this.name, prevTime, structures:this.structures.all.length, PathFinder:'CostMatrix'}, 'updated costmatrix');
+                        this._structureMatrix = costMatrix;
                     }
-                    return mod.pathfinderCache[this.name].costMatrix;
                 }
-
-                if( DEBUG ) logSystem(this.name, 'Calculating cost matrix');
-                var costMatrix = new PathFinder.CostMatrix();
-                let setCosts = structure => {
-                    if(structure.structureType == STRUCTURE_ROAD) {
-                        costMatrix.set(structure.pos.x, structure.pos.y, 1);
-                    } else if(structure.structureType !== STRUCTURE_RAMPART || !structure.isPublic ) {
-                        costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
-                    }
-                };
-                this.structures.all.forEach(setCosts);
-
-                const prevTime = mod.pathfinderCache[this.name].updated;
-                mod.pathfinderCache[this.name].costMatrix = costMatrix;
-                mod.pathfinderCache[this.name].updated = Game.time;
-                mod.pathfinderCache[this.name].serialized = false;
-                mod.pathfinderCacheDirty = true;
-                if( DEBUG && TRACE ) trace('PathFinder', {roomName:this.name, prevTime, structures:this.structures.all.length, PathFinder:'CostMatrix'}, 'updated costmatrix');
-                return costMatrix;
+                return this._structureMatrix;
             }
         },
         'currentCostMatrix': {
@@ -2150,13 +2172,13 @@ mod.cleanup = function() {
         // store our updated cache in the memory segment
         let encodedCache = {};
         for (const key in mod.pathfinderCache) {
-            let costMatrix;
-            if (mod.pathfinderCache[key].serialized) costMatrix = mod.pathfinderCache[key].costMatrix;
-            else costMatrix = mod.pathfinderCache[key].costMatrix.serialize();
-            encodedCache[key] = {
-                costMatrix: costMatrix,
+            const costMatrix = mod.pathfinderCache[key].costMatrix;
+             encodedCache[key] = {
+                costMatrix: mod.pathfinderCache[key].costMatrix,
+                updated: mod.pathfinderCache[key].updated
+                costMatrix: costMatrix.serialize ? costMatrix.serialize() : costMatrix,
                 updated: mod.pathfinderCache[key].updated,
-                serialized: true
+                version: mod.pathfinderCache[key].version
             };
         }
         OCSMemory.saveSegment(MEM_SEGMENTS.COSTMATRIX_CACHE, encodedCache);
@@ -2296,7 +2318,6 @@ mod.loadCostMatrixCache = function(cache) {
         if (!mod.pathfinderCache[key] || mod.pathfinderCache[key].updated < cache[key].updated) {
             count++;
             mod.pathfinderCache[key] = cache[key];
-            mod.pathfinderCache[key].serialized = true;
         }
     }
     if (DEBUG) logSystem('RawMemory', 'loading pathfinder cache.. updated ' + count + ' stale entries.');
