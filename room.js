@@ -2141,6 +2141,10 @@ mod.extend = function(){
         }
         return ret;
     }
+    Room.prototype.rebuildCostMatrix = function() {
+        delete mod.pathfinderCache[this.name];
+        mod.pathfinderCacheDirty = true;
+    };
     Room.prototype.controlObserver = function() {
         const OBSERVER = this.structures.observer;
         if (!OBSERVER) return;

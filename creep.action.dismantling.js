@@ -34,6 +34,7 @@ action.newTarget = function(creep){
                         if( targets && targets.length > 0)
                             return targets[0];
                         else { // remove flag. try next flag
+                            flag.room.rebuildCostMatrix();
                             FlagDir.removeFromDir(flag.name);
                             flag.remove();
                         }
