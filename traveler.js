@@ -147,10 +147,10 @@ module.exports = function(globalOpts = {}){
             let creepPos = creep.pos, destPos = (destination.pos || destination);
             this.registerHostileRoom(creep.room);
             // initialize data object
-            if (!creep.memory._travel) {
-                creep.memory._travel = { stuck: 0, tick: Game.time, cpu: 0, count: 0 };
+            if (!creep.data._travel) {
+                creep.data._travel = { stuck: 0, tick: Game.time, cpu: 0, count: 0 };
             }
-            let travelData = creep.memory._travel;
+            let travelData = creep.data._travel;
             if (creep.fatigue > 0) {
                 travelData.tick = Game.time;
                 return ERR_BUSY;
