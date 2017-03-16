@@ -2315,8 +2315,6 @@ mod.cleanup = function() {
         for (const key in mod.pathfinderCache) {
             const costMatrix = mod.pathfinderCache[key].costMatrix;
              encodedCache[key] = {
-                costMatrix: mod.pathfinderCache[key].costMatrix,
-                updated: mod.pathfinderCache[key].updated
                 costMatrix: costMatrix.serialize ? costMatrix.serialize() : costMatrix,
                 updated: mod.pathfinderCache[key].updated,
                 version: mod.pathfinderCache[key].version

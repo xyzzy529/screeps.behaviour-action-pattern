@@ -149,6 +149,9 @@ for(let a in REACTIONS){
         mod.LAB_REACTIONS[REACTIONS[a][b]] = [a,b];
     }
 }
+mod.MEM_SEGMENTS = {
+    COSTMATRIX_CACHE: 0,
+};
 // used to log something meaningful instead of numbers
 mod.translateErrorCode = function(code){
     var codes = {
