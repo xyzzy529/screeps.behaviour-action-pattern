@@ -589,12 +589,20 @@ mod.extend = function(){
             configurable: true,
             get: function() {
                 if( _.isUndefined(this._constructionSites) ) {
-                    this._constructionSites = this.find(FIND_MY_CONSTRUCTION_SITES);
+                    this._constructionSites = this.find(FIND_CONSTRUCTION_SITES);
                 }
                 return this._constructionSites;
             }
         },
-
+        'myConstructionSites': {
+            configurable: true,
+            get: function() {
+                if( _.isUndefined(this._myConstructionSites) ) {
+                    this._myConstructionSites = this.find(FIND_MY_CONSTRUCTION_SITES);
+                }
+                return this._myConstructionSites;
+            }
+        },
         'creeps': {
             configurable: true,
             get: function() {
@@ -854,14 +862,16 @@ mod.extend = function(){
                         var costMatrix = new PathFinder.CostMatrix();
                         let setCosts = structure => {
                             const site = structure instanceof ConstructionSite;
+                            // don't walk on allied construction sites.
+                            if (site && Task.reputation.allyOwner(structure)) return costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
                             if (structure.structureType === STRUCTURE_ROAD) {
                                 if (!site || USE_UNBUILT_ROADS)
                                     return costMatrix.set(structure.pos.x, structure.pos.y, 1);
                             } else if (OBSTACLE_OBJECT_TYPES.includes(structure.structureType)) {
-                                if (!site || Task.reputation.allyOwner(structure))
-                                    costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
+                                if (!site || Task.reputation.allyOwner(structure)) // don't set for hostile construction sites
+                                    return costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
                             } else if (structure.structureType === STRUCTURE_RAMPART && !(structure.my || structure.isPublic)) {
-                                costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
+                                return costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
                             }
                         };
                         this.structures.all.forEach(setCosts);
@@ -1018,8 +1028,24 @@ mod.extend = function(){
                 return this._collapsed;
             }
         },
+        'hostile': {
+            configurable: true,
+            get: function() {
+                return this.memory.hostile;
+            }
+        },
     });
-
+    Room.prototype.registerIsHostile = function() {
+        if (this.controller) {
+            if (_.isUndefined(this.hostile) || typeof this.hostile === 'number') { // not overridden by user
+                if (this.controller.owner && !this.controller.my && !this.ally) {
+                    this.memory.hostile = this.controller.level;
+                } else {
+                    delete this.memory.hostile;
+                }
+            }
+        }
+    };
     Room.prototype.getBorder = function(roomName) {
         return _.findKey(Game.map.describeExits(this.name), function(name) {
             return this.name === name;
@@ -1052,13 +1078,13 @@ mod.extend = function(){
             if( options.checkOwner ){
                 const room = Game.rooms[roomName];
                 // allow for explicit overrides of hostile rooms using hostileRooms[roomName] = false
-                isMyOrNeutralRoom = Memory.rooms.hostileRooms[roomName] === false || (room &&
+                isMyOrNeutralRoom = this.hostile === false || (room &&
                                     room.controller &&
                                     (room.controller.my ||
                                     (room.controller.owner === undefined)));
             }
             if (!options.allowSK && mod.isSKRoom(roomName)) return 10;
-            if (!options.allowHostile && Memory.rooms.hostileRooms[roomName] &&
+            if (!options.allowHostile && this.hostile &&
                 roomName !== destination && roomName !== origin) {
                 return Number.POSITIVE_INFINITY;
             }
@@ -1570,7 +1596,7 @@ mod.extend = function(){
         return false;
     };
     Room.prototype.terminalBroker = function () {
-        if( !this.my || !this.terminal ) return;
+        if( !this.my || !this.terminal || !this.storage ) return;
         let that = this;
         let mineral = this.mineralType;
         let transacting = false;
@@ -2102,6 +2128,29 @@ mod.extend = function(){
         };
         return look.filter(invalidObject).length == 0;
     };
+    Room.prototype.printCostMatrix = function(creepMatrix, aroundPos) {
+        const matrix = creepMatrix ? this.creepMatrix : this.costMatrix;
+        let startY = 0;
+        let endY = 50;
+        let startX = 0;
+        let endX = 50;
+        if (aroundPos) {
+            startY = Math.max(0, aroundPos.y - 3);
+            endY = Math.min(50, aroundPos.y + 4);
+            startX = Math.max(0, aroundPos.x - 3);
+            endX = Math.min(50, aroundPos.x + 4);
+        }
+        logSystem(this.name, "costMatrix:");
+        for (var y = startY; y < endY; y++) {
+            var line = "";
+            for (var x = startX; x < endX; x++) {
+                var val = matrix.get(x, y).toString(16);
+                if (val == "0") val = "";
+                line += ("   " + val).slice(-3);
+            }
+            logSystem(this.name, line);
+        }
+    };
     Room.prototype.exits = function(findExit, point) {
         if (point === true) point = 0.5;
         let positions;
@@ -2230,6 +2279,7 @@ mod.flush = function(){
         if( global.isNewServer ) {
             delete room._my;
             delete room._constructionSites;
+            delete room._myConstructionSites;
             delete room._maxPerJob;
             delete room._minerals;
             delete room._structures;
@@ -2247,6 +2297,15 @@ mod.flush = function(){
     };
     Memory.observerSchedule = [];
     _.forEach(Game.rooms, clean);
+
+    // Temporary migration can be removed once traveler is merged into /dev
+    if (!_.isUndefined(Memory.rooms.hostileRooms)) {
+        for (roomName in Memory.rooms.hostileRooms) {
+            if (_.isUndefined(Memory.rooms[roomName])) Memory.rooms[roomName] = {};
+            Memory.rooms[roomName].hostile = Memory.rooms.hostileRooms[roomName];
+        }
+        delete Memory.rooms.hostileRooms;
+    }
 };
 mod.analyze = function(){
     let getEnvironment = room => {
