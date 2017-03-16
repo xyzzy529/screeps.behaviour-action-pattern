@@ -57,7 +57,13 @@ module.exports = class Visuals {
 				Visuals.terminal(room);
 			}
 			if (VISUALS.TOWER) {
-				Visuals.tower(room);
+			    Visuals.tower(room);
+			    _.forEach(room.structures.towers, tower => {
+				const vis = new RoomVisual(room.name);
+				const x = 14.8;
+				let y = 3.6;
+			   vis.text(`Tower energy: ${tower.energy}`, x, y);
+		            });
 			}
 			if (VISUALS.TRANSACTIONS) {
 				Visuals.drawTransactions(room);
@@ -360,13 +366,8 @@ module.exports = class Visuals {
 	}
 	
 	static tower(room) {
-	    _.forEach(room.structures.towers, tower => {
-			const vis = new RoomVisual(room.name);
-			const x = 14.8;
-			let y = 3.6;
-			vis.text(`Tower energy: ${tower.energy}`, x, y);
-		});
-	}
+	    
+	}	
 	
 	static drawTransactions(room) {
 		if (room.terminal) {
