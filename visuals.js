@@ -477,12 +477,12 @@ module.exports = class Visuals {
         const vis = new RoomVisual(room.name);
         room.creeps.forEach(creep => {
             if (creep.data._travel && creep.data._travel.path) {
-                const path = creep.memory._travel.path.substr(1);
+                const path = creep.data._travel.path.substr(1);
                 const style = Visuals.creepPathStyle(creep);
                 let x = creep.pos.x;
                 let y = creep.pos.y;
                 if (creep.fatigue === 0) {
-                    const initDirection = +creep.memory._travel.path[0]; // get initial so we know where to set the start (x, y)
+                    const initDirection = +creep.data._travel.path[0]; // get initial so we know where to set the start (x, y)
                     if (initDirection === TOP) {
                         --y;
                     } else if (initDirection === TOP_RIGHT) {
