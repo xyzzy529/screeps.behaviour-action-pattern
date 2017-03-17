@@ -61,7 +61,7 @@ mod.FLAG_COLOR = {
             filter: {'color': COLOR_RED, 'secondaryColor': COLOR_CYAN },
         }
     },
-    //COLOR_PURPLE - lab related
+    //COLOR_PURPLE - Reserved labs
     labs: { // could be used to define certain lab commands
         color: COLOR_PURPLE,
         secondaryColor: COLOR_PURPLE,
@@ -73,8 +73,8 @@ mod.FLAG_COLOR = {
         }
 
     },
-    //COLOR_BLUE,
-    //COLOR_CYAN - Reserved
+    //COLOR_BLUE - Reserved (internal use)
+    //COLOR_CYAN - Reserved (build related)
     //COLOR_GREEN
     claim: { // claim this room, then build spawn at flag
         color: COLOR_GREEN,
