@@ -281,17 +281,22 @@ module.exports = class Visuals {
 			vis.circle(weakest.pos.x, weakest.pos.y, {radius: 0.4, fill: '#FF0000', opacity: 0.3, strokeWidth: 0,});
 			let y = weakest.pos.y - 0.5;
 			const look = weakest.pos.lookFor(LOOK_STRUCTURES);
-			const spawns = _.find(look, o => o instanceof StructureSpawn && o.spawning);
-			if (spawns) {
+			const towers = _.find(look, o => o instanceof StructureTower);
+			if (towers) {
 				y += 0.4;
 			} else {
-				const labs = _.find(look, o => o instanceof StructureLab);
-				if (labs) {
-					if (labs.energy) y += 0.4;
-					if (labs.mineralAmount) y += 0.4;
-					if (labs.cooldown) y += 0.4;
-				}
-			}
+			        const spawns = _.find(look, o => o instanceof StructureSpawn && o.spawning);
+		                if (spawns) {
+				        y += 0.4;
+			        } else {
+				        const labs = _.find(look, o => o instanceof StructureLab);
+				        if (labs) {
+				                if (labs.energy) y += 0.4;
+					        if (labs.mineralAmount) y += 0.4;
+					        if (labs.cooldown) y += 0.4;
+				        }
+			        }
+                        }	
 			vis.text(`H: ${formatNum(weakest.hits)} (${(weakest.hits / weakest.hitsMax * 100).toFixed(2)}%)`, weakest.pos.x + 1, y, {align: 'left', font: 0.4,});
 		}
 	}
