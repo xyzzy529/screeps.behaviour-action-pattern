@@ -15,6 +15,13 @@ mod.populate = function() {
     ]);
 };
 mod.addTasks = (...task) => Task.tasks.push(...task);
+
+mod.installTask = (...taskNames) => {
+    taskNames.forEach(taskName => {
+        Task[taskName] = load(`task.${taskName}`);
+        Task.addTasks(Task[taskName]);
+    });
+};
 // load task memory & flush caches
 mod.flush = function () {
     Task.tasks.forEach(task => {
