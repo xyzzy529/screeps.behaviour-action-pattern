@@ -853,7 +853,7 @@ module.exports = class Visuals {
         if (!room.memory.resources || !room.memory.resources.orders) {
             return;
         }
-        if (VISUALS.STORAGE && room.storage) {F
+        if (VISUALS.STORAGE && room.storage) {
             y += 2 + _.size(room.storage.store) * 0.6;
         }
         if (VISUALS.TERMINAL && room.terminal) {
