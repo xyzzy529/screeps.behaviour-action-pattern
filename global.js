@@ -150,7 +150,10 @@ for(let a in REACTIONS){
     }
 }
 mod.MEM_SEGMENTS = {
-    COSTMATRIX_CACHE: 0,
+    COSTMATRIX_CACHE: {
+        start: 0,
+        end: 5
+    }
 };
 // used to log something meaningful instead of numbers
 mod.translateErrorCode = function(code){

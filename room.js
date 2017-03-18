@@ -2375,7 +2375,7 @@ mod.execute = function() {
 mod.cleanup = function() {
     // flush changes to the pathfinderCache but wait until load
     if (!_.isUndefined(Memory.pathfinder)) {
-        OCSMemory.saveSegment(MEM_SEGMENTS.COSTMATRIX_CACHE, Memory.pathfinder)
+        OCSMemory.saveSegment(MEM_SEGMENTS.COSTMATRIX_CACHE, Memory.pathfinder);
         delete Memory.pathfinder;
     }
     if (mod.pathfinderCacheDirty && mod.pathfinderCacheLoaded) {

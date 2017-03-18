@@ -41,14 +41,30 @@ mod.processSegments = () => {
 	if (_.isUndefined(global.cacheValid)) global.cacheValid = {};
 	if (_.isUndefined(Memory.cacheValid)) Memory.cacheValid = {};
 
-	mod.processSegment(MEM_SEGMENTS.COSTMATRIX_CACHE, Room.loadCostMatrixCache);
+	for (let i = MEM_SEGMENTS.COSTMATRIX_CACHE.start; i <= MEM_SEGMENTS.COSTMATRIX_CACHE.end; i++) {
+		mod.processSegment(i, Room.loadCostMatrixCache);
+	}
 };
 mod.saveSegment = (id, data) => {
 	const numActive = _.size(Memory.activeSegments);
 	if (Memory.activeSegments[id] || numActive + mod.numSaved < 10) {
-		RawMemory.segments[id] = JSON.stringify(data);
-		Memory.cacheValid[id] = Game.time;
-		mod.numSaved++;
+		let i = id.start;
+		let data = '{';
+		let total = 1;
+		for (const key in data) {
+			const temp = `${key}: ${JSON.stringify(data[key])}`;
+			if (data.length + temp.length + 1 / 1024 < 100) data = data + ',' + temp;
+			else {
+				Memory.activeSegments[i] = data + '}';
+				Memory.cacheValid[i] = Game.time;
+				data = '{' + temp;
+				total = temp.length;
+				i++;
+			}
+		}
+		Memory.activeSegments[i] = data;
+		mod.numSaved += i - id.start + 1;
+		for (let index = i; index < id.end; index++) delete Memory.activeSegments[index];
 	} else if (numActive >= 10) {
 		// TODO: also defer?
 		return logError('RawMemory', 'cannot save segment ' + id + ' too many active segments.');
