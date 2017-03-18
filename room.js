@@ -1461,7 +1461,7 @@ mod.extend = function(){
         }
         
         // Links
-        shortAmount = CONTROLLER_STRUCTURES[STRUCTURE_LINK][LEVEL] - (this.structures.links.length + _.filter(this.constructionSites, s => s.structureType === STRUCTURE_LINK).length);
+        shortAmount = CONTROLLER_STRUCTURES[STRUCTURE_LINK][LEVEL] - (this.structures.links.all.length + _.filter(this.constructionSites, s => s.structureType === STRUCTURE_LINK).length);
         if (shortAmount > 0) {
             FlagDir.filter(FLAG_COLOR.construct.link, ...ARGS).splice(0, shortAmount).forEach(flag => {
                 CONSTRUCT(flag, STRUCTURE_LINK);
@@ -1469,7 +1469,7 @@ mod.extend = function(){
         }
         
         // Labs
-        shortAmount = CONTROLLER_STRUCTURES[STRUCTURE_LAB][LEVEL] - (this.structures.labs.length + _.filter(this.constructionSites, s => s.structureType === STRUCTURE_LAB).length);
+        shortAmount = CONTROLLER_STRUCTURES[STRUCTURE_LAB][LEVEL] - (this.structures.labs.all.length + _.filter(this.constructionSites, s => s.structureType === STRUCTURE_LAB).length);
         if (shortAmount > 0) {
             FlagDir.filter(FLAG_COLOR.construct.lab, ...ARGS).splice(0, shortAmount).forEach(flag => {
                 CONSTRUCT(flag, STRUCTURE_LAB);
