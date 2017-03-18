@@ -61,9 +61,9 @@ mod.FLAG_COLOR = {
             filter: {'color': COLOR_RED, 'secondaryColor': COLOR_CYAN },
         }
     },
-    //COLOR_PURPLE,
-    //COLOR_BLUE,
-    //COLOR_CYAN - Reserved
+    //COLOR_PURPLE - Reserved labs
+    //COLOR_BLUE - Reserved (internal use)
+    //COLOR_CYAN - Reserved (build related)
     //COLOR_GREEN
     claim: { // claim this room, then build spawn at flag
         color: COLOR_GREEN,
