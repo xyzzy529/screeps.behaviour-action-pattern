@@ -1427,6 +1427,7 @@ mod.extend = function(){
         const ARGS = [POS, true];
         const CONSTRUCT = (flag, type) => {
             if (!flag) return;
+            flag = Game.flags[flag.name];
             const POS = flag.pos;
             if (!POS) return;
             const structures = POS.lookFor(LOOK_STRUCTURES).filter(s => !(s instanceof StructureRoad || s instanceof StructureRampart));
