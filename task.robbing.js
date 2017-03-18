@@ -65,7 +65,7 @@ mod.handleSpawningStarted = params => { // params: {spawn: spawn.name, name: cre
         // save spawning creep to task memory
         memory.spawning.push(params);
         // clean/validate task memory queued creeps
-        let queued = []
+        let queued = [];
         let validateQueued = o => {
             let room = Game.rooms[o.room];
             if( (room.spawnQueueMedium.some( c => c.name == o.name)) || (room.spawnQueueLow.some( c => c.name == o.name)) ){
@@ -94,7 +94,7 @@ mod.handleSpawningCompleted = creep => {
         // save running creep to task memory
         memory.running.push(creep.name);
         // clean/validate task memory spawning creeps
-        let spawning = []
+        let spawning = [];
         let validateSpawning = o => {
             let spawn = Game.spawns[o.spawn];
             if( spawn && ((spawn.spawning && spawn.spawning.name == o.name) || (spawn.newSpawn && spawn.newSpawn.name == o.name))) {
@@ -119,7 +119,7 @@ mod.handleCreepDied = name => {
         // get task memory
         let memory = Task.robbing.memory(flag);
         // clean/validate task memory running creeps
-        let running = []
+        let running = [];
         let validateRunning = o => {
             let creep = Game.creeps[o];
             // invalidate old creeps for predicted spawning
@@ -141,7 +141,7 @@ mod.memory = (flag) => {
             queued: [], 
             spawning: [],
             running: []
-        }
+        };
     }
     return flag.memory.tasks.robbing;
 };
@@ -151,6 +151,7 @@ mod.nextAction = creep => {
     if( creep.pos.roomName == creep.data.homeRoom ){
         // carrier filled
         if( carrySum > 0 ){
+            if( DEBUG && TRACE ) trace('Task', {creepName:creep.name, pos:creep.pos, nextAction: 'storing?', robbing:'nextAction', Task:'robbing'});
             let deposit = []; // deposit energy in...
             // links?
             if( creep.carry.energy == carrySum ) deposit = creep.room.structures.links.privateers;
@@ -172,11 +173,13 @@ mod.nextAction = creep => {
         }
         // empty
         // travelling
-        if( Task[creep.data.destiny.task].exploitNextRoom(creep) )
+        if( Task[creep.data.destiny.task].exploitNextRoom(creep) ) {
+            if( DEBUG && TRACE ) trace('Task', {creepName:creep.name, pos:creep.pos, nextAction: 'travelling', robbing:'nextAction', Task:'robbing'});
             return;
-        else {
+        } else {
             // no new flag
             // behave as worker
+            if( DEBUG && TRACE ) trace('Task', {creepName:creep.name, pos:creep.pos, nextAction: 'working', robbing:'nextAction', Task:'robbing'});
             Creep.behaviour.worker.nextAction(creep);
             return;
         }
@@ -184,8 +187,8 @@ mod.nextAction = creep => {
     // not at home
     else {
         // at target room
-        if( creep.data.destiny.room == creep.pos.roomName ){
-
+        if( creep.flag && creep.flag.pos.roomName === creep.pos.roomName ){
+            if( DEBUG && TRACE ) trace('Task', {creepName:creep.name, pos:creep.pos, nextAction: 'robbing', robbing:'nextAction', Task:'robbing'});
             // get some energy
             if( creep.sum < creep.carryCapacity*0.4 ) {
                 // harvesting or picking
@@ -209,13 +212,13 @@ mod.nextAction = creep => {
             }
             // carrier full
             else {
-                Population.registerCreepFlag(creep, null);
-                Creep.action.travelling.assign(creep, Game.rooms[creep.data.homeRoom].controller);
+                mod.goHome(creep);
                 return;
             }
         }
         // not at target room
         else {
+            if( DEBUG && TRACE ) trace('Task', {creepName:creep.name, pos:creep.pos, nextAction: 'travelling2', robbing:'nextAction', Task:'robbing'});
             Task[creep.data.destiny.task].exploitNextRoom(creep);
             return;
         }
@@ -234,18 +237,23 @@ mod.exploitNextRoom = creep => {
         if( !flag ) flag = FlagDir.find(validColor, Game.rooms[creep.data.homeRoom].controller.pos, false);
         // new flag found
         if( flag ) {
-            // travelling
-            if( Creep.action.travelling.assign(creep, flag) ) {
-                Population.registerCreepFlag(creep, flag);
-                return true;
-            }
+            return mod.gotoTargetRoom(creep, flag);
         }
     }
     // no new flag
     // go home
+    return mod.goHome(creep);
+};
+mod.goHome = creep => {
     Population.registerCreepFlag(creep, null);
-    Creep.action.travelling.assign(creep, Game.rooms[creep.data.homeRoom].controller);
+    Creep.action.travelling.assignRoom(creep, creep.data.homeRoom);
     return false;
+};
+mod.gotoTargetRoom = (creep, flag) => {
+    if( Creep.action.travelling.assignRoom(creep, flag.pos.roomName) ) {
+        Population.registerCreepFlag(creep, flag);
+        return true;
+    }
 };
 mod.creep = {
     robbing: {

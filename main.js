@@ -215,10 +215,12 @@ global.install = () => {
     Room.extend();
     Spawn.extend();
     FlagDir.extend();
+    Task.populate();
     // custom extend
     if( global.mainInjection.extend ) global.mainInjection.extend();
 };
 global.install();
+require('traveler')({exportTraveler: false, installTraveler: true, installPrototype: true, defaultStuckValue: TRAVELER_STUCK_TICKS, reportThreshold: TRAVELER_THRESHOLD});
 
 let cpuAtFirstLoop;
 module.exports.loop = function () {
@@ -256,8 +258,11 @@ module.exports.loop = function () {
     // custom flush
     if( global.mainInjection.flush ) global.mainInjection.flush();
 
-    // analyze environment
-    FlagDir.analyze();
+    // analyze environment, wait a tick if critical failure
+    if (!FlagDir.analyze()) {
+        logError('FlagDir.analyze failed, waiting one tick to sync flags');
+        return;
+    }
     Room.analyze();
     Population.analyze();
     // custom analyze

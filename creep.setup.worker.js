@@ -8,13 +8,14 @@ setup.maxWorker = room => {
     if (room.controller.level < 4) {
         if (room.situation.invasion) return 1;
         let max = room.controller.level === 2 ? 6 : 4;
-        const numPioneers = room.population ? room.population.typeCount.pioneer : 0;
+        const numPioneers = room.population && room.population.typeCount.pioneer || 0;
         return max - numPioneers;
     }
     if( !setup.hasMinerOrHauler(room))
         count = count + 1;
     // constructionsites present & no strorage or storage > min
-    if( room.constructionSites.length > 0 && (!room.storage || room.storage.store && room.storage.charge > 0))
+    if( room.myConstructionSites.length > 0 && (!room.storage
+        || room.storage.store && room.storage.charge > 0))
         count = count + 1;
     // storage full & base fortifyable
     if( room.storage && room.storage.charge > 1 && room.structures.fortifyable.length > 0 )
