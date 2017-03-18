@@ -247,6 +247,7 @@ module.exports.loop = function () {
     if (Memory.cloaked === undefined) {
         Memory.cloaked = {};
     }
+
     // process loaded memory segments
     OCSMemory.processSegments();
 
@@ -297,9 +298,9 @@ module.exports.loop = function () {
     FlagDir.cleanup();
     Population.cleanup();
     Room.cleanup(); 
-    OCSMemory.cleanup(); // must come last
     // custom cleanup
     if( global.mainInjection.cleanup ) global.mainInjection.cleanup();
+    OCSMemory.cleanup(); // must come last
 
     if ( ROOM_VISUALS && !Memory.CPU_CRITICAL && Visuals ) Visuals.run(); // At end to correctly display used CPU.
 
