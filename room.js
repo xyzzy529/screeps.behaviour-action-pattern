@@ -2232,9 +2232,9 @@ mod.extend = function(){
                 }
                 vert += n;
                 const room = hor + vert;
-                if (!Game.map.isRoomAvailable(room)) continue; // not an available room
-                if (room in Game.rooms && Game.rooms[room].my) continue; // don't bother adding the room to the array if it's owned by us
                 if (OBSERVER_OBSERVE_HIGHWAYS_ONLY && !Room.isHighwayRoom(room)) continue; // we only want highway rooms
+                if (room in Game.rooms && Game.rooms[room].my) continue; // don't bother adding the room to the array if it's owned by us
+                if (!Game.map.isRoomAvailable(room)) continue; // not an available room
                 this.memory.observer.rooms.push(room);
             }
         }
