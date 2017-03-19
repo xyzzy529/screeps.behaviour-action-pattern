@@ -2530,7 +2530,7 @@ mod.loadCostMatrixCache = function(cache) {
             mod.pathfinderCache[key] = cache[key];
         }
     }
-    if (DEBUG) logSystem('RawMemory', 'loading pathfinder cache.. updated ' + count + ' stale entries.');
+    if (DEBUG && count > 0) logSystem('RawMemory', 'loading pathfinder cache.. updated ' + count + ' stale entries.');
     mod.pathfinderCacheLoaded = true;
 };
 mod.validFields = function(roomName, minX, maxX, minY, maxY, checkWalkable = false, where = null) {

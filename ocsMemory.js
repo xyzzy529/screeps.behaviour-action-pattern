@@ -32,14 +32,15 @@ mod.cacheValid = (id) => {
 mod.processSegment = (id, process) => {
 	if (_.isUndefined(Memory.cacheValid[id])) Memory.cacheValid[id] = false;
 	const segment = RawMemory.segments[id];
-	if (segment && !mod.cacheValid(id)) {
+	if (!mod.cacheValid(id)) {
 		try {
-			process(JSON.parse(segment));
+			const data = segment ? JSON.parse(segment) : '';
+			process(data);
 			global.cacheValid[id] = Memory.cacheValid[id];
 		} catch (e) {
             console.log('<font style="color:FireBrick">Error loading segment' + id
                 + ' caused by ' + (e.stack || e.toString()) + '</font>');
-			delete RawMemory.segments[id];
+			RawMemory.segments[id] = '';
 			delete global.cacheValid[id];
 			delete Memory.cacheValid[id];
 		}
@@ -87,7 +88,7 @@ mod.saveSegment = (range, inputData) => {
 			}
 		} else if (Memory.cacheValid[id]) { // no more data, clear this segment
 			if (DEBUG) logSystem('OCSMemory.saveSegment', 'clearing unused segment ' + id);
-			delete RawMemory.segments[id];
+			RawMemory.segments[id] = '';
 			delete Memory.cacheValid[id];
 		}
 	}
