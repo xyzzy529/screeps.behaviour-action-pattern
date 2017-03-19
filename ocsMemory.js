@@ -30,49 +30,66 @@ mod.cacheValid = (id) => {
 	return global.cacheValid[id] === Memory.cacheValid[id];
 };
 mod.processSegment = (id, process) => {
-	if (_.isUndefined(Memory.cacheValid[id])) Memory.cacheValid[id] = Game.time;
+	if (_.isUndefined(Memory.cacheValid[id])) Memory.cacheValid[id] = false;
 	const segment = RawMemory.segments[id];
 	if (segment && !mod.cacheValid(id)) {
-		process(JSON.parse(segment));
-		global.cacheValid[id] = Memory.cacheValid[id];
+		try {
+			process(JSON.parse(segment));
+			global.cacheValid[id] = Memory.cacheValid[id];
+		} catch (e) {
+            console.log('<font style="color:FireBrick">Error loading segment' + id
+                + ' caused by ' + (e.stack || e.toString()) + '</font>');
+			delete RawMemory.segments[id];
+			delete global.cacheValid[id];
+			delete Memory.cacheValid[id];
+		}
 	}
 };
 mod.processSegments = () => {
 	if (_.isUndefined(global.cacheValid)) global.cacheValid = {};
 	if (_.isUndefined(Memory.cacheValid)) Memory.cacheValid = {};
 
-	for (let i = MEM_SEGMENTS.COSTMATRIX_CACHE.start; i <= MEM_SEGMENTS.COSTMATRIX_CACHE.end; i++) {
-		mod.processSegment(i, Room.loadCostMatrixCache);
+	for (let id = MEM_SEGMENTS.COSTMATRIX_CACHE.start; id <= MEM_SEGMENTS.COSTMATRIX_CACHE.end; id++) {
+		mod.processSegment(id, Room.loadCostMatrixCache);
 	}
 };
-mod.saveSegment = (id, data) => {
+mod.saveSegment = (range, inputData) => {
 	const numActive = _.size(Memory.activeSegments);
-	if (Memory.activeSegments[id] || numActive + mod.numSaved < 10) {
-		let i = id.start;
-		let data = '{';
-		let total = 1;
-		for (const key in data) {
-			const temp = `${key}: ${JSON.stringify(data[key])}`;
-			if (data.length + temp.length + 1 / 1024 < 100) data = data + ',' + temp;
-			else {
-				Memory.activeSegments[i] = data + '}';
-				Memory.cacheValid[i] = Game.time;
-				data = '{' + temp;
-				total = temp.length;
-				i++;
+	const keys = Object.keys(inputData);
+	let keyNum = 0;
+	let encodedData;
+	for (let id = range.start; id <= range.end; id++) {
+		if (keyNum < keys.length) { // more data to save
+			if (RawMemory.segments[id] || numActive + mod.numSaved < 10) {
+				let temp;
+				while (keyNum < keys.length) {
+					const key = keys[keyNum];
+					keyNum++;
+					const stringified = JSON.stringify(inputData[key]);
+					temp = `"${key}":${stringified}`;
+					if (!encodedData || (encodedData.length + temp.length + 1) / 1024 < 100) {
+	 					encodedData = encodedData ? encodedData + ',' + temp : '{' + temp;
+					} else break;
+				}
+				if (DEBUG) logSystem('OCSMemory.saveSegment', 'Saving ' + _.round(encodedData.length / 1024, 2) + 'kb of data to segment ' + id);
+				RawMemory.segments[id] = encodedData + '}';
+				Memory.cacheValid[id] = Game.time;
+				encodedData = '{' + temp;
+				if (!Memory.activeSegments[id]) mod.numSaved++;
+			} else if (numActive >= 10) {
+				// TODO: also defer?
+				return logError('RawMemory', 'cannot save segment ' + id + ' too many active segments.');
+			} else if (numActive + mod.numSaved >= 10) {
+				// TODO: defer one tick?
+				return logError('RawMemory', 'cannot save segment ' + id + ' loaded + saved exceeds limit(10).');
+			} else {
+				logError('RawMemory', 'should not be here.');
 			}
+		} else if (Memory.cacheValid[id]) { // no more data, clear this segment
+			if (DEBUG) logSystem('OCSMemory.saveSegment', 'clearing unused segment ' + id);
+			delete RawMemory.segments[id];
+			delete Memory.cacheValid[id];
 		}
-		Memory.activeSegments[i] = data;
-		mod.numSaved += i - id.start + 1;
-		for (let index = i; index < id.end; index++) delete Memory.activeSegments[index];
-	} else if (numActive >= 10) {
-		// TODO: also defer?
-		return logError('RawMemory', 'cannot save segment ' + id + ' too many active segments.');
-	} else if (numActive + mod.numSaved >= 10) {
-		// TODO: defer one tick?
-		return logError('RawMemory', 'cannot save segment ' + id + ' loaded + saved exceeds limit(10).');
-	} else {
-		logError('RawMemory', 'should not be here.');
 	}
 };
 mod.cleanup = () => {
