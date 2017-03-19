@@ -2211,10 +2211,9 @@ mod.extend = function(){
     };
     Room.prototype.initObserverRooms = function() {
         const OBSERVER_RANGE = OBSERVER_OBSERVE_RANGE > 10 ? 10 : OBSERVER_OBSERVE_RANGE; // can't be > 10
-        const PRIORITISE_HIGHWAY = OBSERVER_PRIORITISE_HIGHWAY;
         const [x, y] = Room.calcGlobalCoordinates(this.name, (x,y) => [x,y]); // hacky get x,y
         const [HORIZONTAL, VERTICAL] = Room.calcCardinalDirection(this.name);
-        let ROOMS = [];
+        this.memory.observer.rooms = [];
 
         for (let a = x - OBSERVER_RANGE; a < x + OBSERVER_RANGE; a++) {
             for (let b = y - OBSERVER_RANGE; b < y + OBSERVER_RANGE; b++) {
@@ -2236,15 +2235,9 @@ mod.extend = function(){
                 if (!Game.map.isRoomAvailable(room)) continue; // not an available room
                 if (room in Game.rooms && Game.rooms[room].my) continue; // don't bother adding the room to the array if it's owned by us
                 if (OBSERVER_OBSERVE_HIGHWAYS_ONLY && !Room.isHighwayRoom(room)) continue; // we only want highway rooms
-                ROOMS.push(room);
+                this.memory.observer.rooms.push(room);
             }
         }
-        if (PRIORITISE_HIGHWAY) {
-            ROOMS = _.sortBy(ROOMS, v => {
-                return Room.isHighwayRoom(v) ? 0 : 1; // should work, I hope
-            });
-        }
-        this.memory.observer.rooms = ROOMS;
     };
 };
 mod.flush = function(){
