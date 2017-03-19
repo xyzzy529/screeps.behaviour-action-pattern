@@ -378,7 +378,7 @@ action.isValidTarget = function(target){
 };
 action.isAddableAction = function(creep){
     let pop = creep.room.population;
-    return (creep.sum == 0) && (!pop || !pop.actionCount[this.name] || pop.actionCount[this.name] < this.maxPerAction);
+    return (!pop || !pop.actionCount[this.name] || pop.actionCount[this.name] < this.maxPerAction);
 };
 action.isAddableTarget = function(target){
     return true;

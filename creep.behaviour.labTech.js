@@ -25,14 +25,14 @@ mod.nextAction = function(creep){
         return;
     }
     const outflowPriority = [
+        Creep.action.reallocating,
         Creep.action.feeding,
         Creep.action.charging,
         Creep.action.fueling,
     ];
     let priority = outflowPriority;
-    if( creep.sum * 2 < creep.carryCapacity ) {
+    if( creep.sum < creep.carryCapacity / 2 ) {
         priority = [
-            Creep.action.reallocating,
             Creep.action.uncharging,
             Creep.action.picking,
         ];
