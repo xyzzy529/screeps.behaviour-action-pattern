@@ -1426,6 +1426,7 @@ mod.extend = function(){
         const POS = new RoomPosition(25, 25, this.name);
         const ARGS = [POS, true];
         const CONSTRUCT = (flag, type) => {
+            if (_.size(Game.constructionSites) >= 100) return;
             if (!flag) return;
             flag = Game.flags[flag.name];
             const POS = flag.pos;
