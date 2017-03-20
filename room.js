@@ -197,15 +197,15 @@ mod.extend = function(){
         });
     };
 
-    let PowerSpawn = function(room){
+    let PowerSpawns = function(room){
         this.room = room;
 
         Object.defineProperties(this, {
             'all': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this.room.memory.powerSpawn)) {
-                        this.room.savePowerSpawn();
+                    if( _.isUndefined(this.room.memory.powerSpawns)) {
+                        this.room.savePowerSpawns();
                     }
                     if( _.isUndefined(this._all) ){
                         this._all = [];
@@ -216,7 +216,7 @@ mod.extend = function(){
                                 this._all.push(o);
                             }
                         };
-                        _.forEach(this.room.memory.powerSpawn, add);
+                        _.forEach(this.room.memory.powerSpawns, add);
                     }
                     return this._all;
                 }
@@ -224,15 +224,15 @@ mod.extend = function(){
         });
     };
 
-    let Nuker = function(room){
+    let Nukers = function(room){
         this.room = room;
 
         Object.defineProperties(this, {
             'all': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this.room.memory.nuker)) {
-                        this.room.saveNuker();
+                    if( _.isUndefined(this.room.memory.nukers)) {
+                        this.room.saveNukers();
                     }
                     if( _.isUndefined(this._all) ){
                         this._all = [];
@@ -243,7 +243,7 @@ mod.extend = function(){
                                 this._all.push(o);
                             }
                         };
-                        _.forEach(this.room.memory.nuker, add);
+                        _.forEach(this.room.memory.nukers, add);
                     }
                     return this._all;
                 }
@@ -428,25 +428,47 @@ mod.extend = function(){
             'nuker': {
                 configurable: true,
                 get: function() {
-                    if (_.isUndefined(this.room.memory.nuker)) {
-                        this.room.saveNuker();
+                    if (_.isUndefined(this.room.memory.nukers)) {
+                        this.room.saveNukers();
                     }
                     if (_.isUndefined(this._nuker)) {
-                        this._nuker = Game.getObjectById(this.room.memory.nuker);
+                        if (this.room.memory.nukers.length > 0) {
+                            this._nuker = Game.getObjectById(this.room.memory.nukers[0].id);
+                        }
                     }
                     return this._nuker;
                 },
             },
+            'nukers': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._nukers) ){
+                        this._nukers = new Nukers(this.room);
+                    }
+                    return this._nukers;
+                }
+            },
             'powerSpawn': {
                 configurable: true,
                 get: function() {
-                    if (_.isUndefined(this.room.memory.powerSpawn)) {
-                        this.room.savePowerSpawn();
+                    if (_.isUndefined(this.room.memory.powerSpawns)) {
+                        this.room.savePowerSpawns();
                     }
                     if (_.isUndefined(this._powerSpawn)) {
-                        this._powerSpawn = Game.getObjectById(this.room.memory.powerSpawn);
+                        if (this.room.memory.powerSpawns.length > 0) {
+                            this._powerSpawn = Game.getObjectById(this.room.memory.powerSpawns[0].id);
+                        }
                     }
                     return this._powerSpawn;
+                }
+            },
+            'powerSpawns': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._powerSpawns) ){
+                        this._powerSpawns = new PowerSpawns(this.room);
+                    }
+                    return this._powerSpawns;
                 }
             },
         });
@@ -1194,42 +1216,34 @@ mod.extend = function(){
             filter: s => s instanceof StructureObserver
         }).map(s => s.id);
     };
-    Room.prototype.saveNuker = function() {
-        if( _.isUndefined(this.memory.nuker) ){
-            this.memory.nuker = [];
-        }
-        let nuker = this.find(FIND_MY_STRUCTURES, {
+    Room.prototype.saveNukers = function() {
+        let nukers = this.find(FIND_MY_STRUCTURES, {
             filter: (structure) => ( structure.structureType == STRUCTURE_NUKER )
         });
-
-        this.memory.nuker = [];
+        this.memory.nukers = [];
 
         // for each entry add to memory ( if not contained )
         let add = (nuker) => {
-            let nukerData = this.memory.nuker.find( (l) => l.id == nuker.id );
+            let nukerData = this.memory.nukers.find( (l) => l.id == nuker.id );
             if( !nukerData ) {
-                this.memory.nuker.push({
+                this.memory.nukers.push({
                     id: nuker.id,
                 });
             }
         };
-        nuker.forEach(add);
+        nukers.forEach(add);
     };
-    Room.prototype.savePowerSpawn = function() {
-        if( _.isUndefined(this.memory.powerSpawn) ){
-            this.memory.powerSpawn = [];
-        }
+    Room.prototype.savePowerSpawns = function() {
         let powerSpawns = this.find(FIND_MY_STRUCTURES, {
             filter: (structure) => ( structure.structureType == STRUCTURE_POWER_SPAWN )
         });
-
-        this.memory.powerSpawn = [];
+        this.memory.powerSpawns = [];
 
         // for each entry add to memory ( if not contained )
         let add = (powerSpawn) => {
-            let powerSpawnData = this.memory.powerSpawn.find( (l) => l.id == powerSpawn.id );
+            let powerSpawnData = this.memory.powerSpawns.find( (l) => l.id == powerSpawn.id );
             if( !powerSpawnData ) {
-                this.memory.powerSpawn.push({
+                this.memory.powerSpawns.push({
                     id: powerSpawn.id,
                 });
             }
@@ -1907,8 +1921,9 @@ mod.extend = function(){
             for (let i=0;i<data.container.length;i++) {
                 let d = data.container[i];
                 let container = Game.getObjectById(d.id);
-                if (container && container.store[resourceType]) {
-                    let amount = container.store[resourceType];
+                let amt = -container.getNeeds(resourceType);
+                if (container && !(this.structures.container.out.includes(container) && resourceType === RESOURCE_ENERGY) && amt > 0) {
+                    let amount = amt;
                     if (amount >= amountMin) return { structure: container, amount: amount };
                 }
             }
@@ -2481,65 +2496,6 @@ mod.extend = function(){
         }
         return ret;
     }
-    Room.prototype.controlObserver = function() {
-        const OBSERVER = this.structures.observer;
-        if (!OBSERVER) return;
-        if (!this.memory.observer.rooms) this.initObserverRooms();
-        const ROOMS = this.memory.observer.rooms;
-        let lastLookedIndex = Number.isInteger(this.memory.observer.lastLookedIndex) ? this.memory.observer.lastLookedIndex : ROOMS.length;
-        let nextRoom;
-        let i = 0;
-        do { // look ma! my first ever do-while loop!
-            if (lastLookedIndex >= ROOMS.length) {
-                nextRoom = ROOMS[0];
-            }  else {
-                nextRoom = ROOMS[lastLookedIndex + 1];
-            }
-            lastLookedIndex = ROOMS.indexOf(nextRoom);
-            if (++i >= ROOMS.length) { // safety check - prevents an infinite loop
-                break;
-            }
-        } while (Memory.observerSchedule.includes(nextRoom) || nextRoom in Game.rooms);
-        this.memory.observer.lastLookedIndex = lastLookedIndex;
-        Memory.observerSchedule.push(nextRoom);
-        OBSERVER.observeRoom(nextRoom); // now we get to observe a room
-    };
-    Room.prototype.initObserverRooms = function() {
-        const OBSERVER_RANGE = OBSERVER_OBSERVE_RANGE > 10 ? 10 : OBSERVER_OBSERVE_RANGE; // can't be > 10
-        const PRIORITISE_HIGHWAY = OBSERVER_PRIORITISE_HIGHWAY;
-        const [x, y] = Room.calcGlobalCoordinates(this.name, (x,y) => [x,y]); // hacky get x,y
-        const [HORIZONTAL, VERTICAL] = Room.calcCardinalDirection(this.name);
-        let ROOMS = [];
-
-        for (let a = x - OBSERVER_RANGE; a < x + OBSERVER_RANGE; a++) {
-            for (let b = y - OBSERVER_RANGE; b < y + OBSERVER_RANGE; b++) {
-                let hor = HORIZONTAL;
-                let vert = VERTICAL;
-                let n = a;
-                if (a < 0) { // swap horizontal letter
-                    hor = hor === 'W' ? 'E' : 'W';
-                    n = Math.abs(a) - 1;
-                }
-                hor += n;
-                n = b;
-                if (b < 0) {
-                    vert = vert === 'N' ? 'S' : 'N';
-                    n = Math.abs(b) - 1;
-                }
-                vert += n;
-                const room = hor + vert;
-                if (room in Game.rooms && Game.rooms[room].my) continue; // don't bother adding the room to the array if it's owned by us
-                if (OBSERVER_OBSERVE_HIGHWAYS_ONLY && !Room.isHighwayRoom(room)) continue; // we only want highway rooms
-                ROOMS.push(room);
-            }
-        }
-        if (PRIORITISE_HIGHWAY) {
-            ROOMS = _.sortBy(ROOMS, v => {
-                return Room.isHighwayRoom(v) ? 0 : 1; // should work, I hope
-            });
-        }
-        this.memory.observer.rooms = ROOMS;
-    };
     Room.prototype.isWalkable = function(x, y, look) {
         if (!look) look = this.lookAt(x,y);
         else look = look[y][x];
@@ -2633,7 +2589,11 @@ mod.extend = function(){
         } while (Memory.observerSchedule.includes(nextRoom) || nextRoom in Game.rooms);
         this.memory.observer.lastLookedIndex = lastLookedIndex;
         Memory.observerSchedule.push(nextRoom);
-        OBSERVER.observeRoom(nextRoom); // now we get to observe a room
+        const r = OBSERVER.observeRoom(nextRoom); // now we get to observe a room
+        if (r === ERR_INVALID_ARGS && i < ROOMS.length) { // room has not yet been created / off the map (backup)
+            Memory.observerSchedule.splice(Memory.observerSchedule.indexOf(nextRoom), 1); // remove invalid room from list
+            this.controlObserver(); // should look at the next room (latest call will override previous calls on the same tick)
+        }
     };
     Room.prototype.initObserverRooms = function() {
         const OBSERVER_RANGE = OBSERVER_OBSERVE_RANGE > 10 ? 10 : OBSERVER_OBSERVE_RANGE; // can't be > 10
@@ -2659,6 +2619,7 @@ mod.extend = function(){
                 }
                 vert += n;
                 const room = hor + vert;
+                if (!Game.map.isRoomAvailable(room)) continue; // not an available room
                 if (room in Game.rooms && Game.rooms[room].my) continue; // don't bother adding the room to the array if it's owned by us
                 if (OBSERVER_OBSERVE_HIGHWAYS_ONLY && !Room.isHighwayRoom(room)) continue; // we only want highway rooms
                 ROOMS.push(room);
@@ -2732,15 +2693,15 @@ mod.analyze = function(){
                 room.saveTowers();
                 room.saveSpawns();
                 room.saveObserver();
-                room.saveNuker();
-                room.savePowerSpawn();
+                room.saveNukers();
+                room.savePowerSpawns();
                 room.saveContainers();
                 room.saveLinks();
                 room.saveLabs();
                 room.updateResourceOrders();
                 room.updateRoomOrders();
                 room.terminalBroker();
-                room.initObserverRooms(); // to re-evaluate rooms, in case parameters are changed
+                if (room.structures.observer) room.initObserverRooms(); // to re-evaluate rooms, in case parameters are changed
             }
             room.roadConstruction();
             room.linkDispatcher();
@@ -2827,7 +2788,7 @@ mod.isMine = function(roomName) {
 };
 
 mod.calcCardinalDirection = function(roomName) {
-    const parsed = /^([WE])[0-9]{1,2}([NS])[0-9]{1,2}$/.exec(roomName);
+    const parsed = /^([WE])[0-9]+([NS])[0-9]+$/.exec(roomName);
     return [parsed[1], parsed[2]];
 };
 mod.calcGlobalCoordinates = function(roomName, callBack) {
