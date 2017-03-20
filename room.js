@@ -1456,6 +1456,8 @@ mod.extend = function(){
             flag = Game.flags[flag.name];
             const POS = flag.pos;
             if (!POS) return;
+            const sites = POS.lookFor(LOOK_CONSTRUCTION_SITES);
+            if (sites && sites.length) return; // already a construction site
             const structures = POS.lookFor(LOOK_STRUCTURES).filter(s => !(s instanceof StructureRoad || s instanceof StructureRampart));
             if (structures && structures.length) return; // pre-existing structure here
             const r = POS.createConstructionSite(type);
@@ -1535,6 +1537,15 @@ mod.extend = function(){
             FlagDir.filter(FLAG_COLOR.construct.powerSpawn, ...ARGS).splice(0, 1).forEach(flag => {
                 CONSTRUCT(flag, STRUCTURE_POWER_SPAWN);
             });
+        }
+        
+        // Extractor
+        if (CONTROLLER_STRUCTURES[STRUCTURE_EXTRACTOR][LEVEL] > 0) {
+            const [mineral] = this.find(FIND_MINERALS);
+            const flag = mineral.pos.createFlag('_tempExtractor', FLAG_COLOR.construct.color, FLAG_COLOR.construct.secondaryColor);
+            CONSTRUCT({
+                flagName: flag.name,
+            }, STRUCTURE_EXTRACTOR);
         }
     };
     Room.prototype.updateResourceOrders = function () {
