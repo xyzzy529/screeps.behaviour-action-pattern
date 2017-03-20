@@ -1503,35 +1503,35 @@ mod.extend = function(){
         }
         
         // Storage
-        if (!this.storage) {
+        if (!this.storage && CONTROLLER_STRUCTURES[STRUCTURE_STORAGE][LEVEL] > 0) {
             FlagDir.filter(FLAG_COLOR.construct.storage, ...ARGS).splice(0, 1).forEach(flag => {
                 CONSTRUCT(flag, STRUCTURE_STORAGE);
             });
         }
         
         // Terminal
-        if (!this.terminal) {
+        if (!this.terminal && CONTROLLER_STRUCTURES[STRUCTURE_TERMINAL][LEVEL] > 0) {
             FlagDir.filter(FLAG_COLOR.construct.terminal, ...ARGS).splice(0, 1).forEach(flag => {
                 CONSTRUCT(flag, STRUCTURE_TERMINAL);
             });
         }
         
         // Observer
-        if (!this.structures.observer) {
+        if (!this.structures.observer && CONTROLLER_STRUCTURES[STRUCTURE_OBSERVER][LEVEL] > 0) {
             FlagDir.filter(FLAG_COLOR.construct.observer, ...ARGS).splice(0, 1).forEach(flag => {
                 CONSTRUCT(flag, STRUCTURE_OBSERVER);
             });
         }
         
         // Nuker
-        if (!this.structures.nuker) {
+        if (!this.structures.nuker && CONTROLLER_STRUCTURES[STRUCTURE_NUKER][LEVEL] > 0) {
             FlagDir.filter(FLAG_COLOR.construct.nuker, ...ARGS).splice(0, 1).forEach(flag => {
                 CONSTRUCT(flag, STRUCTURE_NUKER);
             });
         }
         
         // Power Spawn
-        if (!this.structures.powerSpawn) {
+        if (!this.structures.powerSpawn && CONTROLLER_STRUCTURES[STRUCTURE_POWER_SPAWN][LEVEL] > 0) {
             FlagDir.filter(FLAG_COLOR.construct.powerSpawn, ...ARGS).splice(0, 1).forEach(flag => {
                 CONSTRUCT(flag, STRUCTURE_POWER_SPAWN);
             });
