@@ -23,7 +23,7 @@ setup.maxCount = function(room){
             // Energy reserves are low
             room.conserveForDefense ||
             // No energy structures built near controller
-            (room.structures.container.controller.length + room.structures.links.controller.length) == 0 ||
+            (room.structures.container.controller.length + room.structures.links.controller.length) === 0 ||
             // Upgrading blocked -> http://support.screeps.com/hc/en-us/articles/207711889-StructureController#upgradeBlocked
             room.controller.upgradeBlocked
         ) return 0;
@@ -71,8 +71,8 @@ setup.low = {
 setup.level8 = {
     fixedBody: [CARRY, MOVE, MOVE, MOVE],
     multiBody: [WORK],
-    minAbsEnergyAvailable: 300,
-    minEnergyAvailable: 1,
+    minAbsEnergyAvailable: 1700,
+    minEnergyAvailable: 0.5,
     maxMulti: CONTROLLER_MAX_UPGRADE_PER_TICK / UPGRADE_CONTROLLER_POWER,
     maxCount: room => setup.maxCount(room),
 };
