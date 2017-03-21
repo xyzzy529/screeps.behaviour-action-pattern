@@ -21,7 +21,7 @@ mod.nextAction = function(creep){
     }
 
     if( !creep.room.collapsed ) {
-        return Creep.action.recycling;
+        return Creep.action.recycling.assign(creep);
     }
 
     let priority;

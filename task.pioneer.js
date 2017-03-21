@@ -209,7 +209,7 @@ mod.creep = {
     },
     worker: {
         fixedBody: [MOVE, CARRY, WORK],
-        behaviour: 'worker',
+        behaviour: 'collapseWorker',
         queue: 'High'
     }
 };
