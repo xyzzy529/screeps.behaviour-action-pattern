@@ -39,15 +39,16 @@ mod.run = function(creep, params = {}) {
             let invalid = [];
             let findInvalid = entry => {
                 const predictedRenewal = entry.predictedRenewal ? entry.predictedRenewal : entry.spawningTime;
-                if( entry.roomName == args.roomName && ['miner', 'upgrader'].includes(entry.creepType) && entry.determinatedSpot
+                if( entry.roomName === creep.pos.roomName && ['miner', 'upgrader'].includes(entry.creepType) && entry.determinatedSpot
                     && entry.ttl > predictedRenewal )
                     invalid.push(entry.determinatedSpot);
             };
             _.forEach(Memory.population, findInvalid);
             const containerSpot = (source.container && !_.some(invalid,{x:source.container.pos.x, y:source.container.pos.y})) ? source.container.pos : null;
             let spots = [];
+            let args;
             if (!containerSpot) {
-                const args = {
+                args = {
                     spots: [{
                         pos: source.pos,
                         range: 1
