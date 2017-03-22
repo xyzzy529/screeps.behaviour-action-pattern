@@ -260,9 +260,9 @@ mod.extend = function(){
         if (terminalData) order = terminalData.orders.find((o)=>{return o.type==resourceType;});
         if (!order) order = { orderAmount: 0, orderRemaining: 0, storeAmount: 0 };
         let loadTarget = Math.max(order.orderRemaining + (this.store[resourceType]||0), order.storeAmount + ((resourceType == RESOURCE_ENERGY) ? TERMINAL_ENERGY : 0));
-        if (resourceType === RESOURCE_ENERGY && this.room.storage.store[RESOURCE_ENERGY > MAX_STORAGE_ENERGY]) {
+        if (resourceType === RESOURCE_ENERGY && this.room.storage.store[RESOURCE_ENERGY] > MAX_STORAGE_ENERGY) {
             const rcl = this.room.controller.level;
-            loadTarget = Math.min(55000, Math.max(loadTarget, this.room.storage.store[RESOURCE_ENERGY] - MAX_STORAGE_ENERGY[rcl]));
+            loadTarget = Math.min(60000, Math.max(loadTarget, this.room.storage.store[RESOURCE_ENERGY] - MAX_STORAGE_ENERGY[rcl]));
         }
         let unloadTarget = order.orderAmount + order.storeAmount + ((resourceType == RESOURCE_ENERGY) ? TERMINAL_ENERGY : 0);
         if (unloadTarget < 0) unloadTarget = 0;
