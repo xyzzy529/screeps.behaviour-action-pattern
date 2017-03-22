@@ -1,4 +1,5 @@
-module.exports = class Visuals {};
+const Visuals = class {};
+module.exports = Visuals;
 
 Visuals.extend = function() {
     
