@@ -1542,9 +1542,9 @@ mod.extend = function(){
         // Extractor
         if (CONTROLLER_STRUCTURES[STRUCTURE_EXTRACTOR][LEVEL] > 0) {
             const [mineral] = this.find(FIND_MINERALS);
-            const flag = mineral.pos.createFlag('_tempExtractor', FLAG_COLOR.construct.color, FLAG_COLOR.construct.secondaryColor);
+            const flagName = mineral.pos.createFlag('_tempExtractor', FLAG_COLOR.construct.color, FLAG_COLOR.construct.secondaryColor);
             CONSTRUCT({
-                flagName: flag.name,
+                flagName,
             }, STRUCTURE_EXTRACTOR);
         }
     };
