@@ -39,83 +39,6 @@ Visuals.extend = function() {
         }
     });
     
-    Visuals.run = function () {
-        for (let roomName in Game.rooms) {
-            const room = Game.rooms[roomName];
-            if (!ROOM_VISUALS_ALL && !room.my) continue;
-            if (!room.controller) continue;
-            
-            if (Memory.heatmap === undefined) Memory.heatmap = false;
-            
-            if (VISUALS.HEATMAP) {
-                if (Game.time % VISUALS.HEATMAP_INTERVAL === 0) {
-                    Visuals.setHeatMapData(room);
-                }
-                
-                if (Memory.heatmap) {
-                    Visuals.drawHeatMapData(room);
-                    continue;
-                }
-            }
-            
-            if (VISUALS.ROOM) {
-                Visuals.drawRoomInfo(room, VISUALS.ROOM_GLOBAL);
-            }
-            if (VISUALS.ROOM_ORDERS) {
-                Visuals.drawRoomOrders(room);
-            }
-            if (VISUALS.ROOM_OFFERS) {
-                Visuals.drawRoomOffers(room);
-            }
-            if (VISUALS.CONTROLLER) {
-                Visuals.drawControllerInfo(room.controller);
-            }
-            if (VISUALS.SPAWN) {
-                room.structures.spawns.filter(s => s.spawning).forEach(Visuals.drawSpawnInfo);
-            }
-            if (VISUALS.MINERAL) {
-                let [mineral] = room.minerals;
-                if (mineral) Visuals.drawMineralInfo(mineral);
-            }
-            if (VISUALS.SOURCE) {
-                room.sources.forEach(Visuals.drawSourceInfo);
-            }
-            if (VISUALS.WALL) {
-                Visuals.highlightWeakest(room, STRUCTURE_WALL);
-            }
-            if (VISUALS.RAMPART) {
-                Visuals.highlightWeakest(room, STRUCTURE_RAMPART);
-            }
-            if (VISUALS.ROAD) {
-                Visuals.highlightWeakest(room, STRUCTURE_ROAD);
-            }
-            if (VISUALS.STORAGE) {
-                Visuals.storage(room);
-            }
-            if (VISUALS.TERMINAL) {
-                Visuals.terminal(room);
-            }
-            if (VISUALS.TOWER) {
-                room.structures.towers.forEach(Visuals.drawTowerInfo);
-            }
-            if (VISUALS.TRANSACTIONS) {
-                Visuals.drawTransactions(room);
-            }
-            if (VISUALS.LABS) {
-                Visuals.drawLabs(room);
-            }
-            if (VISUALS.CREEP) {
-                Visuals.drawCreepPath(room);
-            }
-        }
-        if (VISUALS.ROOM_GLOBAL) {
-            if (VISUALS.CPU) {
-                Visuals.collectSparklineStats();
-            }
-            Visuals.drawGlobal();
-        }
-    };
-    
     Visuals.drawGlobal = function () {
         const vis = new RoomVisual();
         const bufferWidth = 1;
@@ -576,7 +499,84 @@ Visuals.extend = function() {
         });
     };
     
-}
+};
+
+Visuals.run = function () {
+    for (let roomName in Game.rooms) {
+        const room = Game.rooms[roomName];
+        if (!ROOM_VISUALS_ALL && !room.my) continue;
+        if (!room.controller) continue;
+        
+        if (Memory.heatmap === undefined) Memory.heatmap = false;
+        
+        if (VISUALS.HEATMAP) {
+            if (Game.time % VISUALS.HEATMAP_INTERVAL === 0) {
+                Visuals.setHeatMapData(room);
+            }
+            
+            if (Memory.heatmap) {
+                Visuals.drawHeatMapData(room);
+                continue;
+            }
+        }
+        
+        if (VISUALS.ROOM) {
+            Visuals.drawRoomInfo(room, VISUALS.ROOM_GLOBAL);
+        }
+        if (VISUALS.ROOM_ORDERS) {
+            Visuals.drawRoomOrders(room);
+        }
+        if (VISUALS.ROOM_OFFERS) {
+            Visuals.drawRoomOffers(room);
+        }
+        if (VISUALS.CONTROLLER) {
+            Visuals.drawControllerInfo(room.controller);
+        }
+        if (VISUALS.SPAWN) {
+            room.structures.spawns.filter(s => s.spawning).forEach(Visuals.drawSpawnInfo);
+        }
+        if (VISUALS.MINERAL) {
+            let [mineral] = room.minerals;
+            if (mineral) Visuals.drawMineralInfo(mineral);
+        }
+        if (VISUALS.SOURCE) {
+            room.sources.forEach(Visuals.drawSourceInfo);
+        }
+        if (VISUALS.WALL) {
+            Visuals.highlightWeakest(room, STRUCTURE_WALL);
+        }
+        if (VISUALS.RAMPART) {
+            Visuals.highlightWeakest(room, STRUCTURE_RAMPART);
+        }
+        if (VISUALS.ROAD) {
+            Visuals.highlightWeakest(room, STRUCTURE_ROAD);
+        }
+        if (VISUALS.STORAGE) {
+            Visuals.storage(room);
+        }
+        if (VISUALS.TERMINAL) {
+            Visuals.terminal(room);
+        }
+        if (VISUALS.TOWER) {
+            room.structures.towers.forEach(Visuals.drawTowerInfo);
+        }
+        if (VISUALS.TRANSACTIONS) {
+            Visuals.drawTransactions(room);
+        }
+        if (VISUALS.LABS) {
+            Visuals.drawLabs(room);
+        }
+        if (VISUALS.CREEP) {
+            Visuals.drawCreepPath(room);
+        }
+    }
+    if (VISUALS.ROOM_GLOBAL) {
+        if (VISUALS.CPU) {
+            Visuals.collectSparklineStats();
+        }
+        Visuals.drawGlobal();
+    }
+};
 
 function formatNum(n) {
     if (n >= 1000000) {
