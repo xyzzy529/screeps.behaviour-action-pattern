@@ -44,7 +44,8 @@ mod.run = function(creep, params = {}) {
                     invalid.push(entry.determinatedSpot);
             };
             _.forEach(Memory.population, findInvalid);
-            const containerSpot = (source.container && !_.some(invalid,{x:source.container.pos.x, y:source.container.pos.y})) ? source.container.pos : null;
+            const containerSpot = (source.container && source.container.pos.isNearTo(source)
+                && !_.some(invalid,{x:source.container.pos.x, y:source.container.pos.y})) ? source.container.pos : null;
             let spots = [];
             let args;
             if (!containerSpot) {
