@@ -216,6 +216,8 @@ global.install = () => {
     Spawn.extend();
     FlagDir.extend();
     Task.populate();
+    
+    if (ROOM_VISUALS && !Memory.CPU_CRITICAL && Visuals) Visuals.extend();
     // custom extend
     if( global.mainInjection.extend ) global.mainInjection.extend();
     if (DEBUG) logSystem('Global.install', 'Code reloaded.');
