@@ -1485,7 +1485,16 @@ mod.extend = function(){
         }
     };
     Room.prototype.updateRoomOrders = function () {
-        if (!this.memory.resources || !this.memory.resources.orders) return;
+        if (this.memory.resources === undefined) {
+            this.memory.resources = {
+                lab: [],
+                container: [],
+                terminal: [],
+                storage: [],
+                powerSpawn: [],
+            };
+        }
+        if (!this.memory.resources.orders) return;
         let rooms = _.filter(Game.rooms, (room) => { return room.my && room.storage && room.terminal && room.name !== this.name; });
         let orders = this.memory.resources.orders;
         for (let i=0;i<orders.length;i++) {
@@ -1513,15 +1522,6 @@ mod.extend = function(){
                 rooms.sort((a,b)=>{ return Game.map.getRoomLinearDistance(this.name,a.name,true) - Game.map.getRoomLinearDistance(this.name,b.name,true); });
                 for (let j=0;j<rooms.length;j++) {
                     let room = rooms[j];
-                    if (room.memory.resources === undefined) {
-                        room.memory.resources = {
-                            lab: [],
-                            container: [],
-                            terminal: [],
-                            storage: [],
-                            powerSpawn: [],
-                        };
-                    }
                     let available = (room.storage.store[order.type]||0) + (room.terminal.store[order.type]||0);
                     if (available < 100) continue;
                     available = Math.min(available,amountRemaining);
@@ -1673,7 +1673,7 @@ mod.extend = function(){
                 //room.controller.level < 8 &&
                 room.storage && room.terminal &&
                 room.terminal.sum < room.terminal.storeCapacity - 50000 &&
-                room.storage.sum < room.storage.storeCapacity * 0.6 &&
+                room.storage.charge < 0.6 &&
                 !room._isReceivingEnergy
             )
             let targetRoom = _.min(_.filter(Game.rooms, requiresEnergy), 'storage.store.energy');
