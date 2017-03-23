@@ -40,7 +40,7 @@ Visuals.extend = function() {
         }
     });
     
-    Visuals.drawGlobal = function () {
+    Visuals.drawGlobal = function() {
         const vis = new RoomVisual();
         const bufferWidth = 1;
         const sectionWidth = 49 / 5;
@@ -89,14 +89,14 @@ Visuals.extend = function() {
         }
     };
     
-    Visuals.drawSparkline = function (room, x, y, w, h, values, options) {
+    Visuals.drawSparkline = function(room, x, y, w, h, values, options) {
         const vis = room ? new RoomVisual(room) : new RoomVisual();
         _.forEach(options, option => {
             vis.poly(_.map(values, (v, i) => [x + w * (i / (values.length - 1)), y + h * (1 - (v[option.key] - option.min) / (option.max - option.min))]), option);
         });
     };
     
-    Visuals.collectSparklineStats = function () {
+    Visuals.collectSparklineStats = function() {
         if (!_.get(Memory, 'visualStats.cpu')) {
             _.set(Memory, 'visualStats.cpu', []);
         }
@@ -110,7 +110,7 @@ Visuals.extend = function() {
         }
     };
     
-    Visuals.drawRoomInfo = function (room) {
+    Visuals.drawRoomInfo = function(room) {
         const vis = new RoomVisual(room.name);
         let x;
         let y = 0;
@@ -167,13 +167,13 @@ Visuals.extend = function() {
         }
     };
     
-    Visuals.drawSpawnInfo = function (spawn) {
+    Visuals.drawSpawnInfo = function(spawn) {
         if (!spawn.spawning) return;
         const vis = new RoomVisual(spawn.room.name);
         vis.text(`${spawn.spawning.name} (${((spawn.spawning.needTime - spawn.spawning.remainingTime) / spawn.spawning.needTime * 100).toFixed(1)}%)`, spawn.pos.x + 1, spawn.pos.y - 0.5, Visuals.tooltipStyle);
     };
     
-    Visuals.drawMineralInfo = function (mineral) {
+    Visuals.drawMineralInfo = function(mineral) {
         const vis = new RoomVisual(mineral.room.name);
         let x = mineral.pos.x + 1;
         let y = mineral.pos.y - 0.5;
@@ -184,7 +184,7 @@ Visuals.extend = function() {
         }
     };
     
-    Visuals.drawSourceInfo = function (source) {
+    Visuals.drawSourceInfo = function(source) {
         const vis = new RoomVisual(source.room.name);
         let x = source.pos.x + 0.5;
         let y = source.pos.y - 0.5;
@@ -195,7 +195,7 @@ Visuals.extend = function() {
         }
     };
     
-    Visuals.drawControllerInfo = function (controller) {
+    Visuals.drawControllerInfo = function(controller) {
         const vis = new RoomVisual(controller.room.name);
         const BASE_X = controller.pos.x + 1;
         let y = controller.pos.y - 0.5;
@@ -222,7 +222,7 @@ Visuals.extend = function() {
         }
     };
     
-    Visuals.highlightWeakest = function (room, type) {
+    Visuals.highlightWeakest = function(room, type) {
         const vis = new RoomVisual(room.name);
         let weakest = _(room.find(FIND_STRUCTURES)).filter(s => s.structureType === type).min(s => s.hits);
         if (weakest && weakest.pos) {
@@ -252,7 +252,7 @@ Visuals.extend = function() {
         }
     };
     
-    Visuals.drawRoomOrders = function (room) {
+    Visuals.drawRoomOrders = function(room) {
         const vis = new RoomVisual(room.name);
         const x = 43;
         let y = 4.5;
@@ -271,7 +271,7 @@ Visuals.extend = function() {
         }
     };
     
-    Visuals.drawRoomOffers = function (room) {
+    Visuals.drawRoomOffers = function(room) {
         const vis = new RoomVisual(room.name);
         const x = 43;
         let y = 4.5;
@@ -293,7 +293,7 @@ Visuals.extend = function() {
         }
     };
     
-    Visuals.storage = function (room) {
+    Visuals.storage = function(room) {
         if (room.storage) {
             const vis = new RoomVisual(room.name);
             const x = 43;
@@ -303,7 +303,7 @@ Visuals.extend = function() {
         }
     };
     
-    Visuals.terminal = function (room) {
+    Visuals.terminal = function(room) {
         if (room.terminal) {
             const vis = new RoomVisual(room.name);
             const x = 43;
@@ -316,12 +316,12 @@ Visuals.extend = function() {
         }
     };
     
-    Visuals.drawTowerInfo = function (tower) {
+    Visuals.drawTowerInfo = function(tower) {
         const vis = new RoomVisual(tower.room.name);
         vis.text(`E: ${tower.energy}/${tower.energyCapacity}`, tower.pos.x + 1, tower.pos.y - 0.5, Visuals.tooltipStyle);
     };
     
-    Visuals.drawTransactions = function (room) {
+    Visuals.drawTransactions = function(room) {
         if (room.terminal) {
             const vis = new RoomVisual(room.name);
             const x = room.terminal.pos.x;
@@ -364,7 +364,7 @@ Visuals.extend = function() {
         }
     };
     
-    Visuals.drawLabs = function (room) {
+    Visuals.drawLabs = function(room) {
         const vis = new RoomVisual(room.name);
         for (let lab of room.structures.labs.all) {
             if (lab.energy || lab.mineralAmount || lab.cooldown) {
@@ -383,7 +383,7 @@ Visuals.extend = function() {
         }
     };
     
-    Visuals.setHeatMapData = function (room) {
+    Visuals.setHeatMapData = function(room) {
         if (room.memory.heatmap === undefined) {
             room.memory.heatmap = {};
             for (let x = 0; x < 50; x++) {
@@ -403,7 +403,7 @@ Visuals.extend = function() {
         });
     };
     
-    Visuals.drawHeatMapData = function (room) {
+    Visuals.drawHeatMapData = function(room) {
         const vis = new RoomVisual(room.name);
         const data = Object.keys(room.memory.heatmap).map(k => {
             return {
@@ -423,7 +423,7 @@ Visuals.extend = function() {
         });
     };
     
-    Visuals.creepPathStyle = function (creep) {
+    Visuals.creepPathStyle = function(creep) {
         function randomColour() {
             let c = '#';
             while (c.length < 7) {
@@ -440,7 +440,7 @@ Visuals.extend = function() {
         };
     };
     
-    Visuals.drawCreepPath = function (room) {
+    Visuals.drawCreepPath = function(room) {
         const vis = new RoomVisual(room.name);
         room.creeps.forEach(creep => {
             if (creep.memory && creep.memory._travel && creep.memory._travel.path) {
@@ -502,7 +502,7 @@ Visuals.extend = function() {
     
 };
 
-Visuals.run = function () {
+Visuals.run = function() {
     for (let roomName in Game.rooms) {
         const room = Game.rooms[roomName];
         if (!ROOM_VISUALS_ALL && !room.my) continue;
