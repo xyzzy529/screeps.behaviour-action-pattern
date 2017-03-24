@@ -2186,23 +2186,37 @@ mod.extend = function(){
         const OBSERVER = this.structures.observer;
         if (!OBSERVER) return;
         if (!this.memory.observer.rooms) this.initObserverRooms();
-        const ROOMS = this.memory.observer.rooms;
-        let lastLookedIndex = Number.isInteger(this.memory.observer.lastLookedIndex) ? this.memory.observer.lastLookedIndex : ROOMS.length;
         let nextRoom;
-        let i = 0;
-        do { // look ma! my first ever do-while loop!
-            if (lastLookedIndex >= ROOMS.length) {
-                nextRoom = ROOMS[0];
-            }  else {
-                nextRoom = ROOMS[lastLookedIndex + 1];
+        if (observerRequests.length > 0) { // support for requesting rooms
+            for (const request of observerRequests) {
+                if (Game.map.getRoomLinearDistance(this.name, request.roomName) <= 10 && !Memory.observerSchedule.includes(request.roomName)) {
+                    const room = request.room || Game.rooms[request.roomName];
+                    if (!room) continue;
+                    if (room.creeps && room.creeps.length && room.creeps.length > 0) continue; // highly likely to have vision next tick as well
+                    Memory.observerSchedule.push(room.name);
+                    nextRoom = room.name;
+                    break;
+                }
             }
-            lastLookedIndex = ROOMS.indexOf(nextRoom);
-            if (++i >= ROOMS.length) { // safety check - prevents an infinite loop
-                break;
-            }
-        } while (Memory.observerSchedule.includes(nextRoom) || nextRoom in Game.rooms);
-        this.memory.observer.lastLookedIndex = lastLookedIndex;
-        Memory.observerSchedule.push(nextRoom);
+        }
+        if (!nextRoom) {
+            const ROOMS = this.memory.observer.rooms;
+            let lastLookedIndex = Number.isInteger(this.memory.observer.lastLookedIndex) ? this.memory.observer.lastLookedIndex : ROOMS.length;
+            let i = 0;
+            do { // look ma! my first ever do-while loop!
+                if (lastLookedIndex >= ROOMS.length) {
+                    nextRoom = ROOMS[0];
+                } else {
+                    nextRoom = ROOMS[lastLookedIndex + 1];
+                }
+                lastLookedIndex = ROOMS.indexOf(nextRoom);
+                if (++i >= ROOMS.length) { // safety check - prevents an infinite loop
+                    break;
+                }
+            } while (Memory.observerSchedule.includes(nextRoom) || nextRoom in Game.rooms);
+            this.memory.observer.lastLookedIndex = lastLookedIndex;
+            Memory.observerSchedule.push(nextRoom);
+        }
         const r = OBSERVER.observeRoom(nextRoom); // now we get to observe a room
         if (r === ERR_INVALID_ARGS && i < ROOMS.length) { // room has not yet been created / off the map (backup)
             Memory.observerSchedule.splice(Memory.observerSchedule.indexOf(nextRoom), 1); // remove invalid room from list
@@ -2315,7 +2329,6 @@ mod.analyze = function(){
             room.processInvaders();
             room.processLabs();
             room.processPower();
-            room.controlObserver();
         }
         catch(err) {
             Game.notify('Error in room.js (Room.prototype.loop) for "' + room.name + '" : ' + err.stack ? err + '<br/>' + err.stack : err);
@@ -2350,7 +2363,13 @@ mod.execute = function() {
             if( memory.hostileIds ) _.forEach(memory.hostileIds, triggerKnownInvaders);
         }
     };
-    _.forEach(Memory.rooms, run);
+    _.forEach(Memory.rooms, (memory, roomName) => {
+        run(memory, roomName);
+        let room = Game.rooms[roomName];
+        if (room) {
+            room.controlObserver();
+        }
+    });
 };
 
 mod.bestSpawnRoomFor = function(targetRoomName) {
