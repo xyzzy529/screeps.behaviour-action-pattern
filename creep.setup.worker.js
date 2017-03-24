@@ -39,8 +39,8 @@ setup.byPopulation = function(type, start, perBody, limit) {
 setup.RCL = {
     1: {
         fixedBody: [],
-        multiBody: [CARRY, WORK, MOVE],
-        minAbsEnergyAvailable: 200,
+        multiBody: [CARRY, WORK, MOVE, MOVE],
+        minAbsEnergyAvailable: 250,
         minEnergyAvailable: setup.byPopulation(setup.type, 0, 1, 1),
         maxMulti: 8,
         maxCount: room => setup.maxWorker(room),
@@ -48,8 +48,8 @@ setup.RCL = {
     },
     2: {
         fixedBody: [],
-        multiBody: [CARRY, WORK, MOVE],
-        minAbsEnergyAvailable: 200,
+        multiBody: [CARRY, WORK, MOVE, MOVE],
+        minAbsEnergyAvailable: 250,
         minEnergyAvailable: setup.byPopulation(setup.type, 0, 0.5, 1),
         maxMulti: 8,
         maxCount: room => setup.maxWorker(room),
@@ -57,8 +57,8 @@ setup.RCL = {
     },
     3: {
         fixedBody: [],
-        multiBody: [CARRY, WORK, MOVE],
-        minAbsEnergyAvailable: 200,
+        multiBody: [CARRY, WORK, MOVE, MOVE],
+        minAbsEnergyAvailable: 250,
         minEnergyAvailable: room => setup.hasMinerOrHauler(room) ? 0.3 : 0,
         maxMulti: 8,
         maxCount: room => setup.maxWorker(room),
