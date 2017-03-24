@@ -144,6 +144,7 @@ global.install = () => {
         attackController: load("task.attackController"),
         robbing: load("task.robbing"),
         reputation: load("task.reputation"),
+        labTech: load("task.labTech"),
     });
     Creep.Action = load("creep.Action");
     Creep.Setup = load("creep.Setup");
@@ -181,6 +182,7 @@ global.install = () => {
             claimer: load("creep.behaviour.claimer"),
             hauler: load("creep.behaviour.hauler"),
             healer: load("creep.behaviour.healer"),
+            labTech: load("creep.behaviour.labTech"),
             melee: load("creep.behaviour.melee"),
             miner: load("creep.behaviour.miner"),
             mineralMiner: load("creep.behaviour.mineralMiner"),
