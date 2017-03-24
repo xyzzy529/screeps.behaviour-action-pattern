@@ -2191,10 +2191,9 @@ mod.extend = function(){
             for (const request of observerRequests) {
                 if (Game.map.getRoomLinearDistance(this.name, request.roomName) <= 10 && !Memory.observerSchedule.includes(request.roomName)) {
                     const room = request.room || Game.rooms[request.roomName];
-                    if (!room) continue;
-                    if (room.creeps && room.creeps.length && room.creeps.length > 0) continue; // highly likely to have vision next tick as well
-                    Memory.observerSchedule.push(room.name);
-                    nextRoom = room.name;
+                    if (room && room.creeps && room.creeps.length && room.creeps.length > 0) continue; // highly likely to have vision next tick as well
+                    Memory.observerSchedule.push(request.roomName);
+                    nextRoom = request.roomName;
                     break;
                 }
             }
