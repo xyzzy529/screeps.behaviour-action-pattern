@@ -407,6 +407,22 @@ mod.guid = function(){
         return v.toString(16);
     });
 };
+Object.defineProperty(mod, 'observerRequests', {
+    configurable: true,
+    get: function() {
+        if (_.isUndefined(mod._observerRequests)) {
+            mod._observerRequests = [];
+        }
+        return mod._observerRequests;
+    },
+    /**
+     * Pass an object containing room information to the requests
+     * @param {Object} request - `roomName` property required
+     */
+    set: function(request) {
+        mod._observerRequests.push(request);
+    },
+});
 mod.memoryUsage = function(key) {
     const mem = key ? Memory[key] : Memory;
     let string = '<table><tr><th>Key</th><th>Size (kb)</th></tr>';
