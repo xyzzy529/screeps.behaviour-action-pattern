@@ -147,52 +147,6 @@ mod.memory = (flag) => {
     }
     return flag.memory.tasks.labTech;
 };
-mod.nextAction = function(creep) {
-    if (creep.pos.roomName != creep.data.homeRoom && Game.rooms[creep.data.homeRoom] && Game.rooms[creep.data.homeRoom].controller) {
-        Creep.action.travelling.assignRoom(creep, creep.data.homeRoom);
-        return;
-    }
-    let priority;
-    if (creep.sum < creep.carryCapacity / 2) {
-        priority = [
-            Creep.action.reallocating,
-            Creep.action.uncharging,
-            Creep.action.picking,
-            Creep.action.withdrawing,
-            Creep.action.idle
-        ];
-    } else {
-        priority = [
-            Creep.action.reallocating,
-            Creep.action.feeding,
-            Creep.action.charging,
-            Creep.action.fueling
-        ];
-        if (creep.data.lastAction !== 'withdrawing' || !creep.room.storage || creep.data.lastTarget !== creep.room.storage.id) {
-            priority.push(Creep.action.storing);
-        }
-        priority.push(Creep.action.idle);
-        if (creep.sum > creep.carry.energy ||
-            ( !creep.room.situation.invasion &&
-            SPAWN_DEFENSE_ON_ATTACK && creep.room.conserveForDefense && creep.room.relativeEnergyAvailable > 0.8)) {
-            priority.unshift(Creep.action.storing);
-        }
-        if (creep.room.structures.urgentRepairable.length > 0) {
-            priority.unshift(Creep.action.fueling);
-        }
-    }
-    
-    for (let iAction = 0; iAction < priority.length; iAction++) {
-        const a = priority[iAction];
-        if (a.isValidAction(creep) && a.isAddableAction(creep) && a.assign(creep)) {
-            if (a.name !== 'idle') {
-                creep.data.lastAction = a.name;
-                creep.data.lastTarget = creep.target.id;
-            }
-            return;
-        }
-    }
-};
 
 mod.creep = {
     labTech: {
