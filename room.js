@@ -1191,18 +1191,6 @@ mod.extend = function(){
             this.roadConstructionTrace[key] = 1;
         else this.roadConstructionTrace[key]++;
     };
-    Room.prototype.checkPowerBank = function() {
-    if (!this.powerBank) return; // no power bank in room
-    	//power > 2500, and ticksToDecay > 4500
-        const currentFlags = FlagDir.count(FLAG_COLOR.invade.powerMining, this.powerBank.pos, false);
-    	const flagged = FlagDir.find(FLAG_COLOR.invade.powerMining, this.powerBank.pos, true);
-    	if(!flagged && currentFlags < MAX_AUTO_POWER_MINING_FLAGS){
-    	    if(this.powerBank.power > 2500 && this.powerBank.ticksToDecay > 4500){
-    		    // Place a flag
-    		    this.createFlag(this.powerBank.pos, null, FLAG_COLOR.invade.powerMining.color, FLAG_COLOR.invade.powerMining.secondaryColor);
-    	    }
-        }
-    };
     Room.prototype.saveTowers = function(){
         let towers = this.find(FIND_MY_STRUCTURES, {
             filter: {structureType: STRUCTURE_TOWER}
@@ -1909,18 +1897,6 @@ mod.extend = function(){
             }
         }
     };
-    Room.prototype.processPower = function() {
-        // run lab reactions WOO!
-        let powerSpawns = this.find(FIND_MY_STRUCTURES, { filter: (s) => { return s.structureType == STRUCTURE_POWER_SPAWN; } } );
-        for (var i=0;i<powerSpawns.length;i++) {
-            // see if the reaction is possible
-            let powerSpawn = powerSpawns[i];
-            if (powerSpawn.energy >= POWER_SPAWN_ENERGY_RATIO && powerSpawn.power >= 1) {
-                if (DEBUG && TRACE) trace('Room', { roomName: this.name, actionName: 'processPower' });
-                powerSpawn.processPower();
-            }
-        }
-    };
     Room.prototype.findContainerWith = function(resourceType, amountMin) {
         if (!amountMin) amountMin = 1;
         //if (!RESOURCES_ALL.find((r)=>{r==resourceType;})) return null;
@@ -2505,15 +2481,6 @@ mod.extend = function(){
         }
         return ret;
     }
-    Room.prototype.isWalkable = function(x, y, look) {
-        if (!look) look = this.lookAt(x,y);
-        else look = look[y][x];
-        let invalidObject = o => {
-            return ((o.type == LOOK_TERRAIN && o.terrain == 'wall') ||
-                OBSTACLE_OBJECT_TYPES.includes(o[o.type].structureType));
-        };
-        return look.filter(invalidObject).length == 0;
-    };
     Room.prototype.printCostMatrix = function(creepMatrix, aroundPos) {
         const matrix = creepMatrix ? this.creepMatrix : this.costMatrix;
         let startY = 0;
@@ -2537,46 +2504,6 @@ mod.extend = function(){
             logSystem(this.name, line);
         }
     };
-    Room.prototype.exits = function(findExit, point) {
-        if (point === true) point = 0.5;
-        let positions;
-        if (findExit === 0) {
-            // portals
-            positions = _.chain(this.find(FIND_STRUCTURES)).filter(function(s) {
-                return s.structureType === STRUCTURE_PORTAL;
-            }).map('pos').value();
-        } else {
-            positions = this.find(findExit);
-        }
-
-        // assuming in-order
-        let maxX, maxY;
-        let map = {};
-        let limit = -1;
-        const ret = [];
-        for (let i = 0; i < positions.length; i++) {
-            const pos = positions[i];
-            if (!(_.get(map,[pos.x-1, pos.y]) || _.get(map,[pos.x,pos.y-1]))) {
-                if (point && limit !== -1) {
-                    ret[limit].x += Math.ceil(point * (maxX - ret[limit].x));
-                    ret[limit].y += Math.ceil(point * (maxY - ret[limit].y));
-                }
-                limit++;
-                ret[limit] = _.pick(pos, ['x','y']);
-                maxX = pos.x;
-                maxY = pos.y;
-                map = {};
-            }
-            _.set(map, [pos.x, pos.y], true);
-            maxX = Math.max(maxX, pos.x);
-            maxY = Math.max(maxY, pos.y);
-        }
-        if (point && limit !== -1) {
-            ret[limit].x += Math.ceil(point * (maxX - ret[limit].x));
-            ret[limit].y += Math.ceil(point * (maxY - ret[limit].y));
-        }
-        return ret;
-    }
     Room.prototype.rebuildCostMatrix = function() {
         mod.pathfinderCache[this.name] = {};
         mod.pathfinderCacheDirty = true;
@@ -2585,23 +2512,36 @@ mod.extend = function(){
         const OBSERVER = this.structures.observer;
         if (!OBSERVER) return;
         if (!this.memory.observer.rooms) this.initObserverRooms();
-        const ROOMS = this.memory.observer.rooms;
-        let lastLookedIndex = Number.isInteger(this.memory.observer.lastLookedIndex) ? this.memory.observer.lastLookedIndex : ROOMS.length;
         let nextRoom;
+        if (observerRequests.length > 0) { // support for requesting rooms
+            for (const request of observerRequests) {
+                if (Game.map.getRoomLinearDistance(this.name, request.roomName) <= 10 && !Memory.observerSchedule.includes(request.roomName)) {
+                    const room = request.room || Game.rooms[request.roomName];
+                    if (room && room.creeps && room.creeps.length && room.creeps.length > 0) continue; // highly likely to have vision next tick as well
+                    Memory.observerSchedule.push(request.roomName);
+                    nextRoom = request.roomName;
+                    break;
+                }
+            }
+        }
         let i = 0;
-        do { // look ma! my first ever do-while loop!
-            if (lastLookedIndex >= ROOMS.length) {
-                nextRoom = ROOMS[0];
-            }  else {
-                nextRoom = ROOMS[lastLookedIndex + 1];
-            }
-            lastLookedIndex = ROOMS.indexOf(nextRoom);
-            if (++i >= ROOMS.length) { // safety check - prevents an infinite loop
-                break;
-            }
-        } while (Memory.observerSchedule.includes(nextRoom) || nextRoom in Game.rooms);
-        this.memory.observer.lastLookedIndex = lastLookedIndex;
-        Memory.observerSchedule.push(nextRoom);
+        const ROOMS = this.memory.observer.rooms;
+        if (!nextRoom) {
+            let lastLookedIndex = Number.isInteger(this.memory.observer.lastLookedIndex) ? this.memory.observer.lastLookedIndex : ROOMS.length;
+            do { // look ma! my first ever do-while loop!
+                if (lastLookedIndex >= ROOMS.length) {
+                    nextRoom = ROOMS[0];
+                } else {
+                    nextRoom = ROOMS[lastLookedIndex + 1];
+                }
+                lastLookedIndex = ROOMS.indexOf(nextRoom);
+                if (++i >= ROOMS.length) { // safety check - prevents an infinite loop
+                    break;
+                }
+            } while (Memory.observerSchedule.includes(nextRoom) || nextRoom in Game.rooms);
+            this.memory.observer.lastLookedIndex = lastLookedIndex;
+            Memory.observerSchedule.push(nextRoom);
+        }
         const r = OBSERVER.observeRoom(nextRoom); // now we get to observe a room
         if (r === ERR_INVALID_ARGS && i < ROOMS.length) { // room has not yet been created / off the map (backup)
             Memory.observerSchedule.splice(Memory.observerSchedule.indexOf(nextRoom), 1); // remove invalid room from list
@@ -2610,10 +2550,9 @@ mod.extend = function(){
     };
     Room.prototype.initObserverRooms = function() {
         const OBSERVER_RANGE = OBSERVER_OBSERVE_RANGE > 10 ? 10 : OBSERVER_OBSERVE_RANGE; // can't be > 10
-        const PRIORITISE_HIGHWAY = OBSERVER_PRIORITISE_HIGHWAY;
         const [x, y] = Room.calcGlobalCoordinates(this.name, (x,y) => [x,y]); // hacky get x,y
         const [HORIZONTAL, VERTICAL] = Room.calcCardinalDirection(this.name);
-        let ROOMS = [];
+        this.memory.observer.rooms = [];
 
         for (let a = x - OBSERVER_RANGE; a < x + OBSERVER_RANGE; a++) {
             for (let b = y - OBSERVER_RANGE; b < y + OBSERVER_RANGE; b++) {
@@ -2632,18 +2571,12 @@ mod.extend = function(){
                 }
                 vert += n;
                 const room = hor + vert;
-                if (!Game.map.isRoomAvailable(room)) continue; // not an available room
-                if (room in Game.rooms && Game.rooms[room].my) continue; // don't bother adding the room to the array if it's owned by us
                 if (OBSERVER_OBSERVE_HIGHWAYS_ONLY && !Room.isHighwayRoom(room)) continue; // we only want highway rooms
-                ROOMS.push(room);
+                if (room in Game.rooms && Game.rooms[room].my) continue; // don't bother adding the room to the array if it's owned by us
+                if (!Game.map.isRoomAvailable(room)) continue; // not an available room
+                this.memory.observer.rooms.push(room);
             }
         }
-        if (PRIORITISE_HIGHWAY) {
-            ROOMS = _.sortBy(ROOMS, v => {
-                return Room.isHighwayRoom(v) ? 0 : 1; // should work, I hope
-            });
-        }
-        this.memory.observer.rooms = ROOMS;
     };
 };
 mod.flush = function(){
@@ -2721,7 +2654,6 @@ mod.analyze = function(){
             room.processInvaders();
             room.processLabs();
             room.processPower();
-            room.controlObserver();
         }
         catch(err) {
             Game.notify('Error in room.js (Room.prototype.loop) for "' + room.name + '" : ' + err.stack ? err + '<br/>' + err.stack : err);
@@ -2756,7 +2688,13 @@ mod.execute = function() {
             if( memory.hostileIds ) _.forEach(memory.hostileIds, triggerKnownInvaders);
         }
     };
-    _.forEach(Memory.rooms, run);
+    _.forEach(Memory.rooms, (memory, roomName) => {
+        run(memory, roomName);
+        let room = Game.rooms[roomName];
+        if (room) {
+            room.controlObserver();
+        }
+    });
 };
 mod.cleanup = function() {
     // flush changes to the pathfinderCache but wait until load
