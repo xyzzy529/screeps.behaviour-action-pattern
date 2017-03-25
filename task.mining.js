@@ -215,7 +215,7 @@ mod.checkForRequiredCreeps = (flag) => {
     if(haulerCount < maxHaulers && (!memory.capacityLastChecked || Game.time - memory.capacityLastChecked > REMOTE_HAULER_CHECK_INTERVAL)) {
         for(let i = haulerCount; i < maxHaulers; i++) {
             let minWeight = i >= 1 && REMOTE_HAULER_MIN_WEIGHT;
-            const spawnRoom = mod.strategies.hauler.spawnRoom({roomName, minWeight});
+            const spawnRoom = mod.strategies.hauler.spawnRoom(roomName, minWeight);
             if( !spawnRoom ) {
                 break;
             }
@@ -506,7 +506,7 @@ mod.strategies = {
             // Otherwise, score it
             return Room.bestSpawnRoomFor(flagRoomName);
         },
-        spawnRoom: function({flagRoomName, minWeight}) {
+        spawnRoom: function(flagRoomName, minWeight) {
             return Room.findSpawnRoom({
                 targetRoom: flagRoomName,
                 minEnergyCapacity: minWeight || 500,
