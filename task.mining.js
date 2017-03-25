@@ -185,7 +185,7 @@ mod.checkForRequiredCreeps = (flag) => {
         if( DEBUG && TRACE ) trace('Task', {Task:mod.name, room:roomName, minerCount,
             minerTTLs: _.map(_.map(memory.running.remoteMiner, n=>Game.creeps[n]), "ticksToLive"), [mod.name]:'minerCount'});
 
-        const miner = mod.strategies.miner.setup(room);
+        const miner = mod.strategies.miner.setup(roomName);
         for(let i = minerCount; i < sourceCount; i++) {
             Task.spawn(
                 miner, // creepDefinition
@@ -490,8 +490,8 @@ mod.strategies = {
     },
     miner: {
         name: `miner-${mod.name}`,
-        setup: function(room) {
-            return mod.setupCreep(room.name, Task.mining.creep.miner);
+        setup: function(roomName) {
+            return mod.setupCreep(roomName, Task.mining.creep.miner);
         }
     },
     hauler: {
