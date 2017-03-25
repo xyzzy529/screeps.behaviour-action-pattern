@@ -491,7 +491,7 @@ mod.strategies = {
     miner: {
         name: `miner-${mod.name}`,
         setup: function(room) {
-            return setupCreep(room.name, Task.mining.creep.miner);
+            return mod.setupCreep(room.name, Task.mining.creep.miner);
         }
     },
     hauler: {
