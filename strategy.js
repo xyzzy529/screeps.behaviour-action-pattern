@@ -16,7 +16,7 @@ mod.decorateAgent = function(prototype, ...definitions) {
             logError('strategy handler returned undefined', {agent: this.name || this.id, strategyKey, strategyName, method, stack: new Error().stack});
             return;
         }
-        if (args.length === 0) {
+        if (_.size(args.length) === 0) {
             return returnValOrMethod;
         }
         const returnVal = returnValOrMethod.apply(this.currentStrategy, args);
