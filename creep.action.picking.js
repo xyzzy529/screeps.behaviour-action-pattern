@@ -20,7 +20,6 @@ action.isAddableTarget = function(target, creep){
     return (!target.targetOf || !pickers.length || ((pickers.length < max) && target.amount > _.sum( pickers.map( t => t.carryCapacityLeft))));
 };
 action.newTarget = function(creep){
-    console.log(creep.name, 'energyOnly', action.getStrategy('energyOnly', creep));
     const droppedResources = action.getStrategy('energyOnly', creep) ? _.filter(creep.room.droppedResources, {resourceType: RESOURCE_ENERGY}) : creep.room.droppedResources;
     let filter;
     if( creep.room.my && creep.room.situation.invasion ) {
