@@ -164,12 +164,19 @@ mod.analyze = function(){
         }
     };
     _.forEach(Memory.flags, findStaleFlags);
+    const specialFlag = mod.specialFlag(true);
+    return !!specialFlag;
 };
 mod.execute = function() {
+
     let triggerFound = entry => {
-        if( !entry.cloaking || entry.cloaking == 0)
-        Flag.found.trigger(Game.flags[entry.name]);
-    }
+        if( !entry.cloaking || entry.cloaking == 0) {
+            let p = startProfiling('Flag.execute');
+            const flag = Game.flags[entry.name];
+            Flag.found.trigger(flag);
+            p.checkCPU(entry.name, 2, mod.flagType(flag));
+        }
+    };
     this.list.forEach(triggerFound);
 
     let triggerRemoved = flagName => Flag.FlagRemoved.trigger(flagName);
@@ -180,7 +187,7 @@ mod.cleanup = function(){
     this.stale.forEach(clearMemory);
 };
 mod.flagType = function(flag) {
-    if (mod.isSpecialFlag(flag)) return 'specialFlag';
+    if (mod.isSpecialFlag(flag)) return '_OCS';
     for (const primary in FLAG_COLOR) {
         const obj = FLAG_COLOR[primary];
         if (flag.color === obj.color) {
@@ -197,4 +204,22 @@ mod.flagType = function(flag) {
     }
     logError('Unknown flag type for flag ' + flag ? flag.name : 'undefined flag');
     return 'undefined';
+};
+mod.specialFlag = function(create) {
+    const name = '_OCS';
+    const flag = Game.flags[name];
+    if (create) {
+        if (!flag) {
+            return _(Game.rooms).values().some(function (room) {
+                new RoomPosition(49, 49, room.name).createFlag(name, COLOR_WHITE, COLOR_PURPLE);
+                return true;
+            });
+        } else if (flag.pos.roomName !== 'W0N0') {
+            flag.setPosition(new RoomPosition(49, 49, 'W0N0'));
+        }
+    }
+    return flag;
+};
+mod.isSpecialFlag = function(object) {
+    return object.name === '_OCS';
 };

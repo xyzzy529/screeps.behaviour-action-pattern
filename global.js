@@ -61,9 +61,9 @@ mod.FLAG_COLOR = {
             filter: {'color': COLOR_RED, 'secondaryColor': COLOR_CYAN },
         }
     },
-    //COLOR_PURPLE,
-    //COLOR_BLUE,
-    //COLOR_CYAN - Reserved
+    //COLOR_PURPLE - Reserved labs
+    //COLOR_BLUE - Reserved (internal use)
+    //COLOR_CYAN - Reserved (build related)
     //COLOR_GREEN
     claim: { // claim this room, then build spawn at flag
         color: COLOR_GREEN,
@@ -88,8 +88,12 @@ mod.FLAG_COLOR = {
             color: COLOR_GREEN,
             secondaryColor: COLOR_BROWN,
             filter: {'color': COLOR_GREEN, 'secondaryColor': COLOR_BROWN}
-        }
-
+        },
+        delivery: { // rob energy from friendly rooms and deliver here
+            color: COLOR_GREEN,
+            secondaryColor: COLOR_YELLOW,
+            filter: {'color': COLOR_GREEN, 'secondaryColor': COLOR_YELLOW}
+        },
     },
     //COLOR_YELLOW
     defense: { // point to gather troops
@@ -135,49 +139,20 @@ mod.DECAYABLES = [
     STRUCTURE_RAMPART];
 mod.LAB_IDLE = 'idle';
 mod.LAB_BOOST = 'boost';
+mod.LAB_SEED = 'seed';
 mod.LAB_MASTER = 'master';
 mod.LAB_SLAVE_1 = 'slave_1';
 mod.LAB_SLAVE_2 = 'slave_2';
 mod.LAB_SLAVE_3 = 'slave_3';
-mod.LAB_REACTIONS = {
-    [RESOURCE_HYDROXIDE]: [RESOURCE_OXYGEN, RESOURCE_HYDROGEN],
-    [RESOURCE_ZYNTHIUM_KEANITE]: [RESOURCE_ZYNTHIUM, RESOURCE_KEANIUM],
-    [RESOURCE_UTRIUM_LEMERGITE]: [RESOURCE_UTRIUM, RESOURCE_LEMERGIUM],
-    [RESOURCE_GHODIUM]: [RESOURCE_ZYNTHIUM_KEANITE, RESOURCE_UTRIUM_LEMERGITE],
-
-    [RESOURCE_UTRIUM_HYDRIDE]: [RESOURCE_UTRIUM, RESOURCE_HYDROGEN],
-    [RESOURCE_UTRIUM_OXIDE]: [RESOURCE_UTRIUM, RESOURCE_OXYGEN],
-    [RESOURCE_KEANIUM_HYDRIDE]: [RESOURCE_KEANIUM, RESOURCE_HYDROGEN],
-    [RESOURCE_KEANIUM_OXIDE]: [RESOURCE_KEANIUM, RESOURCE_OXYGEN],
-    [RESOURCE_LEMERGIUM_HYDRIDE]: [RESOURCE_LEMERGIUM, RESOURCE_HYDROGEN],
-    [RESOURCE_LEMERGIUM_OXIDE]: [RESOURCE_LEMERGIUM, RESOURCE_OXYGEN],
-    [RESOURCE_ZYNTHIUM_HYDRIDE]: [RESOURCE_ZYNTHIUM, RESOURCE_HYDROGEN],
-    [RESOURCE_ZYNTHIUM_OXIDE]: [RESOURCE_ZYNTHIUM, RESOURCE_OXYGEN],
-    [RESOURCE_GHODIUM_HYDRIDE]: [RESOURCE_GHODIUM, RESOURCE_HYDROGEN],
-    [RESOURCE_GHODIUM_OXIDE]: [RESOURCE_GHODIUM, RESOURCE_OXYGEN],
-
-    [RESOURCE_UTRIUM_ACID]: [RESOURCE_UTRIUM_HYDRIDE, RESOURCE_HYDROXIDE],
-    [RESOURCE_UTRIUM_ALKALIDE]: [RESOURCE_UTRIUM_OXIDE, RESOURCE_HYDROXIDE],
-    [RESOURCE_KEANIUM_ACID]: [RESOURCE_KEANIUM_HYDRIDE, RESOURCE_HYDROXIDE],
-    [RESOURCE_KEANIUM_ALKALIDE]: [RESOURCE_KEANIUM_OXIDE, RESOURCE_HYDROXIDE],
-    [RESOURCE_LEMERGIUM_ACID]: [RESOURCE_LEMERGIUM_HYDRIDE, RESOURCE_HYDROXIDE],
-    [RESOURCE_LEMERGIUM_ALKALIDE]: [RESOURCE_LEMERGIUM_OXIDE, RESOURCE_HYDROXIDE],
-    [RESOURCE_ZYNTHIUM_ACID]: [RESOURCE_ZYNTHIUM_HYDRIDE, RESOURCE_HYDROXIDE],
-    [RESOURCE_ZYNTHIUM_ALKALIDE]: [RESOURCE_ZYNTHIUM_OXIDE, RESOURCE_HYDROXIDE],
-    [RESOURCE_GHODIUM_ACID]: [RESOURCE_GHODIUM_HYDRIDE, RESOURCE_HYDROXIDE],
-    [RESOURCE_GHODIUM_ALKALIDE]: [RESOURCE_GHODIUM_OXIDE, RESOURCE_HYDROXIDE],
-
-    [RESOURCE_CATALYZED_UTRIUM_ACID]: [RESOURCE_UTRIUM_ACID, RESOURCE_CATALYST],
-    [RESOURCE_CATALYZED_UTRIUM_ALKALIDE]: [RESOURCE_UTRIUM_ALKALIDE, RESOURCE_CATALYST],
-    [RESOURCE_CATALYZED_KEANIUM_ACID]: [RESOURCE_KEANIUM_ACID, RESOURCE_CATALYST],
-    [RESOURCE_CATALYZED_KEANIUM_ALKALIDE]: [RESOURCE_KEANIUM_ALKALIDE, RESOURCE_CATALYST],
-    [RESOURCE_CATALYZED_LEMERGIUM_ACID]: [RESOURCE_LEMERGIUM_ACID, RESOURCE_CATALYST],
-    [RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE]: [RESOURCE_LEMERGIUM_ALKALIDE, RESOURCE_CATALYST],
-    [RESOURCE_CATALYZED_ZYNTHIUM_ACID]: [RESOURCE_ZYNTHIUM_ACID, RESOURCE_CATALYST],
-    [RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE]: [RESOURCE_ZYNTHIUM_ALKALIDE, RESOURCE_CATALYST],
-    [RESOURCE_CATALYZED_GHODIUM_ACID]: [RESOURCE_GHODIUM_ACID, RESOURCE_CATALYST],
-    [RESOURCE_CATALYZED_GHODIUM_ALKALIDE]: [RESOURCE_GHODIUM_ALKALIDE, RESOURCE_CATALYST],
-};
+mod.REACTOR_TYPE_FLOWER = 'flower';
+mod.REACTOR_MODE_IDLE = 'idle';
+mod.REACTOR_MODE_BURST = 'burst';
+mod.LAB_REACTIONS = {};
+for(let a in REACTIONS){
+    for(let b in REACTIONS[a]){
+        mod.LAB_REACTIONS[REACTIONS[a][b]] = [a,b];
+    }
+}
 // used to log something meaningful instead of numbers
 mod.translateErrorCode = function(code){
     var codes = {
@@ -314,7 +289,7 @@ mod.isSummerTime = function(date){
 mod.addById = function(array, id){
     if(array == null) array = [];
     var obj = Game.getObjectById(id);
-    if( obj && !obj.cloak ) array.push(obj);
+    if( obj ) array.push(obj);
     return array;
 };
 // send up to REPORTS_PER_LOOP notify mails, which are cached in memory
@@ -391,5 +366,114 @@ mod.guid = function(){
         var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
         return v.toString(16);
     });
+};
+Object.defineProperty(global, 'observerRequests', {
+    configurable: true,
+    get: function() {
+        if (_.isUndefined(global._observerRequests)) {
+            global._observerRequests = [];
+        }
+        return global._observerRequests;
+    },
+    /**
+     * Pass an object containing room information to the requests
+     * @param {Object} request - `roomName` property required
+     */
+    set: function(request) {
+        global._observerRequests.push(request);
+    },
+});
+mod.memoryUsage = function(key) {
+    const mem = key ? Memory[key] : Memory;
+    let string = '<table><tr><th>Key</th><th>Size (kb)</th></tr>';
+    let total = 0;
+    for (const key in mem) {
+        const sum = JSON.stringify(mem[key]).length / 1024;
+        total += sum;
+        string += `<tr><td>${key}</td><td>${_.round(sum, 2)}</td></tr>`;
+    }
+    string += `<tr><td>Total</td><td>${_.round(total, 2)}</td></tr></table>`;
+    return string;
+};
+mod.profiler = null;
+mod.resetProfiler = function() {
+    mod.loadProfiler(true);
+};
+mod.loadProfiler = function(reset) {
+    if (reset) {
+        logSystem('Profiler', 'resetting profiler data.');
+        Memory.profiler = {
+            totalCPU: 0,
+            totalTicks: 0,
+            types: {},
+            validTick: Game.time
+        };
+    }
+    mod.profiler = Memory.profiler;
+};
+mod.startProfiling = function(name, startCPU) {
+    let checkCPU = function(localName, limit, type) {};
+    let totalCPU = function() {
+        // if you would like to do a baseline comparison
+        // if (_.isUndefined(Memory.profiling)) Memory.profiling = {ticks:0, cpu: 0};
+        // let thisTick = Game.cpu.getUsed() - startCPU;
+        // Memory.profiling.ticks++;
+        // Memory.profiling.cpu += thisTick;
+        // logSystem('Total', _.round(thisTick, 2) + ' ' + _.round(Memory.profiling.cpu / Memory.profiling.ticks, 2));
+    };
+    if (PROFILE || DEBUG) {
+        if (_.isUndefined(Memory.profiler)) resetProfiler();
+        else if (!mod.profiler ||
+            mod.profiler.validTick !== Memory.profiler.validTick ||
+            mod.profiler.totalTicks < Memory.profiler.totalTicks) {
+            loadProfiler();
+        }
+        const onLoad = startCPU || Game.cpu.getUsed();
+        let start = onLoad;
+        if (PROFILE) {
+            checkCPU = function(localName, limit, type) {
+                let current = Game.cpu.getUsed();
+                let used = _.round(current - start, 2);
+                if (!limit || used > limit) {
+                    logSystem(name + ':' + localName, used);
+                }
+                if (type) {
+                    if (_.isUndefined(mod.profiler.types[type])) mod.profiler.types[type] = {totalCPU: 0, count: 0, totalCount: 0};
+                    mod.profiler.types[type].totalCPU = mod.profiler.types[type].totalCPU + used;
+                    mod.profiler.types[type].count++;
+                }
+                start = current;
+            };
+        }
+        totalCPU = function() {
+            const totalUsed = Game.cpu.getUsed() - onLoad;
+            mod.profiler.totalCPU = mod.profiler.totalCPU + totalUsed;
+            mod.profiler.totalTicks = mod.profiler.totalTicks + 1;
+            const avgCPU = mod.profiler.totalCPU / mod.profiler.totalTicks;
+            if (PROFILE && PROFILING.AVERAGE_USAGE && _.size(mod.profiler.types) > 0) {
+                let heading = '';
+                while (heading.length < 30) heading += ' ';
+                global.logSystem(heading, '(avg/creep/tick) (active) (weighted avg) (executions)');
+                for (let type in mod.profiler.types) {
+                    let data = mod.profiler.types[type];
+                    data.totalCount = data.totalCount + data.count;
+                    const typeAvg = _.round(data.totalCPU / data.totalCount, 3);
+                    let heading = type + ': ';
+                    while (heading.length < 30) heading += ' ';
+                    global.logSystem(heading, '     ' + typeAvg + '          ' +
+                        data.count + '       ' + (_.round(typeAvg * data.count, 3)) + '          ' + data.totalCount );
+                    data.count = 0;
+                }
+            }
+            logSystem(name, ' loop:' + _.round(totalUsed, 2) + ' other:' + _.round(onLoad, 2) + ' avg:' + _.round(avgCPU, 2) + ' ticks:' +
+                mod.profiler.totalTicks + ' bucket:' + Game.cpu.bucket, 2);
+            if (PROFILE) console.log('\n');
+            Memory.profiler = mod.profiler;
+        };
+    }
+    return {
+        checkCPU: checkCPU,
+        totalCPU: totalCPU,
+    };
 };
 mod = _.bindAll(mod);

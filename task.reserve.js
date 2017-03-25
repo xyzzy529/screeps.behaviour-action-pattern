@@ -5,7 +5,8 @@ mod.name = 'reserve';
 mod.creep = {
     reserver: {
         fixedBody: [CLAIM, CLAIM, MOVE, MOVE],
-        multiBody: [],
+        multiBody: [CLAIM, MOVE],
+        maxMulti: 7,
         name: "reserver", 
         behaviour: "claimer"
     },
@@ -141,7 +142,10 @@ mod.handleCreepDied = name => {
 mod.nextAction = creep => {
     // override behaviours nextAction function
     // this could be a global approach to manipulate creep behaviour
-
+    if (creep.data.destiny && creep.data.destiny.room !== creep.room.name) {
+        // go to target room
+        return Creep.action.travelling.assignRoom(creep, creep.data.destiny.room);
+    }
     //Reserve if possible, if not (should be never) then recycle
     let priority = [
         Creep.action.reserving,
@@ -168,7 +172,7 @@ mod.memory = (flag) => {
             queued: [], 
             spawning: [],
             running: []
-        }
+        };
     }
     let memory = flag.memory.tasks.reserve;
     if( !memory.valid || memory.valid < ( Game.time - MEMORY_RESYNC_INTERVAL ) )
@@ -177,7 +181,7 @@ mod.memory = (flag) => {
 };
 mod.validateMemoryQueued = memory => {
     // clean/validate task memory queued creeps
-    let queued = []
+    let queued = [];
     let validateQueued = entry => {
         let room = Game.rooms[entry.room];
         if( (room.spawnQueueMedium.some( c => c.name == entry.name)) || (room.spawnQueueLow.some( c => c.name == entry.name)) ){
@@ -189,7 +193,7 @@ mod.validateMemoryQueued = memory => {
 };
 mod.validateMemorySpawning = memory => {
     // clean/validate task memory spawning creeps
-    let spawning = []
+    let spawning = [];
     let validateSpawning = entry => {
         let spawn = Game.spawns[entry.spawn];
         if( spawn && ((spawn.spawning && spawn.spawning.name == entry.name) || (spawn.newSpawn && spawn.newSpawn.name == entry.name))) {
@@ -201,7 +205,7 @@ mod.validateMemorySpawning = memory => {
 };
 mod.validateMemoryRunning = memory => {
     // clean/validate task memory running creeps
-    let running = []
+    let running = [];
     let validateRunning = entry => {
         // invalidate dead or old creeps for predicted spawning
         let creep = Game.creeps[entry];
@@ -234,7 +238,7 @@ mod.strategies = {
             // Don't spawn if...
             const hasFlag = !!flag;
             const hasController = Room.isControllerRoom(flag.pos.roomName) || (flag.room && flag.room.controller);
-            const hasReservation = (flag.room && flag.room.controller && flag.room.controller.reservation && (flag.room.controller.reservation.ticksToEnd > 2500 || flag.room.controller.reservation.username != myName) );
+            const hasReservation = (flag.room && flag.room.controller && flag.room.controller.reservation && (flag.room.controller.reservation.ticksToEnd > 1000 || flag.room.controller.reservation.username != myName) );
             const isOwned = (flag.room && flag.room.controller && flag.room.controller.owner);
             if( // Flag was removed
                 !hasFlag ||
