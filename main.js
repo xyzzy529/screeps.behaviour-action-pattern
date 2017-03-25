@@ -217,13 +217,12 @@ global.install = () => {
     Spawn.extend();
     FlagDir.extend();
     Task.populate();
-
+    // custom extend
+    if( global.mainInjection.extend ) global.mainInjection.extend();
     // reload cached data from memory segment
     for (let i = MEM_SEGMENTS.COSTMATRIX_CACHE.start; i <= MEM_SEGMENTS.COSTMATRIX_CACHE.end; i++) {
         OCSMemory.activateSegment(i);
     }
-    // custom extend
-    if( global.mainInjection.extend ) global.mainInjection.extend();
     if (DEBUG) logSystem('Global.install', 'Code reloaded.');
 };
 global.install();
