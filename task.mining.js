@@ -491,12 +491,13 @@ mod.strategies = {
     miner: {
         name: `miner-${mod.name}`,
         setup: function(roomName) {
-            return mod.setupCreep(roomName, Task.mining.creep.miner);
+            return Task.mining.setupCreep(roomName, Task.mining.creep.miner);
         }
     },
     hauler: {
         name: `hauler-${mod.name}`,
-        ept: function(room) {
+        ept: function(roomName) {
+            const room = Game.rooms[roomName];
             return room ? 10 * room.sources.length : 20;
         },
         homeRoom: function(flagRoomName) {
@@ -520,7 +521,7 @@ mod.strategies = {
             const room = Game.rooms[flagRoomName];
             // TODO loop per-source, take pinned delivery for route calc
             const travel = routeRange(flagRoomName, homeRoom.name);
-            const ept = mod.strategies.hauler.ept(room);
+            const ept = Task.mining.strategies.hauler.ept(flagRoomName);
             // carry = ept * travel * 2 * 50 / 50
             const validHaulers = _.filter(existingHaulers, c => !Task.mining.needsReplacement(c));
             const existingCarry = _.sum(validHaulers, c => (c && c.data && c.data.body) ? c.data.body.carry : 5);
