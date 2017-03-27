@@ -46,7 +46,9 @@ let mod = {
         HEATMAP: false, // collects creep positioning to display a heatmap
         HEATMAP_INTERVAL: 2, // intervals between collections
     },
+    // function parameters: room. expected result: boolean
     SEMI_AUTOMATIC_CONSTRUCTION: true, // enables semi-automatic construction. Will construct based on flags.
+    // function parameters: room, structure type. expected result: boolean
     REMOVE_CONSTRUCTION_FLAG: true, // if false, flag will remain. This is good if a structure decays, it can rebuild
     MAX_STORAGE_ENERGY: { // get rid of energy when reached
         1: 2000,
@@ -127,7 +129,14 @@ let mod = {
     NOTIFICATE_HOSTILES: true, // Log any hostiles - Ignores NOTIFICATE_INTRUDER and NOTIFICATE_INVADER
     COMBAT_CREEPS_RESPECT_RAMPARTS: false, // causes own creeps not to leave through ramparts
     COST_MATRIX_VALIDITY: 1000,
-    CONSTRUCTION_PRIORITY: [STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_LINK,STRUCTURE_TERMINAL,STRUCTURE_STORAGE,STRUCTURE_TOWER,STRUCTURE_POWER_SPAWN,STRUCTURE_NUKER,STRUCTURE_OBSERVER,STRUCTURE_ROAD,STRUCTURE_CONTAINER,STRUCTURE_EXTRACTOR,STRUCTURE_LAB,STRUCTURE_WALL,STRUCTURE_RAMPART],
+    // function parameters: room. expected result: array
+    CONSTRUCTION_PRIORITY: (room) => {
+        const priority = [STRUCTURE_LINK,STRUCTURE_TERMINAL,STRUCTURE_STORAGE,STRUCTURE_TOWER,STRUCTURE_POWER_SPAWN,STRUCTURE_NUKER,STRUCTURE_OBSERVER,STRUCTURE_ROAD,STRUCTURE_CONTAINER,STRUCTURE_EXTRACTOR,STRUCTURE_LAB,STRUCTURE_WALL,STRUCTURE_RAMPART];
+        if (room.structures.spawns.length) {
+            return [STRUCTURE_SPAWN, STRUCTURE_EXTENSION, ...priority];
+        }
+        return [STRUCTURE_EXTENSION, STRUCTURE_SPAWN, ...priority];
+    },
     CONTROLLER_SIGN: false,
     CONTROLLER_SIGN_MESSAGE: `Territory of ${_.chain(Game.spawns).values().first().get('owner.username').value()}, an Open Collaboration Society user! (https://github.com/ScreepsOCS)`,
     CONTROLLER_SIGN_UPDATE: false, // Update sign message if user changes CONTROLLER_SIGN_MESSAGE
