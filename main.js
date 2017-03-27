@@ -131,9 +131,9 @@ global.install = () => {
         Task: load("task"),
         Tower: load("tower"),
         Events: load('events'),
+        OCSMemory: load('ocsMemory'),
         Grafana: GRAFANA ? load('grafana') : undefined,
         Visuals: ROOM_VISUALS && !Memory.CPU_CRITICAL ? load('visuals') : undefined,
-        OCSMemory: load('ocsMemory'),
     });
     _.assign(global.Task, {
         guard: load("task.guard"),
