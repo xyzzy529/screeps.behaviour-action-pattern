@@ -251,7 +251,6 @@ module.exports.loop = function () {
     if (Memory.cloaked === undefined) {
         Memory.cloaked = {};
     }
-
     // ensure up to date parameters
     _.assign(global, load("parameter"));
     
