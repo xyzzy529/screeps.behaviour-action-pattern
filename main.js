@@ -316,9 +316,9 @@ module.exports.loop = function () {
     p.checkCPU('Room.cleanup', PROFILING.ANALYZE_LIMIT);
     // custom cleanup
     if( global.mainInjection.cleanup ) global.mainInjection.cleanup();
+
     OCSMemory.cleanup(); // must come last
     p.checkCPU('OCSMemory.cleanup', PROFILING.ANALYZE_LIMIT);
-
     if ( ROOM_VISUALS && !Memory.CPU_CRITICAL && Visuals ) Visuals.run(); // At end to correctly display used CPU.
     p.checkCPU('visuals', PROFILING.EXECUTE_LIMIT);
 
