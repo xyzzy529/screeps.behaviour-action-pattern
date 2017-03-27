@@ -86,8 +86,7 @@ mod.filter = function(flagColor, pos, local){
             if( local && pos && pos.roomName && entry.roomName != pos.roomName )
                 return false;
             for( let i = 0; i < flagColor.length; i++ ){
-                if( flagColor[i].color == entry.color && flagColor[i].secondaryColor == entry.secondaryColor )
-                    return true;
+                if (Flag.compare(flagColor[i], entry)) return true;
             }
             return false;
         };
