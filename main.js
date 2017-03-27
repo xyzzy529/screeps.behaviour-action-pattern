@@ -252,12 +252,12 @@ module.exports.loop = function () {
         Memory.cloaked = {};
     }
 
+    // ensure up to date parameters
+    _.assign(global, load("parameter"));
+    
     // process loaded memory segments
     OCSMemory.processSegments();
     p.checkCPU('processSegments', PROFILING.ANALYZE_LIMIT);
-
-    // ensure up to date parameters
-    _.assign(global, load("parameter"));
 
     // Flush cache
     Events.flush();
