@@ -12,7 +12,7 @@ action.newTarget = function(creep) {
         drop = creep.pos.findClosestByRange(creep.room.structures.spawns);
     }
     if( !drop ) {
-        drop = creep.pos.findClosestByRange(creep.room.find(FIND_FLAGS, Flag.flagFilter(FLAG_COLOR.commands.drop)));
+        drop = creep.pos.findClosestByRange(creep.room.find(FIND_FLAGS, Flag.flagFilter(FLAG_COLOR.claim.spawn)));
     }
     return drop;
 };
