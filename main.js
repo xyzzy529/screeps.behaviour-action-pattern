@@ -62,13 +62,16 @@ global.inject = (base, alien, namespace) => {
     let keys = _.keys(alien);
     for (const key of keys) {
         if (typeof alien[key] === "function") {
-            if( namespace ){
+            if (namespace) {
                 let original = base[key];
-                if( !base.baseOf ) base.baseOf = {};
-                if( !base.baseOf[namespace] ) base.baseOf[namespace] = {};
-                if( !base.baseOf[namespace][key] ) base.baseOf[namespace][key] = original;
+                if (!base.baseOf) base.baseOf = {};
+                if (!base.baseOf[namespace]) base.baseOf[namespace] = {};
+                if (!base.baseOf[namespace][key]) base.baseOf[namespace][key] = original;
             }
             base[key] = alien[key].bind(base);
+        } else if (alien[key] !== null && typeof base[key] === 'object' && !Array.isArray(base[key]) &&
+            typeof alien[key] === 'object' && !Array.isArray(alien[key])) {
+            global.inject(base[key], alien[key], namespace);
         } else {
             base[key] = alien[key]
         }
@@ -130,9 +133,13 @@ global.install = () => {
         FlagDir: load("flagDir"),
         Task: load("task"),
         Tower: load("tower"),
+        Util: load('util'),
         Events: load('events'),
         Grafana: GRAFANA ? load('grafana') : undefined,
         Visuals: ROOM_VISUALS ? load('visuals') : undefined,
+    });
+    _.assign(global.Util, {
+        DiamondIterator: load('util.diamond.iterator'),
     });
     _.assign(global.Task, {
         guard: load("task.guard"),
@@ -151,7 +158,8 @@ global.install = () => {
         action: {
             attackController: load("creep.action.attackController"),
             avoiding: load("creep.action.avoiding"),
-            building: load("creep.action.building"), 
+            building: load("creep.action.building"),
+            bulldozing: load('creep.action.bulldozing'),
             charging: load("creep.action.charging"),
             claiming: load("creep.action.claiming"),
             defending: load("creep.action.defending"),

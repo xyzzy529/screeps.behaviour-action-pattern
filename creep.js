@@ -349,13 +349,24 @@ mod.extend = function(){
             selector: taskName => Task[taskName] && Task[taskName],
         });
 
+    // Explain API extension
+    Creep.prototype.explainAgent = function() {
+        return `ttl:${this.ticksToLive} pos:${this.pos}`;
+    };
+
     // API
     Creep.prototype.staticCustomStrategy = function(actionName, behaviourName, taskName) {};
     Creep.prototype.customStrategy = function(actionName, behaviourName, taskName) {};
 };
 mod.execute = function(){
     if ( DEBUG && Memory.CPU_CRITICAL ) logSystem('system',`${Game.time}: CPU Bucket level is critical (${Game.cpu.bucket}). Skipping non critical creep roles.`);
-    let run = creep => creep.run();
+    let run = creep => {
+        try {
+            creep.run();
+        } catch (e) {
+            console.log('<span style="color:FireBrick">Creep ' + creep.name + (e.stack || e.toString()) + '</span>');
+        }
+    };
     _.forEach(Game.creeps, run);
 };
 mod.bodyCosts = function(body){
@@ -396,8 +407,25 @@ mod.partsComparator = function (a, b) {
     let indexOfB = partsOrder.indexOf(b);
     return indexOfA - indexOfB;
 };
+mod.formatParts = function(parts) {
+    if (parts && !Array.isArray(parts) && typeof parts === 'object') {
+        const body = [];
+        for (const part of BODYPARTS_ALL) {
+            if (part in parts) body.push(..._.times(parts[part], n => part));
+        }
+        parts = body;
+    }
+    return parts;
+};
+mod.formatBody = function(fixedBody, multiBody) {
+    fixedBody = Creep.formatParts(fixedBody);
+    multiBody = Creep.formatParts(multiBody);
+    return {fixedBody, multiBody};
+};
 // params: {minThreat, maxWeight, maxMulti}
 mod.compileBody = function (room, params, sort = true) {
+    const {fixedBody, multiBody} = Creep.formatBody(params.fixedBody || [], params.multiBody || []);
+    _.assign(params, {fixedBody, multiBody});
     if (params.sort !== undefined) sort = params.sort;
     let parts = [];
     let multi = Creep.multi(room, params);
@@ -407,7 +435,10 @@ mod.compileBody = function (room, params, sort = true) {
     for (let iPart = 0; iPart < params.fixedBody.length; iPart++) {
         parts[parts.length] = params.fixedBody[iPart];
     }
-    if( sort ) parts.sort(Creep.partsComparator);            
+    if( sort ) {
+        const compareFunction = typeof sort === 'function' ? sort : Creep.partsComparator;
+        parts.sort(compareFunction);
+    }
     if( parts.includes(HEAL) ) {
         let index = parts.indexOf(HEAL);
         parts.splice(index, 1);
