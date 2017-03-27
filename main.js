@@ -137,7 +137,7 @@ global.install = () => {
         Events: load('events'),
         OCSMemory: load('ocsMemory'),
         Grafana: GRAFANA ? load('grafana') : undefined,
-        Visuals: ROOM_VISUALS && !Memory.CPU_CRITICAL ? load('visuals') : undefined,
+        Visuals: ROOM_VISUALS ? load('visuals') : undefined,
     });
     _.assign(global.Util, {
         DiamondIterator: load('util.diamond.iterator'),
@@ -227,6 +227,8 @@ global.install = () => {
     Spawn.extend();
     FlagDir.extend();
     Task.populate();
+    
+    if (ROOM_VISUALS) Visuals.extend();
     // custom extend
     if( global.mainInjection.extend ) global.mainInjection.extend();
     // reload cached data from memory segment
