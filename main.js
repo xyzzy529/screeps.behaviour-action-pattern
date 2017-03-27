@@ -132,7 +132,7 @@ global.install = () => {
         Tower: load("tower"),
         Events: load('events'),
         Grafana: GRAFANA ? load('grafana') : undefined,
-        Visuals: ROOM_VISUALS && !Memory.CPU_CRITICAL ? load('visuals') : undefined,
+        Visuals: ROOM_VISUALS ? load('visuals') : undefined,
     });
     _.assign(global.Task, {
         guard: load("task.guard"),
@@ -217,7 +217,7 @@ global.install = () => {
     FlagDir.extend();
     Task.populate();
     
-    if (ROOM_VISUALS && !Memory.CPU_CRITICAL && Visuals) Visuals.extend();
+    if (ROOM_VISUALS) Visuals.extend();
     // custom extend
     if( global.mainInjection.extend ) global.mainInjection.extend();
     if (DEBUG) logSystem('Global.install', 'Code reloaded.');
