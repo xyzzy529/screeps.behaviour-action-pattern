@@ -266,6 +266,15 @@ mod.extend = function(){
                     return this._all;
                 }
             },
+            'my': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._my) ){
+                        this._my = this.room.find(FIND_MY_STRUCTURES);
+                    }
+                    return this._my;
+                }
+            },
             'spawns': {
                 configurable: true,
                 get: function() {
@@ -1064,6 +1073,20 @@ mod.extend = function(){
     });
     Room.prototype.rebuildCostMatrix = function() {
         delete Memory.pathfinder[room.name];
+    };
+    Room.prototype.countMySites = function() {
+        const numSites = _.size(this.myConstructionSites);
+        if (this.memory.myTotalSites && numSites !== this.memory.myTotalSites) {
+            Room.costMatrixInvalid.trigger(this);
+        }
+        this.memory.myTotalSites = numSites;
+    };
+    Room.prototype.countMyStructures = function() {
+        const numStructures = _.size(this.structures.my);
+        if (this.memory.myTotalStructures && numStructures !== this.memory.myTotalStructures) {
+            Room.costMatrixInvalid.trigger(this);
+        }
+        this.memory.myTotalStructures = numStructures;
     };
     Room.prototype.registerIsHostile = function() {
         if (this.controller) {
@@ -2747,6 +2770,14 @@ mod.flush = function(){
     }
 };
 mod.analyze = function(){
+    const numSites = _.size(Game.constructionSites);
+    const sitesChanged = Memory.rooms.myTotalSites && numSites !== Memory.rooms.myTotalSites;
+    Memory.rooms.myTotalSites = numSites;
+
+    const numStructures = _.size(Game.structures);
+    const structuresChanged = Memory.rooms.myTotalStructures && numStructures !== Memory.rooms.myTotalStructures;
+    Memory.rooms.myTotalStructures = numStructures;
+
     let getEnvironment = room => {
         try {
             if( Game.time % MEMORY_RESYNC_INTERVAL == 0 || room.name == 'sim' ) {
@@ -2771,6 +2802,8 @@ mod.analyze = function(){
             room.processInvaders();
             room.processLabs();
             room.processPower();
+            if (!room.memory.myTotalSites || sitesChanged) room.countMySites();
+            if (!room.memory.myTotalStructures || structuresChanged) room.countMyStructures();
         }
         catch(err) {
             Game.notify('Error in room.js (Room.prototype.loop) for "' + room.name + '" : ' + err.stack ? err + '<br/>' + err.stack : err);
