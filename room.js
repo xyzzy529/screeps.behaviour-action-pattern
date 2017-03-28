@@ -4,7 +4,7 @@ let find = Room.prototype.find;
 let mod = {};
 module.exports = mod;
 mod.register = function() {
-    Room.costMatrixInvalid.on(room => room.rebuildCostMatrix());
+    Room.costMatrixInvalid.on(room => Room.rebuildCostMatrix(room.name || room));
 };
 mod.extend = function(){
     let Container = function(room){
@@ -1071,9 +1071,6 @@ mod.extend = function(){
             }
         },
     });
-    Room.prototype.rebuildCostMatrix = function() {
-        delete Memory.pathfinder[room.name];
-    };
     Room.prototype.countMySites = function() {
         const numSites = _.size(this.myConstructionSites);
         if (this.memory.myTotalSites && numSites !== this.memory.myTotalSites) {
@@ -2846,7 +2843,9 @@ mod.execute = function() {
         }
     });
 };
-
+mod.rebuildCostMatrix = function(roomName) {
+    delete Memory.pathfinder[roomName];
+};
 mod.bestSpawnRoomFor = function(targetRoomName) {
     var range = room => room.my ? routeRange(room.name, targetRoomName) : Infinity;
     return _.min(Game.rooms, range);
