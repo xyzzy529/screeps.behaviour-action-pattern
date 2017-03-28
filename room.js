@@ -404,8 +404,9 @@ mod.extend = function(){
                 get: function() {
                     if( _.isUndefined(this._piles) ){
                         const room = this.room;
-                        this._piles = room.find(FIND_FLAGS, {filter: FLAG_COLOR.command.drop.filter})
-                            .map(function(flag) {
+                        this._piles = FlagDir.filter(FLAG_COLOR.command.drop, room.getPositionAt(25,25), true)
+                            .map(function(flagInformation) {
+                                const flag = Game.flags[flagInformation.name];
                                 const piles = room.lookForAt(LOOK_ENERGY, flag.pos.x, flag.pos.y);
                                 return piles.length && piles[0] || flag;
                             });
@@ -1435,11 +1436,13 @@ mod.extend = function(){
     };
     Room.prototype.processConstructionFlags = function() {
         if (!this.my || !Util.fieldOrFunction(SEMI_AUTOMATIC_CONSTRUCTION, this)) return;
+        let sitesSize = _.size(Game.constructionSites);
+        if (sitesSize >= 100) return;
         const LEVEL = this.controller.level;
         const POS = new RoomPosition(25, 25, this.name);
         const ARGS = [POS, true];
         const CONSTRUCT = (flag, type) => {
-            if (_.size(Game.constructionSites) >= 100) return;
+            if (sitesSize >= 100) return;
             if (!flag) return;
             flag = Game.flags[flag.name];
             const POS = flag.pos;
@@ -1449,7 +1452,10 @@ mod.extend = function(){
             const structures = POS.lookFor(LOOK_STRUCTURES).filter(s => !(s instanceof StructureRoad || s instanceof StructureRampart));
             if (structures && structures.length) return; // pre-existing structure here
             const r = POS.createConstructionSite(type);
-            if (Util.fieldOrFunction(REMOVE_CONSTRUCTION_FLAG, this, type) && r === OK) flag.remove();
+            if (Util.fieldOrFunction(REMOVE_CONSTRUCTION_FLAG, this, type) && r === OK) {
+                flag.remove();
+                sitesSize++;
+            }
         };
         
         // Extensions
