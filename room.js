@@ -2766,16 +2766,20 @@ mod.flush = function(){
         delete Memory.rooms.hostileRooms;
     }
 };
-mod.analyze = function(){
+mod.totalSitesChanged = function() {
     const numSites = _.size(Game.constructionSites);
-    const sitesChanged = !_.isUndefined(Memory.rooms.myTotalSites) && numSites !== Memory.rooms.myTotalSites;
+    const oldSites = Memory.rooms.myTotalSites;
     Memory.rooms.myTotalSites = numSites;
-
+    return oldSites && oldSites !== numSites;
+};
+mod.totalStructuresChanged = function() {
     const numStructures = _.size(Game.structures);
-    const structuresChanged = !_.isUndefined(Memory.rooms.myTotalStructures) && numStructures !== Memory.rooms.myTotalStructures;
+    const oldStructures = Memory.rooms.myTotalStructures;
     Memory.rooms.myTotalStructures = numStructures;
-
-    let getEnvironment = room => {
+    return oldStructures && oldStructures !== numStructures;
+};
+mod.analyze = function() {
+    const getEnvironment = room => {
         try {
             if( Game.time % MEMORY_RESYNC_INTERVAL == 0 || room.name == 'sim' ) {
                 room.saveMinerals();
@@ -2799,8 +2803,8 @@ mod.analyze = function(){
             room.processInvaders();
             room.processLabs();
             room.processPower();
-            if (_.isUndefined(room.memory.myTotalSites) || sitesChanged) room.countMySites();
-            if (_.isUndefined(room.memory.myTotalStructures) || structuresChanged) room.countMyStructures();
+            if (Room.totalSitesChanged()) room.countMySites();
+            if (Room.totalStructuresChanged()) room.countMyStructures();
         }
         catch(err) {
             Game.notify('Error in room.js (Room.prototype.loop) for "' + room.name + '" : ' + err.stack ? err + '<br/>' + err.stack : err);
