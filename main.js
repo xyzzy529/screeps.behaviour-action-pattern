@@ -283,6 +283,7 @@ module.exports.loop = function () {
     Creep.register();
     Spawn.register();
     Task.register();
+    Room.register();
     // custom register
     if( global.mainInjection.register ) global.mainInjection.register();
     p.checkCPU('register', PROFILING.REGISTER_LIMIT);

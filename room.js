@@ -3,7 +3,9 @@ let find = Room.prototype.find;
 
 let mod = {};
 module.exports = mod;
-
+mod.register = function() {
+    Room.costMatrixInvalid.on(room => room.rebuildCostMatrix());
+};
 mod.extend = function(){
     let Container = function(room){
         this.room = room;
@@ -1060,6 +1062,9 @@ mod.extend = function(){
             }
         },
     });
+    Room.prototype.rebuildCostMatrix = function() {
+        delete Memory.pathfinder[room.name];
+    };
     Room.prototype.registerIsHostile = function() {
         if (this.controller) {
             if (_.isUndefined(this.hostile) || typeof this.hostile === 'number') { // not overridden by user
