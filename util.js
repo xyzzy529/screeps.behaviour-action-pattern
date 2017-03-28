@@ -76,7 +76,7 @@ module.exports = {
     /**
      * Returns the result of the function or the value passed
      * @param {*} value
-     * @param {...*} args - Arguments pass in the case it's a function
+     * @param {...*} [args] - A list of arguments to pass if it's a function
      * @returns {*}
      */
     fieldOrFunction(value, ...args) {
