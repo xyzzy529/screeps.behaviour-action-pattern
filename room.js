@@ -1073,14 +1073,16 @@ mod.extend = function(){
     });
     Room.prototype.countMySites = function() {
         const numSites = _.size(this.myConstructionSites);
-        if (this.memory.myTotalSites && numSites !== this.memory.myTotalSites) {
+        if (!_.isUndefined(this.memory.myTotalSites) && numSites !== this.memory.myTotalSites) {
+            console.log(this.name, 'site count changed', numSites, this.memory.myTotalSites);
             Room.costMatrixInvalid.trigger(this);
         }
         this.memory.myTotalSites = numSites;
     };
     Room.prototype.countMyStructures = function() {
         const numStructures = _.size(this.structures.my);
-        if (this.memory.myTotalStructures && numStructures !== this.memory.myTotalStructures) {
+        if (!_.isUndefined(this.memory.myTotalStructures) && numStructures !== this.memory.myTotalStructures) {
+            console.log(this.name, 'structure count changed', numStructures, this.memory.myTotalStructures);
             Room.costMatrixInvalid.trigger(this);
         }
         this.memory.myTotalStructures = numStructures;
@@ -2768,11 +2770,13 @@ mod.flush = function(){
 };
 mod.analyze = function(){
     const numSites = _.size(Game.constructionSites);
-    const sitesChanged = Memory.rooms.myTotalSites && numSites !== Memory.rooms.myTotalSites;
+    const sitesChanged = !_.isUndefined(Memory.rooms.myTotalSites) && numSites !== Memory.rooms.myTotalSites;
+    if (sitesChanged) console.log('sitesChanged', numSites, Memory.rooms.myTotalSites);
     Memory.rooms.myTotalSites = numSites;
 
     const numStructures = _.size(Game.structures);
-    const structuresChanged = Memory.rooms.myTotalStructures && numStructures !== Memory.rooms.myTotalStructures;
+    const structuresChanged = !_.isUndefined(Memory.rooms.myTotalStructures) && numStructures !== Memory.rooms.myTotalStructures;
+    if (structuresChanged) console.log('structuresChanged', numStructures, Memory.rooms.myTotalStructures);
     Memory.rooms.myTotalStructures = numStructures;
 
     let getEnvironment = room => {
@@ -2799,8 +2803,8 @@ mod.analyze = function(){
             room.processInvaders();
             room.processLabs();
             room.processPower();
-            if (!room.memory.myTotalSites || sitesChanged) room.countMySites();
-            if (!room.memory.myTotalStructures || structuresChanged) room.countMyStructures();
+            if (_.isUndefined(room.memory.myTotalSites) || sitesChanged) room.countMySites();
+            if (_.isUndefined(room.memory.myTotalStructures) || structuresChanged) room.countMyStructures();
         }
         catch(err) {
             Game.notify('Error in room.js (Room.prototype.loop) for "' + room.name + '" : ' + err.stack ? err + '<br/>' + err.stack : err);
@@ -2844,6 +2848,7 @@ mod.execute = function() {
     });
 };
 mod.rebuildCostMatrix = function(roomName) {
+    console.log('rebuildCostMatrix forced', roomName);
     delete Memory.pathfinder[roomName];
 };
 mod.bestSpawnRoomFor = function(targetRoomName) {
