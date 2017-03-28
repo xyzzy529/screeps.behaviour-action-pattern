@@ -1074,7 +1074,6 @@ mod.extend = function(){
     Room.prototype.countMySites = function() {
         const numSites = _.size(this.myConstructionSites);
         if (!_.isUndefined(this.memory.myTotalSites) && numSites !== this.memory.myTotalSites) {
-            console.log(this.name, 'site count changed', numSites, this.memory.myTotalSites);
             Room.costMatrixInvalid.trigger(this);
         }
         this.memory.myTotalSites = numSites;
@@ -1082,7 +1081,6 @@ mod.extend = function(){
     Room.prototype.countMyStructures = function() {
         const numStructures = _.size(this.structures.my);
         if (!_.isUndefined(this.memory.myTotalStructures) && numStructures !== this.memory.myTotalStructures) {
-            console.log(this.name, 'structure count changed', numStructures, this.memory.myTotalStructures);
             Room.costMatrixInvalid.trigger(this);
         }
         this.memory.myTotalStructures = numStructures;
@@ -2771,12 +2769,10 @@ mod.flush = function(){
 mod.analyze = function(){
     const numSites = _.size(Game.constructionSites);
     const sitesChanged = !_.isUndefined(Memory.rooms.myTotalSites) && numSites !== Memory.rooms.myTotalSites;
-    if (sitesChanged) console.log('sitesChanged', numSites, Memory.rooms.myTotalSites);
     Memory.rooms.myTotalSites = numSites;
 
     const numStructures = _.size(Game.structures);
     const structuresChanged = !_.isUndefined(Memory.rooms.myTotalStructures) && numStructures !== Memory.rooms.myTotalStructures;
-    if (structuresChanged) console.log('structuresChanged', numStructures, Memory.rooms.myTotalStructures);
     Memory.rooms.myTotalStructures = numStructures;
 
     let getEnvironment = room => {
@@ -2848,7 +2844,7 @@ mod.execute = function() {
     });
 };
 mod.rebuildCostMatrix = function(roomName) {
-    console.log('rebuildCostMatrix forced', roomName);
+    if (DEBUG) logSystem(roomName, 'Removing invalid costmatrix to force a rebuild.')
     delete Memory.pathfinder[roomName];
 };
 mod.bestSpawnRoomFor = function(targetRoomName) {
