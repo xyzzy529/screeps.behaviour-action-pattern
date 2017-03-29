@@ -5,6 +5,14 @@ action.reachedRange = 0;
 action.isValidAction = function(creep){
     return creep.sum > 0;
 };
+action.isValidTarget = function(target, creep){
+    if (!target) return false;
+    if (target instanceof Flag) {
+        return _.eq(target, FlagDir.flagFilter(FLAG_COLOR.claim.spawn)) ||
+                _.eq(target, FlagDir.flagFilter(FLAG_COLOR.command.drop));
+    }
+    return true;
+};
 action.newTarget = function(creep) {
     // drop off at drop pile or the nearest spawn
     let drop = creep.pos.findClosestByRange(creep.room.structures.piles);
@@ -14,7 +22,7 @@ action.newTarget = function(creep) {
     if( !drop ) {
         drop = creep.pos.findClosestByRange(creep.room.find(FIND_FLAGS, FlagDir.flagFilter(FLAG_COLOR.claim.spawn)));
     }
-    return drop;
+    return drop || false;
 };
 action.work = function(creep) {
     let ret = OK;
