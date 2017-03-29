@@ -1,9 +1,9 @@
 let mod = {
-    CHATTY: false, // creeps say their current action
+    CHATTY: true, // (false) creeps say their current action
     HONK: true, // HONK when stored path is blocked by other creeps
     OOPS: true, // Creeps say Oops when dropping energy during dropmining
     SAY_ASSIGNMENT: true, // say a symbol representing the assiged action
-    SAY_PUBLIC: true, // creeps talk public
+    SAY_PUBLIC: false, // (true) creeps talk public
     DEBUG: true, // gimme some more details, use false not undefined to unset
     TRACE: false, // use Memory.debugTrace for low-level information
     PROFILE: false, // enable CPU profiling
@@ -16,13 +16,13 @@ let mod = {
     },
     TRAVELER_STUCK_TICKS: 2, // Number of ticks not moving to be considered stuck by the Traveler API
     TRAVELER_THRESHOLD: 5, // Average creep CPU usage/tick before warning about pathing cost, starts after 25 ticks
-    USE_UNBUILT_ROADS: true, // enabling this will set the pathing cost of road construction sites to that of roads
+    USE_UNBUILT_ROADS: false, // (true) enabling this will set the pathing cost of road construction sites to that of roads
     GRAFANA: false, // track for Grafana data
     GRAFANA_INTERVAL: 3, // loops between Grafana tracking - No lower than 3.
     CENSUS_ANNOUNCEMENTS: true, // log birth and death
     SELL_NOTIFICATION: true, // send mail when selling minerals
     SPAWN_INTERVAL: 5, // loops between regular spawn probe
-    ROOM_VISUALS: false, // display basic room statistics with RoomVisuals
+    ROOM_VISUALS: true, // (false) display basic room statistics with RoomVisuals
     ROOM_VISUALS_ALL: false, // displays visuals in all rooms you have vision in. Only your rooms when false.
     VISUALS: { // if ROOM_VISUALS is enabled, you can select what you want to display - All is a bit much for some people.
         ROOM: true, // displays basic info relative to the room
@@ -43,7 +43,7 @@ let mod = {
         WALL: false, // highlight weakest wall and display hits
         RAMPART: false, // highlight weakest rampart and display hits
         ROAD: false, // highlight weakest road and display hits
-        HEATMAP: false, // collects creep positioning to display a heatmap. WARNING: HIGH MEMORY USAGE
+        HEATMAP: true, // (false) collects creep positioning to display a heatmap. WARNING: HIGH MEMORY USAGE
         HEATMAP_INTERVAL: 2, // intervals between collections
     },
     SEMI_AUTOMATIC_CONSTRUCTION: true, // enables semi-automatic construction. Will construct based on flags.
@@ -108,15 +108,15 @@ let mod = {
     LIMIT_URGENT_REPAIRING: 750, // urgent repair when hits below
     GAP_REPAIR_DECAYABLE: 800, // decayables (e.g. roads) only get repaired when that much hits are missing
     MEMORY_RESYNC_INTERVAL: 500, // interval to reload spawns & towers present in a room
-    TIME_REPORT: 28000, // ticks between room reports
+    TIME_REPORT: 5400, // (28000) ticks between room reports
     REPORT_MAX_LENGTH: 500,
     REPORTS_PER_LOOP: 18,
     SEND_STATISTIC_REPORTS: true, // Set to true to receive room statistics per mail, otherwise set to false.
-    ROAD_CONSTRUCTION_ENABLE: false, // Set to False to disable automatic road construction, or to a number to enable for owned rooms reaching that RC Level. WARNING: HIGH MEMORY USAGE
+    ROAD_CONSTRUCTION_ENABLE: true, // (false) Set to False to disable automatic road construction, or to a number to enable for owned rooms reaching that RC Level. WARNING: HIGH MEMORY USAGE
     ROAD_CONSTRUCTION_INTERVAL: 500,
     ROAD_CONSTRUCTION_MIN_DEVIATION: 1.2,
     ROAD_CONSTRUCTION_ABS_MIN: 3,
-    TIME_ZONE: 1, // zone offset in hours (-12 through +12) from UTC
+    TIME_ZONE: -6, // zone offset in hours (-12 through +12) from UTC
     USE_SUMMERTIME: true, // Please define isSummerTime in global.js to suit to your local summertime rules
     SPAWN_DEFENSE_ON_ATTACK: true, // This will attempt to store enough to have a defense and spawn troops when invaded.
     MANAGED_CONTAINER_TRIGGER: 0.25, // managed containers get filled below this relative energy amount and emptied when above 1-this value
@@ -130,8 +130,8 @@ let mod = {
     CONSTRUCTION_PRIORITY: [STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_LINK,STRUCTURE_TERMINAL,STRUCTURE_STORAGE,STRUCTURE_TOWER,STRUCTURE_POWER_SPAWN,STRUCTURE_NUKER,STRUCTURE_OBSERVER,STRUCTURE_ROAD,STRUCTURE_CONTAINER,STRUCTURE_EXTRACTOR,STRUCTURE_LAB,STRUCTURE_WALL,STRUCTURE_RAMPART],
     CONTROLLER_SIGN: true,
     CONTROLLER_SIGN_MESSAGE: `Territory of ${_.chain(Game.spawns).values().first().get('owner.username').value()}, an Open Collaboration Society user! (https://github.com/ScreepsOCS)`,
-    CONTROLLER_SIGN_UPDATE: false, // Update sign message if user changes CONTROLLER_SIGN_MESSAGE
-    MINERS_AUTO_BUILD: false, // miners and remoteMiners will build their own containers if they are missing.
+    CONTROLLER_SIGN_UPDATE: true, // Update sign message if user changes CONTROLLER_SIGN_MESSAGE
+    MINERS_AUTO_BUILD: true, // miners and remoteMiners will build their own containers if they are missing.
     MINER_WORK_THRESHOLD: 50, // how long to wait before a miner checks for repairs/construction sites nearby again
     REMOTE_HAULER_MULTIPLIER: 1, // Max number of haulers spawned per source in a remote mining room.
     REMOTE_HAULER_CHECK_INTERVAL: 5, // how many ticks before we check to see if new haulers need spawninig?
