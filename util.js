@@ -1,6 +1,21 @@
 // All methods require a JSDoc comment describing it.
 // http://usejsdoc.org/
 module.exports = {
+/**
+ * Shows the Stack Trace and Invoke params
+ * @param  {Object}  callerInvoke arguments.callee.caller
+ * @param  {Boolean} [logIt=true] put thisOut to console; or just return String
+ * @return {string}               stack trace info
+ * Usage: Util.stackTrace(arguments.callee.caller);
+ *   must use arguments.callee.caller as param or 'from:' will not work.
+ */
+stackTrace(callerInvoke, logIt=true) {
+    var thisOut = 'from: '+callerInvoke.toString()+'\n';
+    var err = new Error();
+    thisOut += err.stack.substring(44)+'\n'; // skip over "Error\n at stackTrace ..." lines
+    if (logIt) logSystem('** stackTrace **',thisOut)
+    return thisOut;
+},
     /**
      * formats an integer into a readable value
      * @param {Number} number
@@ -14,7 +29,7 @@ module.exports = {
         }
         return number.toString();
     },
-    
+
     /**
      * Pad a number with a character
      * @param {Number} number - The number to pad
@@ -24,12 +39,14 @@ module.exports = {
      * @returns {string}
      */
     pad(number, padCharacter = '0', padLength = 2, padLengthMax = true) {
-        if (!padCharacter) padCharacter = '0';
-        if (padLengthMax) padLength -= number.toString().length;
+        if (!padCharacter)
+            padCharacter = '0';
+        if (padLengthMax)
+            padLength -= number.toString().length;
         const padString = _.times(padLength, n => padCharacter).join('');
         return padString + number;
     },
-    
+
     /**
      * Gets a property from an object and optionally sets the default
      * @param {Object} object - The object
@@ -47,7 +64,7 @@ module.exports = {
         }
         return r;
     },
-    
+
     /**
      * Sets a property on an object, optionally if the property doesn't already exist
      * @param {Object} object - The object
@@ -62,7 +79,7 @@ module.exports = {
         }
         _.set(object, path, value);
     },
-    
+
     /**
      * Calls a function if it exists
      * @param {Function} toCall - The function to call
@@ -70,9 +87,11 @@ module.exports = {
      * @returns {*} Will return whatever the function calls, if it exists
      */
     callIfExists(toCall, ...args) {
-        if (toCall) return toCall(...args);
-    },
-    
+        if (toCall)
+            return toCall(...args);
+        }
+    ,
+
     /**
      * Returns the result of the function or the value passed
      * @param {*} value
@@ -80,19 +99,22 @@ module.exports = {
      * @returns {*}
      */
     fieldOrFunction(value, ...args) {
-        return typeof value === 'function' ? value(...args) : value;
+        return typeof value === 'function'
+            ? value(...args)
+            : value;
     },
-    
+
     /**
      * Checks if the value is an object or function
      * @param {*} value - The value to check
      * @returns {Boolean}
      */
     isObject(value) {
-        if (value === null) return false;
+        if (value === null)
+            return false;
         return typeof value === 'function' || typeof value === 'object';
     },
-    
+
     /**
      * Translates an error code to the type
      * @param {Number} code - The error code / constant
@@ -114,10 +136,10 @@ module.exports = {
             11: 'ERR_TIRED',
             12: 'ERR_NO_BODYPART',
             14: 'ERR_RCL_NOT_ENOUGH',
-            15: 'ERR_GCL_NOT_ENOUGH',
+            15: 'ERR_GCL_NOT_ENOUGH'
         }[code * -1];
     },
-    
+
     /**
      * Returns a HTML formatted string with the style applied
      * @param {Object|string} style - Either a colour string or an object with CSS properties
@@ -137,7 +159,7 @@ module.exports = {
         }
         return msg;
     },
-    
+
     /**
      * Logs an error to console
      * @param {string} message - A string describing the error
@@ -151,7 +173,7 @@ module.exports = {
             console.log(msg);
         }
     },
-    
+
     /**
      * Log an error for a creep's action, given an error code
      * @param {Creep} creep - The creep causing the error
@@ -162,13 +184,15 @@ module.exports = {
         if (code) {
             const error = Util.translateErrorCode(code);
             if (creep) {
-                creep.say(error ? error : code);
+                creep.say(error
+                    ? error
+                    : code);
             }
             Game.notify(message, 120);
         }
         console.log(Util.dye(CRAYON.error, message));
     },
-    
+
     /**
      * Log text as a system message showing a "referrer" as a label
      * @param {string} roomName - The name of the room being logged from
@@ -178,7 +202,7 @@ module.exports = {
         const text = Util.dye(CRAYON.system, roomName);
         console.log(Util.dye(CRAYON.system, `<a href="/a/#!/room/${roomName}">${text}</a> &gt;`), ...message);
     },
-    
+
     /**
      * Trace an error or debug statement
      * @param {string} category - The error category
@@ -197,12 +221,13 @@ module.exports = {
         }
         function noMemoryWhere(e) {
             const setting = Memory.debugTrace.no[e[0]];
-            return setting === true || e[0] in Memory.debugTrace.no &&
-                (setting === e[1] || (!e[1] && setting === `${e[1]}`));
+            return setting === true || e[0] in Memory.debugTrace.no && (setting === e[1] || (!e[1] && setting === `${e[1]}`));
         }
-        if (!(Memory.debugTrace[category] === true || _(entityWhere).reduce(reduceMemoryWhere, 1) === true)) return;
-        if (Memory.debugTrace.no && _(entityWhere).pairs().some(noMemoryWhere) === true) return;
-        
+        if (!(Memory.debugTrace[category] === true || _(entityWhere).reduce(reduceMemoryWhere, 1) === true))
+            return;
+        if (Memory.debugTrace.no && _(entityWhere).pairs().some(noMemoryWhere) === true)
+            return;
+
         let msg = message;
         let key;
         if (message.length === 0 && category) {
@@ -211,7 +236,7 @@ module.exports = {
                 key = leaf;
                 leaf = entityWhere[leaf];
             } while (entityWhere[leaf] && leaf !== category);
-            
+
             if (leaf && leaf !== category) {
                 if (typeof leaf === 'string') {
                     msg = [leaf];
@@ -220,22 +245,24 @@ module.exports = {
                 }
             }
         }
-        
+
         console.log(Game.time, Util.dye(CRAYON.error, category), ...msg, Util.dye(CRAYON.birth, JSON.stringify(entityWhere)));
     },
-    
+
     /**
      * Converts the date to local time
      * @param {Date} date - Server date
      * @returns {Date}
      */
     toLocalDate(date) {
-        if (!date) date = new Date();
+        if (!date)
+            date = new Date();
         let offset = TIME_ZONE;
-        if (USE_SUMMERTIME && isSummerTime(date)) offset++;
+        if (USE_SUMMERTIME && isSummerTime(date))
+            offset++;
         return new Date(date.getTime() + (3600000 * offset));
     },
-    
+
     /**
      * Formats the date object to a date-time string
      * @param {Date} date - The date to format
@@ -245,7 +272,7 @@ module.exports = {
         const pad = Util.pad;
         return pad(date.getFullYear(), 0, 4) + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate()) + ' ' + Util.toTimeString(date);
     },
-    
+
     /**
      * Formats the date object to a time string
      * @param {Date} date - The date to format
@@ -255,7 +282,7 @@ module.exports = {
         const pad = Util.pad;
         return pad(date.getHours()) + ':' + pad(date.getMinutes()) + ':' + pad(date.getSeconds());
     },
-    
+
     /**
      * Checks if it's summertime/daylight savings in the date provided
      * @param {Date} date - A date object to check
@@ -263,7 +290,7 @@ module.exports = {
      */
     isSummerTime(date) {
         if (!Reflect.has(Date.prototype, 'stdTimezoneOffset')) {
-            Date.prototype.stdTimezoneOffset = function () {
+            Date.prototype.stdTimezoneOffset = function() {
                 const jan = new Date(this.getFullYear(), 0, 1);
                 const jul = new Date(this.getFullYear(), 6, 1);
                 return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
@@ -271,16 +298,16 @@ module.exports = {
         }
         if (!Reflect.has(Date.prototype, 'dst')) {
             Object.defineProperty(Date.prototype, 'dst', {
-                get: function () {
+                get: function() {
                     return this.getTimezoneOffset() < this.stdTimezoneOffset();
                 },
-                configurable: true,
+                configurable: true
             });
         }
-        
+
         return date.dst;
     },
-    
+
     /**
      * Adds a Game object to an array by providing the object ID
      * @param {Array<*>} array - The array to add the object to
@@ -288,12 +315,14 @@ module.exports = {
      * @returns {Array<*>}
      */
     addById(array, id) {
-        if (!array) array = [];
+        if (!array)
+            array = [];
         const obj = Game.getObjectById(id);
-        if (obj) array.push(obj);
+        if (obj)
+            array.push(obj);
         return array;
     },
-    
+
     /**
      * Sends room statistics via. game email
      */
@@ -309,7 +338,7 @@ module.exports = {
             _.forEach(mails, Game.notify);
         }
     },
-    
+
     /**
      * Gets the distances between two rooms, respecting natural walls
      * @param {string} fromRoom - Starting room
@@ -317,51 +346,63 @@ module.exports = {
      * @returns {Number}
      */
     routeRange(fromRoom, toRoom) {
-        if (fromRoom === toRoom) return 0;
-        
+        if (fromRoom === toRoom)
+            return 0;
+
         return Util.get(Memory, `routeRange.${fromRoom}.${toRoom}`, function() {
-            const room = fromRoom instanceof Room ? fromRoom : Game.rooms[fromRoom];
-            if (!room) return Room.roomDistance(fromRoom, toRoom, false);
-            
+            const room = fromRoom instanceof Room
+                ? fromRoom
+                : Game.rooms[fromRoom];
+            if (!room)
+                return Room.roomDistance(fromRoom, toRoom, false);
+
             const route = room.findroute(toRoom, false, false);
-            if (!route) return Room.roomDistance(fromRoom, toRoom, false);
-            
-            return route === ERR_NO_PATH ? Infinity : route.length;
+            if (!route)
+                return Room.roomDistance(fromRoom, toRoom, false);
+
+            return route === ERR_NO_PATH
+                ? Infinity
+                : route.length;
         });
     },
-    
+
     /**
      * Paves the room utilising Brown/Brown Pavement Art flags
      * @param {string} roomName - The room to pave
      */
     pave(roomName) {
         const flags = _.values(Game.flags).filter(f => f.pos.roomName === roomName && f.color === FLAG_COLOR.pavementArt.color && f.secondaryColor === FLAG_COLOR.pavementArt.secondaryColor)
-        const val = Memory.pavementArt[roomName] === undefinede ? '' : Memory.pavementArt[roomName];
+        const val = Memory.pavementArt[roomName] === undefinede
+            ? ''
+            : Memory.pavementArt[roomName];
         const posMap = flag => `x${flag.pos.x}y${flag.pos.y}`;
-        Memory.pavementArt[roomName] = val + flags.map(posMap).join('')+'x';
+        Memory.pavementArt[roomName] = val + flags.map(posMap).join('') + 'x';
         const setSite = flag => flag.pos.createConstructionSite(STRUCTURE_WALL);
         flags.forEach(setSite);
         const remote = f => f.remove();
         flags.forEach(remove);
     },
-    
+
     /**
      * Unpaves the room
      * @param {string} roomName - The room to unpave
      * @returns {Boolean} Whether or not the method was sucessful
      */
     unpave(roomName) {
-        if (!Memory.pavementArt || !Memory.pavementArt[roomName]) return false;
+        if (!Memory.pavementArt || !Memory.pavementArt[roomName])
+            return false;
         const room = Game.rooms[roomName];
-        if (!room) return false;
+        if (!room)
+            return false;
         const unpaved = structure => Memory.pavementArt[roomName].indexOf(`x${structure.pos.x}y${structure.pos.y}x`) >= 0;
         const structures = room.structures.all.filter(unpaved);
         const destroy = structure => structure.destroy();
-        if (structures) structures.forEach(destroy);
+        if (structures)
+            structures.forEach(destroy);
         delete Memory.pavementArt[roomName];
         return true;
     },
-    
+
     /**
      * Generate a GUID. Note: This is not guaranteed to be 100% unique.
      * @returns {string}
@@ -369,18 +410,22 @@ module.exports = {
     guid() {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
             const r = Math.random() * 16 | 0;
-            const v = c === 'x' ? r : (r & 0x3 | 0x8);
+            const v = c === 'x'
+                ? r
+                : (r & 0x3 | 0x8);
             return v.toString(16);
         });
     },
-    
+
     /**
      * List the current memory usage of a given path in memory in kb
      * @param {string} key - The location in memory to check eg 'rooms.E1S1.statistics'
      * @returns {string}
      */
     memoryUsage(key) {
-        const mem = key ? Memory[key] : Memory;
+        const mem = key
+            ? Memory[key]
+            : Memory;
         let string = '<table><tr><th>Key</th><th>Size (kb)</th></tr>';
         let total = 0;
         for (const key in mem) {
@@ -391,31 +436,31 @@ module.exports = {
         string += `<tr><td>Total</td><td>${_.round(total, 2)}</td></tr></table>`;
         return string;
     },
-    
+
     /**
      * Reset all profiling data
      */
     resetProfiler() {
         Util.loadProfiler(true);
     },
-    
+
     /**
      * Load existing profiling data or intialize to defaults.
      * @param {Boolean} [reset=false] - Optionally reset all profiling data
      */
-    loadProfiler(reset=false) {
+    loadProfiler(reset = false) {
         if (reset) {
             Util.logSystem('Profiler', 'resetting profiler data.');
             Memory.profiler = {
                 totalCPU: 0,
                 totalTicks: 0,
                 types: {},
-                validTick: Game.time,
+                validTick: Game.time
             };
         }
         global.profiler = Memory.profiler;
     },
-    
+
     /**
      * Creates and returns a profiling object, use checkCPU to compare usage between calls
      * @param {string} name - The name to use when reporting
@@ -428,9 +473,7 @@ module.exports = {
         if (PROFILE || DEBUG) {
             if (_.isUndefined(Memory.profiler)) {
                 Util.resetProfiler();
-            } else if (!global.profiler ||
-                global.profiler.validTick !== Memory.profiler.validTick ||
-                global.profiler.totalTicks < Memory.profiler.totalTicks) {
+            } else if (!global.profiler || global.profiler.validTick !== Memory.profiler.validTick || global.profiler.totalTicks < Memory.profiler.totalTicks) {
                 Util.loadProfiler();
             }
             const onLoad = startCPU || Game.cpu.getUsed();
@@ -452,7 +495,7 @@ module.exports = {
                         Util.set(global.profiler.types, type, {
                             totalCPU: 0,
                             count: 0,
-                            totalCount: 0,
+                            totalCount: 0
                         });
                         global.profiler.types[type].totalCPU += used;
                         glboal.profiler.types[type].count++;
@@ -470,22 +513,23 @@ module.exports = {
                 const avgCPU = global.profiler.totalCPU / global.profiler.totalTicks;
                 if (PROFILE && PROFILING.AVERAGE_USAGE && _.size(global.profiler.types) > 0) {
                     let heading = '';
-                    while (heading.length < 30) heading += ' ';
+                    while (heading.length < 30)
+                        heading += ' ';
                     Util.logSystem(heading, '(avg/creep/tick) (active) (weighted avg) (executions)');
                     for (const type in global.profiler.types) {
                         const data = global.profiler.types[type];
                         data.totalCount += data.count;
                         const typeAvg = _.round(data.totalCPU / data.totalCount, 3);
                         let heading = type + ': ';
-                        while (heading < 30) heading += ' ';
-                        Util.logSystem(heading, '\t' + typeAvg + '\t\t' +
-                            data.count + '\t\t' + _.round(typeAvg * data.count, 3) + '\t\t' + data.totalCount);
+                        while (heading < 30)
+                            heading += ' ';
+                        Util.logSystem(heading, '\t' + typeAvg + '\t\t' + data.count + '\t\t' + _.round(typeAvg * data.count, 3) + '\t\t' + data.totalCount);
                         data.count = 0;
                     }
                 }
-                Util.logSystem(name, ' loop:' + _.round(totalUsed, 2), 'other:' + _.round(onLoad, 2), 'avg:' + _.round(avgCPU, 2), 'ticks:' +
-                    global.profiler.totalTicks, 'bucket:' + Game.cpu.bucket, 2);
-                if (PROFILE) console.log('\n');
+                Util.logSystem(name, ' loop:' + _.round(totalUsed, 2), 'other:' + _.round(onLoad, 2), 'avg:' + _.round(avgCPU, 2), 'ticks:' + global.profiler.totalTicks, 'bucket:' + Game.cpu.bucket, 2);
+                if (PROFILE)
+                    console.log('\n');
                 Memory.profiler = global.profiler;
             };
         }
