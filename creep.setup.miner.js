@@ -4,8 +4,8 @@ setup.minControllerLevel = 1;
 setup.default = {
     fixedBody: {
         [CARRY]: 1,
-        [MOVE]: 1,
         [WORK]: 3,
+        [MOVE]: 1,
     },
     multiBody: [WORK, MOVE],
     minAbsEnergyAvailable: 500,
@@ -24,8 +24,8 @@ setup.low = {
 setup.high = {
     fixedBody: {
         [CARRY]: 1,
-        [MOVE]: 1,
         [WORK]: 4,
+        [MOVE]: 1,
     },
     multiBody: [WORK, MOVE],
     minAbsEnergyAvailable: 500,

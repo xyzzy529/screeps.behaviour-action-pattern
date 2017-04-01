@@ -1,5 +1,6 @@
 // useful commands
 
+console.log(JSON.stringify(Object) );
 // Recycle a creep
 Creep.action.recycling.assign(Game.creeps['<creepName>']);
 
@@ -10,26 +11,39 @@ _.forEach(Memory.rooms, r => delete r.roadConstructionTrace);
 _.forEach(Game.constructionSites, s => s.remove());
 
 // spawn something...
-Game.spawns['<spawnName>'].createCreepBySetup(Creep.setup.worker);
+Game.spawns['Spawn1'].createCreepBySetup(Creep.setup.worker);
 // or
 Game.rooms['<roomName>'].spawnQueueLow.push({parts:[MOVE,WORK,CARRY],name:'max',setup:'worker'});
+Game.spawns['E81N77'].spawnQueueLow.push({parts:[MOVE,MOVE,WORK,CARRY,CARRY,CARRY,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH], name:'max', setup:'melee'});
+
+Game.spawns['Spawn1'].createCreep([MOVE,MOVE,WORK,CARRY,CARRY,CARRY,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH], 'max');
+
 
 // clear spawn queues for a room
 // clear low priority queue
 Memory.rooms['<roomName>'].spawnQueueLow = [0];
 // clear medium priority queue
 Memory.rooms['<roomName>'].spawnQueueMedium = [0];
-// clear high priority queue 
+// clear high priority queue
 Memory.rooms['<roomName>'].spawnQueueHigh = [0];
 
 // move Creep
 Game.creeps['<creepName>'].move(RIGHT);
 
+// Path moves (not persistant, must be issued each turn)
+Game.creeps['worker-800-2'].moveTo(29,31,{visualizePathStyle: {fill:'transparent',stroke:'#fff',lineStyle:'dashed',strokeWidth: .15,opacity: .1}});
+
 // force recycle a Creep
 Game.creeps['<creepName>'].data.creepType="recycler";
+Creep.action.recycling.assign(Game.creeps['<creepName>']);
 
-// To override a module file create a copy of an existing module and name it "custom.<originalModuleName>". Then call this method (without ".js"): 
+// To override a module file create a copy of an existing module...
+// Name it "custom.<originalModuleName>" or "viral.<originalModuleName>".
+// see:
+// Then call this method (without ".js"):
 getPath('<originalModuleName>', true);
+getPath('viral.creep.setup.upgrader', true);
+
 // To completely re-evaluate all modules:
 delete Memory.modules;
 
@@ -51,3 +65,7 @@ Game.rooms['<roomName>'].setStore('<structure>', '<resource>', '<amount>');
 
 //resource management - one off amount in container
 Game.rooms['<roomName>'].placeOrder('<structure>', '<resource>', '<amount>');
+
+// ***** ToDo ideas ******
+DRIVE_BY_REPAIR_RANGE: 2, // change from box search to line in front, then keep location as it passes
+//Add displays to Browser instead of browser console window.

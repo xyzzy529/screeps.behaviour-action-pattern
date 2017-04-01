@@ -22,6 +22,7 @@ global.getPath = (modName, reevaluate = false) => {
     if( reevaluate || !Memory.modules[modName] ){
         // find base file
         let path = './custom.' + modName;
+		// path = './' + modName + '.custom'; <= use this pattern for all files, better folder/filename placement?
         if(!validatePath(path)) {
             path = './internal.' + modName;
             if(!validatePath(path)) 
@@ -82,6 +83,7 @@ global.infect = (mod, namespace, modName) => {
     if( Memory.modules[namespace][modName] ) {
         // get module from stored viral override path
         let viralOverride = tryRequire(`./${namespace}.${modName}`);
+		// `./${modName}.${namespace}` ToDo
         // override
         if( viralOverride ) {
             global.inject(mod, viralOverride, namespace);

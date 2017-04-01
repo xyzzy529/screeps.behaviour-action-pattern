@@ -20,16 +20,16 @@ mod.nextAction = function(creep){
         Creep.action.travelling.assignRoom(creep, creep.data.homeRoom);
         return;
     }
-    const outflowPriority = [
+    const outflowPriority = [ // original: feed, charge, fuel
+        Creep.action.fueling,
         Creep.action.feeding,
         Creep.action.charging,
-        Creep.action.fueling,
     ];
     let priority = outflowPriority;
     if( creep.sum * 2 < creep.carryCapacity ) {
-        priority = [
-            Creep.action.uncharging,
+        priority = [ // original: pick, uncharge
             Creep.action.picking,
+            Creep.action.uncharging,
         ];
         Creep.action.withdrawing.debounce(creep, outflowPriority, function(withdrawing) {
             priority.push(withdrawing);

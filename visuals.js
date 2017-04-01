@@ -170,7 +170,7 @@ module.exports = class Visuals {
         let x;
         let y = 0;
         // Room Name, centered middle
-        vis.text(`Room: ${vis.roomName}`, 24.5, ++y);
+        vis.text(`Room: ${vis.roomName}`, 5.5, ++y);
         // Display bars: RCL, GCL, CPU, Bucket, Tick #
         const bufferWidth = 1;
         const sectionWidth = 49 / 5;

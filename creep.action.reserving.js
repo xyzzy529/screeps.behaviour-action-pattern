@@ -52,13 +52,26 @@ action.work = function(creep){
     var workResult;
 
     creep.controllerSign();
-
+	
+	/* from creep.action.claiming.js */
+	if (!creep.target.my) {
+		if (creep.target.owner) {
+			workResult = creep.attackController(creep.target);
+		} else {
+			workResult = creep.claimController(creep.target);
+			if (workResult != OK) {
+				workResult = creep.reserveController(creep.target);
+			}
+		}
+	}
+	/* Original
     if( creep.target.owner && !creep.target.my ){
         workResult = creep.attackController(creep.target);
     }
     else {
         workResult = creep.reserveController(creep.target);
     }
+	*/
     return workResult;
 };
 action.onAssignment = function(creep, target) {
