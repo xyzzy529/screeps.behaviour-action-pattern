@@ -1,4 +1,5 @@
 let mod = { // (option) is default, so when you change them you can go back
+    SUICIDE_UNKNOWN: false, // (false) set any unknown creep in population to suicide()
     CHATTY: true, // (false) creeps say their current action, verbose
     HONK: true, // (true) HONK when stored path is blocked by other creeps
     OOPS: true, // (true) Creeps say Oops when dropping energy during dropmining
@@ -149,7 +150,7 @@ let mod = { // (option) is default, so when you change them you can go back
     CONTROLLER_SIGN_UPDATE: true, // (true) Update sign message if user changes CONTROLLER_SIGN_MESSAGE
     MINERS_AUTO_BUILD: true, // (true) miners and remoteMiners will build their own containers if they are missing.
     MINER_WORK_THRESHOLD: 50, // how long to wait before a miner checks for repairs/construction sites nearby again
-    REMOTE_HAULER_MULTIPLIER: 0.5, // (1) Max number of haulers spawned per source in a remote mining room.
+    REMOTE_HAULER_MULTIPLIER: 2, // (1) Max number of haulers spawned per source in a remote mining room.
     REMOTE_HAULER_CHECK_INTERVAL: 5, // how many ticks before we check to see if new haulers need spawninig?
     REMOTE_RESERVE_HAUL_CAPACITY: 0.1, // Percent of allocated haul capacity before sending reservers.
     REMOTE_HAULER_REHOME: false, // (false) May haulers choose closer storage for delivery?
