@@ -17,12 +17,28 @@ setup.maxMulti = function(room) {
     let hardLimit = 50;
     return Math.min(11, multi, hardLimit);
 };
+setup.maxCountLast = {
+    Val: -1,
+    Time: 0
+}
 setup.maxCount = function(room) {
-    console.log("maxCountCalc function! Room=|" + room.name + "|");
-
+    let start = Game.cpu.getUsed();
+    if (setup.maxCountLast.Time == Game.time) { // fast return value, no re-calc
+        //console.log(`maxCount fast return`);
+        return setup.maxCountLast.Val;
+    } else {
+        setup.maxCountLast.Time = Game.time;
+        setup.maxCountLast.Val = setup.maxCountCalc(room);
+        let used = Game.cpu.getUsed() - start;
+        //console.log(`maxCountCalc return Last.Time=|${setup.maxCountLast.Time}| Game.time=|${Game.time}| CPU=${used}`);
+        return setup.maxCountLast.Val;
+    }
+}
+//setup.maxCount = function(room){
+setup.maxCountCalc = function(room){
+    //console.log("maxCountCalc function! Room=|" + room.name + "|");
     /* if (debug) */
     //Util.stackTrace(arguments.callee.caller);
-
     // Don't spawn upgrader if...
     if ( // Room under attack
     room.situation.invasion ||
@@ -94,10 +110,8 @@ setup.low = {
     },
     minAbsEnergyAvailable: 300,
     minEnergyAvailable: 1,
-/*    maxMulti: room => setup.maxMulti(room),
-    maxCount: room => setup.maxCount(room) */
-    maxMulti: setup.default.maxMulti,
-    maxCount: setup.default.maxCount,
+    maxMulti: room => setup.maxMulti(room),
+    maxCount: room => setup.maxCount(room),
 };
 setup.level8 = {
     fixedBody: {
@@ -108,7 +122,7 @@ setup.level8 = {
     minAbsEnergyAvailable: 1700,
     minEnergyAvailable: 0.5,
     maxMulti: CONTROLLER_MAX_UPGRADE_PER_TICK / UPGRADE_CONTROLLER_POWER,
-    maxCount: setup.default.maxCount,
+    maxCount: room => setup.maxCount(room),
 };
 setup.RCL = {
     1: setup.none,
