@@ -26,7 +26,7 @@ mod.nextAction = function(creep){
         Creep.action.charging,
     ];
     let priority = outflowPriority;
-    if( creep.sum * 2 < creep.carryCapacity ) {
+    if( creep.sum < creep.carryCapacity ) {  // removed creep.sum*2
         priority = [ // original: pick, uncharge
             Creep.action.picking,
             Creep.action.uncharging,
