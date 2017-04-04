@@ -18,10 +18,10 @@ setup.maxMulti = function(room) {
     return Math.min(11, multi, hardLimit);
 };
 setup.maxCount = function(room) {
-    console.log("maxCount Original function! Room=|" + room.name + "|");
+    console.log("maxCountCalc function! Room=|" + room.name + "|");
 
     /* if (debug) */
-    Util.stackTrace(arguments.callee.caller);
+    // Util.stackTrace(arguments.callee.caller);
     // Don't spawn upgrader if...
     if ( // Room under attack
     room.situation.invasion ||

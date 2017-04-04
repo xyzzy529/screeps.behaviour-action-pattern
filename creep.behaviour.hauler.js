@@ -7,7 +7,7 @@ mod.run = function(creep) {
     if( creep.action == null || creep.action.name == 'idle' ) {
         this.nextAction(creep);
     }
-    
+
     // Do some work
     if( creep.action && creep.target ) {
         creep.action.step(creep);
@@ -39,6 +39,8 @@ mod.nextAction = function(creep){
     } else {
         priority = outflowPriority.concat([
             Creep.action.storing,
+            Creep.action.building, // added so no idle
+            Creep.action.upgrading, // added so no idle
             Creep.action.idle,
         ]);
         if ( creep.sum > creep.carry.energy ||
