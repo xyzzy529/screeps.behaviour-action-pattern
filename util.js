@@ -1,21 +1,22 @@
 // All methods require a JSDoc comment describing it.
 // http://usejsdoc.org/
 module.exports = {
-/**
- * Shows the Stack Trace and Invoke params
- * @param  {Object}  callerInvoke arguments.callee.caller
- * @param  {Boolean} [logIt=true] put thisOut to console; or just return String
- * @return {string}               stack trace info
- * Usage: Util.stackTrace(arguments.callee.caller);
- *   must use arguments.callee.caller as param or 'from:' will not work.
- */
-stackTrace(callerInvoke, logIt=true) {
-    var thisOut = 'from: '+callerInvoke.toString()+'\n';
-    var err = new Error();
-    thisOut += err.stack.substring(44)+'\n'; // skip over "Error\n at stackTrace ..." lines
-    if (logIt) logSystem('** stackTrace **',thisOut)
-    return thisOut;
-},
+    /**
+     * Shows the Stack Trace and Invoke params
+     * @param  {Object}  callerInvoke arguments.callee.caller
+     * @param  {Boolean} [logIt=true] put thisOut to console; or just return String
+     * @return {string}               stack trace info
+     * Usage: Util.stackTrace(arguments.callee.caller);
+     *   must use arguments.callee.caller as param or 'from:' will not work.
+     */
+    stackTrace(callerInvoke, logIt = true) {
+        let thisOut = 'from: ' + callerInvoke.toString() + '\n';
+        let err = new Error();
+        thisOut += err.stack.substring(44) + '\n'; // skip over "Error\n at stackTrace ..." lines
+        if (logIt)
+            logSystem('** stackTrace **', thisOut);
+        return thisOut;
+    },
     /**
      * formats an integer into a readable value
      * @param {Number} number
