@@ -21,7 +21,8 @@ setup.maxCount = function(room) {
     console.log("maxCountCalc function! Room=|" + room.name + "|");
 
     /* if (debug) */
-    // Util.stackTrace(arguments.callee.caller);
+    //Util.stackTrace(arguments.callee.caller);
+
     // Don't spawn upgrader if...
     if ( // Room under attack
     room.situation.invasion ||
