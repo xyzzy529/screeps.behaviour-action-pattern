@@ -6,6 +6,10 @@ Game.creeps['miner-250-3'].data.determinatedTarget ='source-mine-id'
 
 // Recycle a creep
 Creep.action.recycling.assign(Game.creeps['<creepName>']);
+// healer
+Game.creeps['guard-W3S97g2-1'].heal(Game.creeps['guard-W3S97g2-1']);
+Game.creeps['guard-W3S97g1-1'].heal(Game.creeps['guard-W3S97g2-1']);
+Game.creeps['guard-W3S97g3-1'].heal(Game.creeps['guard-W3S97g2-1']);
 
 // flush road construction traces
 _.forEach(Memory.rooms, r => delete r.roadConstructionTrace);
@@ -16,13 +20,29 @@ _.forEach(Game.constructionSites, s => s.remove());
 // spawn something...
 Game.spawns['Spawn1'].createCreepBySetup(Creep.setup.upgrader);
 Game.spawns['Spawn1'].createCreepBySetup(Creep.setup.worker);
+Game.spawns['Spawn1'].createCreepBySetup(Creep.setup.ranger);
 // or
 Game.rooms['<roomName>'].spawnQueueLow.push({parts:[MOVE,WORK,CARRY],name:'max',setup:'worker'});
-Game.spawns['E81N77'].spawnQueueLow.push({parts:[MOVE,MOVE,WORK,CARRY,CARRY,CARRY,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH], name:'max', setup:'melee'});
+Game.rooms['W3S96'].spawnQueueHigh.push({parts:[
+  RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,
+  TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,
+  MOVE,MOVE,MOVE,MOVE,
+], name:'max', setup:'ranger'});
 
-Game.spawns['Spawn1'].createCreep([MOVE,MOVE,WORK,CARRY,CARRY,CARRY,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH], 'max');
+Game.spawns['Spawn1'].createCreep([
+    RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,
+    TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,
+    MOVE,MOVE,MOVE,MOVE,
+], 'max');
+CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,
+WORK,WORK,WORK,
+ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,
+TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,
 
-
+console.log(JSON.stringify(
+  Game.rooms['W3S96'].spawnQueueLow.forEach(function (s) {console.log(s.name)})
+);
+Game.rooms['W3S96'].spawnQueueLow
 // clear spawn queues for a room
 // clear low priority queue
 Memory.rooms['W3S96'].spawnQueueLow = [0];
@@ -82,6 +102,6 @@ Game.rooms['<roomName>'].setStore('<structure>', '<resource>', '<amount>');
 //resource management - one off amount in container
 Game.rooms['<roomName>'].placeOrder('<structure>', '<resource>', '<amount>');
 
-// ***** ToDo ideas ******
+// ***** TODO ideas ******
 DRIVE_BY_REPAIR_RANGE: 2, // change from box search to line in front, then keep location as it passes
 //Add displays to Browser instead of browser console window.
