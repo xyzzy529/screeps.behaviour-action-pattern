@@ -7,7 +7,7 @@ mod.run = function(creep) {
     if( creep.action == null || creep.action.name == 'idle' ) {
         this.nextAction(creep);
     }
-    
+
     // Do some work
     if( creep.action && creep.target ) {
         creep.action.step(creep);
@@ -35,7 +35,7 @@ mod.nextAction = function(creep){
                 else if( this.assign(creep, Creep.action.storing) ) return; // prefer storage
             }
             if( this.assign(creep, Creep.action.charging) ) return;
-            // no deposit :/ 
+            // no deposit :/
             // try spawn & extensions
             if( this.assign(creep, Creep.action.feeding) ) return;
             this.assign(creep, Creep.action.dropping);
@@ -55,9 +55,9 @@ mod.nextAction = function(creep){
             return;
         }
         // picking last until we have strategies that can compare cost vs benefit otherwise remoteHaulers bounce between piles of dropped energy
+        if( this.assign(creep, Creep.action.picking) ) return;
         if( this.assign(creep, Creep.action.uncharging) ) return;
         // if( this.assign(creep, Creep.action.robbing) ) return;
-        if( this.assign(creep, Creep.action.picking) ) return;
         // wait
         if ( creep.sum === 0 ) {
             let source = creep.pos.findClosestByRange(creep.room.sources);
@@ -87,7 +87,7 @@ mod.nextAction = function(creep){
         this.assign(creep, Creep.action.recycling, mother);
     }
 };
-mod.assign = function(creep, action, target){        
+mod.assign = function(creep, action, target){
     return (action.isValidAction(creep) && action.isAddableAction(creep) && action.assign(creep, target));
 };
 mod.gotoTargetRoom = function(creep){
