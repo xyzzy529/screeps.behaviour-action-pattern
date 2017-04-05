@@ -28,9 +28,9 @@ mod.extend = function(){
             }
         }
     };
-    
-    // Check if a creep has body parts of a certain type anf if it is still active. 
-    // Accepts a single part type (like RANGED_ATTACK) or an array of part types. 
+
+    // Check if a creep has body parts of a certain type anf if it is still active.
+    // Accepts a single part type (like RANGED_ATTACK) or an array of part types.
     // Returns true, if there is at least any one part with a matching type present and active.
     Creep.prototype.hasActiveBodyparts = function(partTypes) {
         return this.hasBodyparts(partTypes, this.body.length - Math.ceil(this.hits * 0.01));
@@ -111,7 +111,7 @@ mod.extend = function(){
             }
             if( this.flee ) {
                 this.fleeMove();
-                Creep.behaviour.ranger.heal(this);
+                Creep.behaviour.ranger.medic(this);
                 if( SAY_ASSIGNMENT ) this.say(String.fromCharCode(10133), SAY_PUBLIC);
             }
             p.checkCPU(this.name, 5, this.data ? this.data.creepType : 'noType');
@@ -255,7 +255,7 @@ mod.extend = function(){
             if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, Action:'repairing', Creep:'repairNearby'}, 'no WORK');
         }
     };
-    
+
     Creep.prototype.controllerSign = function() {
         if(CONTROLLER_SIGN && (!this.room.controller.sign || this.room.controller.sign.username != this.owner.username || (CONTROLLER_SIGN_UPDATE && this.room.controller.sign.text != CONTROLLER_SIGN_MESSAGE))) {
             this.signController(this.room.controller, CONTROLLER_SIGN_MESSAGE);
@@ -292,7 +292,7 @@ mod.extend = function(){
                 }
                 return this._sum;
             }
-        }, 
+        },
         'threat': {
             configurable: true,
             get: function() {
