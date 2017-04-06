@@ -28,9 +28,9 @@ mod.extend = function(){
             }
         }
     };
-    
-    // Check if a creep has body parts of a certain type anf if it is still active. 
-    // Accepts a single part type (like RANGED_ATTACK) or an array of part types. 
+
+    // Check if a creep has body parts of a certain type anf if it is still active.
+    // Accepts a single part type (like RANGED_ATTACK) or an array of part types.
     // Returns true, if there is at least any one part with a matching type present and active.
     Creep.prototype.hasActiveBodyparts = function(partTypes) {
         return this.hasBodyparts(partTypes, this.body.length - Math.ceil(this.hits * 0.01));
@@ -111,7 +111,7 @@ mod.extend = function(){
             }
             if( this.flee ) {
                 this.fleeMove();
-                Creep.behaviour.ranger.heal(this);
+                Creep.behaviour.ranger.medic(this);
                 if( SAY_ASSIGNMENT ) this.say(String.fromCharCode(10133), SAY_PUBLIC);
             }
             p.checkCPU(this.name, 5, this.data ? this.data.creepType : 'noType');
@@ -227,18 +227,17 @@ mod.extend = function(){
         if (this.room.controller && this.room.controller.owner && !(this.room.my || this.room.reserved || this.room.ally)) return;
         // if it has energy and a work part, remoteMiners do repairs once the source is exhausted.
         if(this.carry.energy > 0 && this.hasActiveBodyparts(WORK)) {
-            const repairRange = this.data && this.data.creepType === 'remoteHauler' ? REMOTE_HAULER.DRIVE_BY_REPAIR_RANGE : DRIVE_BY_REPAIR_RANGE;
-            let nearby = this.pos.findInRange(this.room.structures.repairable, repairRange);
+            let nearby = this.pos.findInRange(this.room.structures.repairable, DRIVE_BY_REPAIR_RANGE);
             if( nearby && nearby.length ){
                 if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'repairing', Creep:'repairNearby'}, nearby[0].pos);
                 this.repair(nearby[0]);
             } else {
                 if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'repairing', Creep:'repairNearby'}, 'none');
                 // enable remote haulers to build their own roads and containers
-                if( REMOTE_HAULER.DRIVE_BY_BUILDING && this.data && this.data.creepType === 'remoteHauler' ) {
+                if( REMOTE_HAULER_DRIVE_BY_BUILDING && this.data && this.data.creepType === 'remoteHauler' ) {
                     // only search in a range of 1 to save cpu
-                    let nearby = this.pos.findInRange(this.room.myConstructionSites, REMOTE_HAULER.DRIVE_BY_BUILD_RANGE, {filter: (site) =>{
-                        return site.my && REMOTE_HAULER.DRIVE_BY_BUILD_ALL ||
+                    let nearby = this.pos.findInRange(this.room.myConstructionSites, REMOTE_HAULER_DRIVE_BY_BUILD_RANGE, {filter: (site) =>{
+                        return site.my && REMOTE_HAULER_DRIVE_BY_BUILD_ALL ||
                             (site.structureType === STRUCTURE_CONTAINER ||
                             site.structureType === STRUCTURE_ROAD);
                     }});
@@ -256,7 +255,7 @@ mod.extend = function(){
             if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, Action:'repairing', Creep:'repairNearby'}, 'no WORK');
         }
     };
-    
+
     Creep.prototype.controllerSign = function() {
         if(CONTROLLER_SIGN && (!this.room.controller.sign || this.room.controller.sign.username != this.owner.username || (CONTROLLER_SIGN_UPDATE && this.room.controller.sign.text != CONTROLLER_SIGN_MESSAGE))) {
             this.signController(this.room.controller, CONTROLLER_SIGN_MESSAGE);
@@ -293,7 +292,7 @@ mod.extend = function(){
                 }
                 return this._sum;
             }
-        }, 
+        },
         'threat': {
             configurable: true,
             get: function() {
