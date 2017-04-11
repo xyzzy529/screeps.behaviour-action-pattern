@@ -62,7 +62,7 @@ _myRoom.spawnQueueHigh.length);
 
 // move Creep
 Game.creeps['<creepName>'].move(RIGHT);
-Game.creeps['upgrader-1000-2'].move(LEFT); // Temp for just 1 tick
+Game.creeps['worker-1200-1'].move(LEFT); // Temp for just 1 tick
 Game.creeps['upgrader-1000-2'].data.determinatedSpot.x = 10;
 Game.creeps['upgrader-1000-2'].data.determinatedSpot.y = 26;
 
@@ -71,7 +71,9 @@ Game.creeps['worker-800-2'].moveTo(29,31,{visualizePathStyle: {fill:'transparent
 
 // force recycle a Creep
 Game.creeps['<creepName>'].data.creepType="recycler";
-Creep.action.recycling.assign(Game.creeps['<creepName>']);
+Creep.action.recycling.assign(Game.creeps['remoteWorker-W4S96-SK-1']);
+Creep.action.building.assign(Game.creeps['remoteMiner-W4S96-SK-1']);
+Creep.action.upgrading.assign(Game.creeps['upgrader-650-2']);
 
 // To override a module file create a copy of an existing module...
 // Name it "custom.<originalModuleName>" or "viral.<originalModuleName>".
@@ -101,6 +103,45 @@ Game.rooms['<roomName>'].setStore('<structure>', '<resource>', '<amount>');
 
 //resource management - one off amount in container
 Game.rooms['<roomName>'].placeOrder('<structure>', '<resource>', '<amount>');
+
+// Market commands
+Game.market.calcTransactionCost(1000, 'W3S96', 'W43N44');
+Game.market.credits
+Game.market.deal('58ebfe0e4cd7d75420e53774', 1200, "W3S96");
+JSON.stringify(Game.rooms.W3S96.terminal.store);
+
+OrderIS='5870578777b3f51f3c6db301';
+OrdAmount = ;
+OrdDest = ;
+Game.market.calcTransactionCost(max(1000,OrdAmount),'W3S96',OrdDest);
+
+// Arbitrage model
+// Buy cost delivered to ME
+// getAllOrders
+allSellOrders = Game.market.getAllOrders({type: ORDER_SELL, resourceType: RESOURCE_HYDROGEN});
+allBuyOrders = Game.market.getAllOrders({type: ORDER_BUY, resourceType: RESOURCE_HYDROGEN});
+let allBuySort = _.sortBy(allBuyOrders, 'price');
+for (let i=0; i<allBuySort.length; i++) {
+  for (let j=0; j<allSellSort.length; j++ ) {
+    if (allBuySort[i].price > allSellOrders[j].price) {
+      trxAmount = Math.min(allBuySort[i].remainingAmount, allSellOrders[j].remainingAmount);
+      buyTrxCost = Game.market.calcTransactionCost(trxAmount, 'W3S96', allBuySort[i].roomName);
+      sellTrxCost = Game.market.calcTransactionCost(trxAmount, 'W3S96', allSellOrders[j].roomName);
+      TotalTrxCost = buyTrxCost + sellTrxCost;
+      CreditsEarned = (allBuySort[i].price - allSellOrders[j].price) * trxAmount;
+      EnergyCostPer = TotalTrxCost/CreditsEarned;
+      console.log(`Buy[${i}]@${allBuySort[i].price} to Sell[${j}]@${allSellOrders[j].price} TrxEnergy=${TotalTrxCost} Credits=${CreditsEarned} E/C=${EnergyCostPer}`);
+    }
+  }
+
+}
+console.log(allSellOrders.length, allBuyOrders.length);
+//
+let buyOrder = Game.market.getOrderById(testOrderId);
+
+let buyTrxCost = Game.market.calcTransactionCost(1000, 'W3S96', buyOrder.roomName);
+Game.market.createOrder(ORDER_BUY, RESOURCE_GHODIUM, 0.01, 100, "W3S96");
+Game.market.calcTransactionCost(1000, 'E32N33', 'E32S78');
 
 // ***** TODO ideas ******
 DRIVE_BY_REPAIR_RANGE: 2, // change from box search to line in front, then keep location as it passes

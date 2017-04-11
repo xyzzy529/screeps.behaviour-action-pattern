@@ -1,6 +1,8 @@
 /* https://github.com/ScreepsOCS/screeps.behaviour-action-pattern */
 const cpuAtLoad = Game.cpu.getUsed();
 
+
+
 // check if a path is valid
 global.validatePath = path => {
     let mod;
@@ -16,7 +18,7 @@ global.validatePath = path => {
     }
     return mod != null;
 };
-// evaluate existing module overrides and store them to memory. 
+// evaluate existing module overrides and store them to memory.
 // return current module path to use for require
 global.getPath = (modName, reevaluate = false) => {
     if( reevaluate || !Memory.modules[modName] ){
@@ -25,7 +27,7 @@ global.getPath = (modName, reevaluate = false) => {
 		// path = './' + modName + '.custom'; <= use this pattern for all files, better folder/filename placement?
         if(!validatePath(path)) {
             path = './internal.' + modName;
-            if(!validatePath(path)) 
+            if(!validatePath(path))
                 path = './' + modName;
         }
         Memory.modules[modName] = path;
@@ -107,7 +109,7 @@ global.load = (modName) => {
         mod = tryRequire(path);
     }
     if( mod ) {
-        // load viral overrides 
+        // load viral overrides
         mod = infect(mod, 'internalViral', modName);
         mod = infect(mod, 'viral', modName);
     }
@@ -142,6 +144,11 @@ global.install = () => {
     });
     _.assign(global.Util, {
         DiamondIterator: load('util.diamond.iterator'),
+        /**
+        * Extra "viral" items
+        */
+        Future: load('util.futureturn'),
+        MarketOp: load('util.marketops'),
     });
     _.assign(global.Task, {
         guard: load("task.guard"),
@@ -167,10 +174,10 @@ global.install = () => {
             defending: load("creep.action.defending"),
             dismantling: load("creep.action.dismantling"),
             dropping: load("creep.action.dropping"),
-            feeding: load("creep.action.feeding"), 
-            fortifying: load("creep.action.fortifying"), 
-            fueling: load("creep.action.fueling"), 
-            guarding: load("creep.action.guarding"), 
+            feeding: load("creep.action.feeding"),
+            fortifying: load("creep.action.fortifying"),
+            fueling: load("creep.action.fueling"),
+            guarding: load("creep.action.guarding"),
             harvesting: load("creep.action.harvesting"),
             healing: load("creep.action.healing"),
             idle: load("creep.action.idle"),
@@ -184,7 +191,7 @@ global.install = () => {
             storing: load("creep.action.storing"),
             travelling: load("creep.action.travelling"),
             uncharging: load("creep.action.uncharging"),
-            upgrading: load("creep.action.upgrading"), 
+            upgrading: load("creep.action.upgrading"),
             withdrawing: load("creep.action.withdrawing"),
         },
         behaviour: {
@@ -228,18 +235,29 @@ global.install = () => {
     Task.populate();
     // custom extend
     if( global.mainInjection.extend ) global.mainInjection.extend();
-    if (DEBUG) logSystem('Global.install', 'Code reloaded.');
+    if (DEBUG) logSystem('Global.install', 'Code reloaded. ====================================================');
 };
 global.install();
 require('traveler')({exportTraveler: false, installTraveler: true, installPrototype: true, defaultStuckValue: TRAVELER_STUCK_TICKS, reportThreshold: TRAVELER_THRESHOLD});
 
+Future.reset();
 let cpuAtFirstLoop;
 module.exports.loop = function () {
     const cpuAtLoop = Game.cpu.getUsed();
     let p = startProfiling('main', cpuAtLoop);
-    p.checkCPU('deserialize memory', 5); // the profiler makes an access to memory on startup
+    p.checkCPU('deserialize memory', 0); // the profiler makes an access to memory on startup
+    Future.check();
+    p.checkCPU('FutureCheck', 0);
     // let the cpu recover a bit above the threshold before disengaging to prevent thrashing
     Memory.CPU_CRITICAL = Memory.CPU_CRITICAL ? Game.cpu.bucket < CRITICAL_BUCKET_LEVEL + CRITICAL_BUCKET_OVERFILL : Game.cpu.bucket < CRITICAL_BUCKET_LEVEL;
+    // if (false) {
+    //     Memory.xGame = Game;
+    //     Memory.xTime = Game.time;
+    //     Memory.xCopy = true;
+    //     console.log(Game.time, Memory.xGame.time, Memory.xTime, Memory.xCopy);
+    //     p.checkCPU('myMemoryTest-copy', 0, 'myMemoryTest');
+    // }
+    p.checkCPU('myMemoryTest-eval', 0, 'myMemoryTest');
     if (!cpuAtFirstLoop) cpuAtFirstLoop = cpuAtLoop;
 
     // ensure required memory namespaces
@@ -322,7 +340,16 @@ module.exports.loop = function () {
     p.checkCPU('grafana', PROFILING.EXECUTE_LIMIT);
 
     Game.cacheTime = Game.time;
+    // if (false) {
+    //     p.checkCPU('myMemoryTest-anti-set',0, 'myMemoryTest');
+    //     Memory.xGame = JSON.stringify(Game);
+    //     Memory.xTime = Game.time;
+    //     Memory.xCopy = true;
+    //     p.checkCPU('myMemoryTest-post-set', 0, 'myMemoryTest');
+    //     console.log(Game.time, Memory.xGame.time, Memory.xTime, Memory.xCopy);
+    // }
 
-    if( DEBUG && TRACE ) trace('main', {cpuAtLoad, cpuAtFirstLoop, cpuAtLoop, cpuTick: Game.cpu.getUsed(), isNewServer: global.isNewServer, lastServerSwitch: Game.lastServerSwitch, main:'cpu'});
+    if( DEBUG && TRACE )
+        trace('main', {cpuAtLoad, cpuAtFirstLoop, cpuAtLoop, cpuTick: Game.cpu.getUsed(), isNewServer: global.isNewServer, lastServerSwitch: Game.lastServerSwitch, main:'cpu'});
     p.totalCPU();
 };

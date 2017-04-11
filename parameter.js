@@ -7,6 +7,7 @@ let mod = { // (option) is default, so when you change them you can go back
     SAY_PUBLIC: false, // (true) creeps talk public
     DEBUG: true, // (true) gimme some more details, use false not undefined to unset
     TRACE: false, // (false) use Memory.debugTrace for low-level information
+    LOGSYSTEM: false, // (false) output the logSystem() console.log function
     PROFILE: false, // (false) enable CPU profiling
     PROFILING: {
         ANALYZE_LIMIT: 2, // (2) profile warning levels

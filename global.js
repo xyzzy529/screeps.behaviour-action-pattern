@@ -283,8 +283,10 @@ mod.trace = function (category, entityWhere, ...message) {
 };
 // log some text as "system message" showing a "referrer" as label
 mod.logSystem = function (roomName, message) {
-	let text = dye(CRAYON.system, roomName);
-	console.log(dye(CRAYON.system, `<a href="/a/#!/room/${roomName}">${text}</a> &gt; `) + message);
+  if (LOGSYSTEM) {
+    let text = dye(CRAYON.system, roomName);
+    console.log(dye(CRAYON.system, `<a href="/a/#!/room/${roomName}">${text}</a> &gt; `) + message);
+  }
 };
 mod.isObj = function (val) {
 	if (val === null) {

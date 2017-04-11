@@ -25,7 +25,7 @@ mod.run = function(creep) {
 mod.heal = function(creep) { // Does NOT move to healTarget TODO
     if (creep.data.body.heal !== undefined && !creep.attacking) {
         if (creep.hits < creep.hitsMax) { // am I bleading?
-            console.log(`Heal-self from ${creep.name}.heal(${creep.name})`);
+            //console.log(`Heal-self from ${creep.name}.heal(${creep.name})`);
             creep.heal(creep); // self-heal
         } else { // heal creep if close
             if (creep.room.casualties.length > 0) {
@@ -33,11 +33,11 @@ mod.heal = function(creep) { // Does NOT move to healTarget TODO
                     let healTarget = creep.room.casualties[i];
                     range = creep.pos.getRangeTo(healTarget);
                     if (range <= 1) {
-                        console.log(`Heal-near from ${creep.name}.heal(${healTarget.name})`);
+                        //console.log(`Heal-near from ${creep.name}.heal(${healTarget.name})`);
                         creep.heal(healTarget);
                         continue;
                     } else if (range <= 3) {
-                        console.log(`Heal-range from ${creep.name}.heal(${healTarget.name})`);
+                        //console.log(`Heal-range from ${creep.name}.heal(${healTarget.name})`);
                         creep.rangedHeal(healTarget);
                         continue;
                     }
