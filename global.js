@@ -511,25 +511,28 @@ mod.startProfiling = function (name, startCPU) {
 			mod.profiler.totalTicks = mod.profiler.totalTicks + 1;
 			const avgCPU = mod.profiler.totalCPU / mod.profiler.totalTicks;
 			if (PROFILE && PROFILING.AVERAGE_USAGE && _.size(mod.profiler.types) > 0) {
-				let heading = '';
-				while (heading.length < 30)
-					heading += ' ';
-				global.logSystem(heading, '(avg/creep/tick) (active) (weighted avg) (executions)');
+				const spaceFiller = '                             ';
+				global.logSystem(spaceFiller, '(avg/creep/tick) (active)  (Est/Tick)    (executions)');
 				for (let type in mod.profiler.types) {
 					let data = mod.profiler.types[type];
 					data.totalCount = data.totalCount + data.count;
 					const typeAvg = _.round(data.totalCPU / data.totalCount, 3);
 					let heading = type + ': ';
-					while (heading.length < 30)
-						heading += ' ';
-					global.logSystem(heading, '     ' + typeAvg + '          ' +
-						data.count + '       ' + (_.round(typeAvg * data.count, 3)) + '          ' + data.totalCount);
+					// http://jsben.ch/#/ittWT
+					// while (heading.length < 30)
+					// 	heading += ' ';
+					heading = heading + spaceFiller.substr(heading.length);
+					global.logSystem(heading, '     ' + typeAvg.toFixed(3) + '          ' +
+						data.count + '       ' + ((typeAvg * data.count).toFixed(3)) + '          ' + data.totalCount );
 					data.count = 0;
 				}
 			}
-			logSystem(name, ' ticks:' + mod.profiler.totalTicks + ' CPU:' + _.round(Game.cpu.bucket, 2) +
-				' loop:' + _.round(totalUsed, 2) + ' other:' + _.round(onLoad, 2) +
-				' avg:' + _.round(avgCPU, 2) );
+			// http://jsben.ch/#/hNTYe  addition of FULL check; no appreciable diff
+			let cpuDelta = (Game.gcl.level*10+20) - totalUsed - onLoad;
+			cpuDelta = (cpuDelta>=0?"+":'') +(cpuDelta<10.0&&cpuDelta>-10.0?' ':'') + cpuDelta.toFixed(1);
+			logSystem(name, 'ticks:' + mod.profiler.totalTicks + ' CPU:' + (Game.cpu.bucket>9999?'FULL':Game.cpu.bucket) +
+					' loop:' + totalUsed.toFixed(2) + ' other:' + onLoad.toFixed(2) +
+					' avg:' + avgCPU.toFixed(2) +	'  :' + cpuDelta);
 			if (PROFILE)
 				console.log('\n');
 			Memory.profiler = mod.profiler;
