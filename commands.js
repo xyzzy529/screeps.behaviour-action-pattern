@@ -24,15 +24,15 @@ Game.spawns['Spawn1'].createCreepBySetup(Creep.setup.ranger);
 // or
 Game.rooms['<roomName>'].spawnQueueLow.push({parts:[MOVE,WORK,CARRY],name:'max',setup:'worker'});
 Game.rooms['W3S96'].spawnQueueHigh.push({parts:[
-  RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,
   TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,
-  MOVE,MOVE,MOVE,MOVE,
+  RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,
+  MOVE,MOVE,MOVE,MOVE,MOVE,
 ], name:'max', setup:'ranger'});
 
 Game.spawns['Spawn1'].createCreep([
+  TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,
     RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,
-    TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,
-    MOVE,MOVE,MOVE,MOVE,
+    MOVE,MOVE,MOVE,MOVE,MOVE,
 ], 'max');
 CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,
 WORK,WORK,WORK,
@@ -40,7 +40,7 @@ ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,
 TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,
 
 console.log(JSON.stringify(
-  Game.rooms['W3S96'].spawnQueueLow.forEach(function (s) {console.log(s.name)})
+  Game.rooms['W3S96'].spawnQueueLow.forEach(function (s) {console.log(s.name)});
 );
 Game.rooms['W3S96'].spawnQueueLow
 // clear spawn queues for a room
@@ -71,7 +71,7 @@ Game.creeps['worker-800-2'].moveTo(29,31,{visualizePathStyle: {fill:'transparent
 
 // force recycle a Creep
 Game.creeps['<creepName>'].data.creepType="recycler";
-Creep.action.recycling.assign(Game.creeps['remoteWorker-W4S96-SK-1']);
+Creep.action.recycling.assign(Game.creeps['reserver-Flag2-1']);
 Creep.action.building.assign(Game.creeps['remoteMiner-W4S96-SK-1']);
 Creep.action.upgrading.assign(Game.creeps['upgrader-650-2']);
 
@@ -107,7 +107,7 @@ Game.rooms['<roomName>'].placeOrder('<structure>', '<resource>', '<amount>');
 // Market commands
 Game.market.calcTransactionCost(1000, 'W3S96', 'W43N44');
 Game.market.credits
-Game.market.deal('58ebfe0e4cd7d75420e53774', 1200, "W3S96");
+Game.market.deal('58ee0276cf50f151570784bf', 101, "W3S96");
 JSON.stringify(Game.rooms.W3S96.terminal.store);
 
 OrderIS='5870578777b3f51f3c6db301';
@@ -142,6 +142,7 @@ let buyOrder = Game.market.getOrderById(testOrderId);
 let buyTrxCost = Game.market.calcTransactionCost(1000, 'W3S96', buyOrder.roomName);
 Game.market.createOrder(ORDER_BUY, RESOURCE_GHODIUM, 0.01, 100, "W3S96");
 Game.market.calcTransactionCost(1000, 'E32N33', 'E32S78');
+Game.rooms.W3S96.terminal.store[RESOURCE_ENERGY];
 
 // ***** TODO ideas ******
 DRIVE_BY_REPAIR_RANGE: 2, // change from box search to line in front, then keep location as it passes
