@@ -530,7 +530,7 @@ mod.startProfiling = function (name, startCPU) {
 			// http://jsben.ch/#/hNTYe  addition of FULL check; no appreciable diff
 			let cpuDelta = (Game.gcl.level*10+20) - totalUsed - onLoad;
 			cpuDelta = (cpuDelta>=0?"+":'') +(cpuDelta<10.0&&cpuDelta>-10.0?' ':'') + cpuDelta.toFixed(1);
-			logSystem(name, 'ticks:' + mod.profiler.totalTicks + ' CPU:' + (Game.cpu.bucket>9999?'FULL':Game.cpu.bucket) +
+			logSystem(name, '#' + Game.time + ' CPU:' + (Game.cpu.bucket>9999?'FULL':Game.cpu.bucket) +
 					' loop:' + totalUsed.toFixed(2) + ' other:' + onLoad.toFixed(2) +
 					' avg:' + avgCPU.toFixed(2) +	'  :' + cpuDelta);
 			if (PROFILE)
