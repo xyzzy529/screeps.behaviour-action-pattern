@@ -1457,7 +1457,7 @@ mod.extend = function(){
                 sitesSize++;
             }
         };
-        
+
         // Extensions
         let shortAmount = CONTROLLER_STRUCTURES[STRUCTURE_EXTENSION][LEVEL] - (this.structures.extensions.length + _.filter(this.constructionSites, s => s.structureType === STRUCTURE_EXTENSION).length);
         if (shortAmount > 0) {
@@ -1465,7 +1465,7 @@ mod.extend = function(){
                 CONSTRUCT(flag, STRUCTURE_EXTENSION);
             });
         }
-        
+
         // Spawns
         shortAmount = CONTROLLER_STRUCTURES[STRUCTURE_SPAWN][LEVEL] - (this.structures.spawns.length + _.filter(this.constructionSites, s => s.structureType === STRUCTURE_SPAWN).length);
         if (shortAmount > 0) {
@@ -1473,7 +1473,7 @@ mod.extend = function(){
                 CONSTRUCT(flag, STRUCTURE_SPAWN);
             });
         }
-        
+
         // Towers
         shortAmount = CONTROLLER_STRUCTURES[STRUCTURE_TOWER][LEVEL] - (this.structures.towers.length + _.filter(this.constructionSites, s => s.structureType === STRUCTURE_TOWER).length);
         if (shortAmount > 0) {
@@ -1481,7 +1481,7 @@ mod.extend = function(){
                 CONSTRUCT(flag, STRUCTURE_TOWER);
             });
         }
-        
+
         // Links
         shortAmount = CONTROLLER_STRUCTURES[STRUCTURE_LINK][LEVEL] - (this.structures.links.all.length + _.filter(this.constructionSites, s => s.structureType === STRUCTURE_LINK).length);
         if (shortAmount > 0) {
@@ -1489,7 +1489,7 @@ mod.extend = function(){
                 CONSTRUCT(flag, STRUCTURE_LINK);
             });
         }
-        
+
         // Labs
         shortAmount = CONTROLLER_STRUCTURES[STRUCTURE_LAB][LEVEL] - (this.structures.labs.all.length + _.filter(this.constructionSites, s => s.structureType === STRUCTURE_LAB).length);
         if (shortAmount > 0) {
@@ -1497,42 +1497,42 @@ mod.extend = function(){
                 CONSTRUCT(flag, STRUCTURE_LAB);
             });
         }
-        
+
         // Storage
         if (!this.storage && CONTROLLER_STRUCTURES[STRUCTURE_STORAGE][LEVEL] > 0) {
             FlagDir.filter(FLAG_COLOR.construct.storage, ...ARGS).splice(0, 1).forEach(flag => {
                 CONSTRUCT(flag, STRUCTURE_STORAGE);
             });
         }
-        
+
         // Terminal
         if (!this.terminal && CONTROLLER_STRUCTURES[STRUCTURE_TERMINAL][LEVEL] > 0) {
             FlagDir.filter(FLAG_COLOR.construct.terminal, ...ARGS).splice(0, 1).forEach(flag => {
                 CONSTRUCT(flag, STRUCTURE_TERMINAL);
             });
         }
-        
+
         // Observer
         if (!this.structures.observer && CONTROLLER_STRUCTURES[STRUCTURE_OBSERVER][LEVEL] > 0) {
             FlagDir.filter(FLAG_COLOR.construct.observer, ...ARGS).splice(0, 1).forEach(flag => {
                 CONSTRUCT(flag, STRUCTURE_OBSERVER);
             });
         }
-        
+
         // Nuker
         if (!this.structures.nuker && CONTROLLER_STRUCTURES[STRUCTURE_NUKER][LEVEL] > 0) {
             FlagDir.filter(FLAG_COLOR.construct.nuker, ...ARGS).splice(0, 1).forEach(flag => {
                 CONSTRUCT(flag, STRUCTURE_NUKER);
             });
         }
-        
+
         // Power Spawn
         if (!this.structures.powerSpawn && CONTROLLER_STRUCTURES[STRUCTURE_POWER_SPAWN][LEVEL] > 0) {
             FlagDir.filter(FLAG_COLOR.construct.powerSpawn, ...ARGS).splice(0, 1).forEach(flag => {
                 CONSTRUCT(flag, STRUCTURE_POWER_SPAWN);
             });
         }
-        
+
         // Extractor
         if (CONTROLLER_STRUCTURES[STRUCTURE_EXTRACTOR][LEVEL] > 0) {
             const [mineral] = this.find(FIND_MINERALS);
@@ -2787,7 +2787,7 @@ mod.execute = function() {
         let bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
         if( DEBUG || NOTIFICATE_INVADER || (NOTIFICATE_INTRUDER && creep.room.my) || NOTIFICATE_HOSTILES ) logSystem(creep.pos.roomName, `Hostile intruder (${bodyCount}) from "${creep.owner.username}".`);
         if( NOTIFICATE_INVADER || (NOTIFICATE_INTRUDER && creep.owner.username !== 'Invader' && creep.room.my) || (NOTIFICATE_HOSTILES && creep.owner.username !== 'Invader') ){
-            Game.notify(`Hostile intruder ${creep.id} (${bodyCount}) from "${creep.owner.username}" in room ${creep.pos.roomName} at ${toDateTimeString(toLocalDate(new Date()))}`);
+            Game.notify(`Hostile intruder ${creep.id}\n (${bodyCount})\nfrom "${creep.owner.username}" in room ${creep.pos.roomName} at ${toDateTimeString(toLocalDate(new Date()))}`);
         }
         // trigger subscribers
         Room.newInvader.trigger(creep);
