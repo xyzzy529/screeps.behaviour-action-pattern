@@ -13,7 +13,7 @@
  *   defaultStuckValue: integer    The maximum number of ticks the creep is in the same RoomPosition before it
  *                                   determines it is stuck and repaths.
  *   reportThreshold:   integer    The mimimum CPU used on pathing to console.log() warnings on CPU usage. Defaults to 50
- * 
+ *
  * Examples: var Traveler = require('Traveler')();
  *           require('util.traveler')({exportTraveler: false, installTraveler: false, installPrototype: true, defaultStuckValue: 2});
  */
@@ -236,7 +236,15 @@ module.exports = function(globalOpts = {}){
                 }
                 if (ret.incomplete) {
                     const route = ret.route && ret.route.length;
-                    console.log(`TRAVELER: incomplete path for ${creep.name} from ${creep.pos} to ${destPos}. Route length ${route}.`);
+                    travelData.incomplete = -(~travelData.incomplete); // ~ (not) then - serves to either set to 1 or increment by 1
+                    console.log(`TRAVELER: incomplete path for ${creep.name}x(${travelData.incomplete}) from ${creep.pos} to ${destPos}. Route length ${route}.`);
+                    if (travelData.incomplete > 6) {
+                        // if creep gets stuck too much, then recycle on next turn
+                        // TODO fix spawn only 1, if only 1 spot
+                        // interim fix for reserver with no spot next to controller
+                        Creep.action.recycling.assign(Game.creeps[creep.name]);
+                        travelData.incomplete = 0;
+                    }
                     if (route > 1) {
                         ret = this.findTravelPath(creep, new RoomPosition(25, 25, ret.route[1].room),
                             _.create(options, {
