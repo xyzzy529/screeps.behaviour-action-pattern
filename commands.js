@@ -5,9 +5,11 @@ console.log(JSON.stringify(Object) );
 Game.creeps['miner-250-3'].data.determinatedTarget ='source-mine-id'
 
 // Recycle a creep
-Creep.action.recycling.assign(Game.creeps['<creepName>']);
+Creep.action.recycling.assign(Game.creeps['worker-400-2']);
+Creep.action.upgrading.assign(Game.creeps['defender-58f4e7bab96226e2355e7209-1']);
+Creep.action.healing.assign(Game.creeps['guard-W3S97g3-1']);
 // healer
-Game.creeps['guard-W3S97g2-1'].heal(Game.creeps['guard-W3S97g2-1']);
+Game.creeps['guard-W3S97g3-1'].heal(Game.creeps['hauler-650-1']);
 Game.creeps['guard-W3S97g1-1'].heal(Game.creeps['guard-W3S97g2-1']);
 Game.creeps['guard-W3S97g3-1'].heal(Game.creeps['guard-W3S97g2-1']);
 
@@ -18,21 +20,21 @@ _.forEach(Memory.rooms, r => delete r.roadConstructionTrace);
 _.forEach(Game.constructionSites, s => s.remove());
 
 // spawn something...
-Game.spawns['Spawn1'].createCreepBySetup(Creep.setup.upgrader);
+Game.spawns['Spawn3'].createCreepBySetup(Creep.setup.upgrader);
 Game.spawns['Spawn1'].createCreepBySetup(Creep.setup.worker);
-Game.spawns['Spawn1'].createCreepBySetup(Creep.setup.ranger);
+Game.spawns['Spawn3'].createCreepBySetup(Creep.setup.ranger);
+Game.spawns['Spawn3'].createCreepBySetup(Creep.setup.defender);
 // or
 Game.rooms['<roomName>'].spawnQueueLow.push({parts:[MOVE,WORK,CARRY],name:'max',setup:'worker'});
 Game.rooms['W3S96'].spawnQueueHigh.push({parts:[
   TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,
   RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,
-  MOVE,MOVE,MOVE,MOVE,MOVE,
+  MOVE,MOVE,MOVE
 ], name:'max', setup:'ranger'});
 
-Game.spawns['Spawn1'].createCreep([
-  TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,
-    RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,
-    MOVE,MOVE,MOVE,MOVE,MOVE,
+Game.spawns['Spawn3'].createCreep([
+    RANGED_ATTACK,
+    MOVE,
 ], 'max');
 CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,
 WORK,WORK,WORK,
@@ -61,10 +63,10 @@ _myRoom.spawnQueueMedium.length,
 _myRoom.spawnQueueHigh.length);
 
 // move Creep
-Game.creeps['<creepName>'].move(RIGHT);
+Game.creeps['hauler-650-1'].move(5);
 Game.creeps['worker-1200-1'].move(LEFT); // Temp for just 1 tick
-Game.creeps['upgrader-1000-2'].data.determinatedSpot.x = 10;
-Game.creeps['upgrader-1000-2'].data.determinatedSpot.y = 26;
+Game.creeps['hauler-650-1'].data.determinatedSpot.x = 37;
+Game.creeps['hauler-650-1'].data.determinatedSpot.y = 41;
 
 // Path moves (not persistant, must be issued each turn)
 Game.creeps['worker-800-2'].moveTo(29,31,{visualizePathStyle: {fill:'transparent',stroke:'#fff',lineStyle:'dashed',strokeWidth: .15,opacity: .1}});
