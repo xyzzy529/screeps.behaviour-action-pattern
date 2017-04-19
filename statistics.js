@@ -9,13 +9,18 @@ mod.process = function(){
     }
     let message;
     if( SEND_STATISTIC_REPORTS && this.storedStatisticsTime > 0 ) {
-        message = '<div><h3><b>Status report </b></h3>'
+        message = '<div><h3><b>Status Report </b></h3>'
             + '<h4>at ' + toDateTimeString(toLocalDate()) + ',<br/>'
-            + 'comparison to state before: ' + this.toTimeSpanString(new Date(), new Date(this.storedStatisticsTime)) + ' (' + (Game.time - Memory.statistics.tick) + ' loops)</h4>';
+            + 'comparison to state before: ' + this.toTimeSpanString(new Date(), new Date(this.storedStatisticsTime))
+            + ' (' + (Game.time - Memory.statistics.tick) + ' loops)</h4>';
 
         if( Game.cpu.bucket ){
             bucketDif = Game.cpu.bucket - Memory.statistics.bucket;
-            message += 'CPU Bucket: ' + Game.cpu.bucket + ' ('  + (bucketDif >= 0 ? '+' : '' ) + bucketDif + ')';
+            message += 'CPU Bucket: ' + Game.cpu.bucket.toLocaleString() + ' ('  + (bucketDif >= 0 ? '+' : '' ) + bucketDif + ') <br/>';
+        }
+        if ( Game.market.credits ) {
+            creditDiff = Game.market.credits - Memory.statistics.credits;
+            message += 'Market Credits: ' + Game.market.credits.toLocaleString() + ' ('  + (creditDiff >= 0 ? '+' : '' ) + creditDiff.toLocaleString() + ') <br/>';
         }
         message += '</div>';
         Memory.statistics.reports.push(message);
@@ -42,7 +47,7 @@ mod.process = function(){
                     let totalDif = isUpgraded ? (room.memory.statistics.controllerProgressTotal - room.memory.statistics.controllerProgress) + room.controller.progress : (room.controller.progress - room.memory.statistics.controllerProgress);
                     let percDif = (100*totalDif/room.controller.progressTotal).toFixed(1);
                     let step = (totalDif / (Game.time - Memory.statistics.tick)).toFixed(2);
-                    message += '<li>Level ' + room.controller.level + ', ' + filledPercent + '% of ' + room.controller.progressTotal + '<br/>( +' + totalDif + ' | +' + percDif + '% | +' + step + '/loop )' + (isUpgraded ? ' <b><i>Upgraded!</i></b></li></ul>' : '</li></ul>');
+                    message += '<li>Level ' + room.controller.level + ', ' + filledPercent + '% of ' + room.controller.progressTotal.toLocaleString() + '<br/>( +' + totalDif.toLocaleString() + ' | +' + percDif + '% | +' + step + '/loop )' + (isUpgraded ? ' <b><i>Upgraded!</i></b></li></ul>' : '</li></ul>');
 
                     // storage
                     if( room.storage && room.memory.statistics.store ){
@@ -51,12 +56,12 @@ mod.process = function(){
                         message += '<u>Storage</u><ul>';
                         for( let type in memoryStoreRecord ){ // changed & depleted
                             let dif = (currentRecord[type] ? currentRecord[type] - memoryStoreRecord[type] : memoryStoreRecord[type] * -1);
-                            message += '<li>' + type + ': ' + (currentRecord[type] || 0) + ' (' + (dif > -1 ? '+' : '' ) + dif + ')</li>';
+                            message += '<li>' + type + ': ' + (currentRecord[type].toLocaleString() || 0) + ' (' + (dif > -1 ? '+' : '' ) + dif.toLocaleString() + ')</li>';
                         }
                         // new
                         for( let type in currentRecord ){
                             if(!memoryStoreRecord[type])
-                                message += '<li>' + type + ': ' + currentRecord[type] + ' (+' + currentRecord[type] + ')</li>';
+                                message += '<li>' + type + ': ' + currentRecord[type].toLocaleString() + ' (+' + currentRecord[type].toLocaleString() + ')</li>';
                         }
                         message += '</ul>';
                     }
@@ -73,7 +78,7 @@ mod.process = function(){
                 else if( !room.controller.my && room.controller.reservation ){
                     // controller
                     message = '<ul><li><b>Room ' + room.name + '</b><br/><u>Controller</u><ul><li>Reservation: ' +
-                        room.controller.reservation.ticksToEnd + ' for ' +
+                        room.controller.reservation.ticksToEnd.toLocaleString() + ' for ' +
                         room.controller.reservation.username + '</li></ul></li></ul>';
                     Memory.statistics.reports.push(message);
                 }
@@ -98,6 +103,7 @@ mod.process = function(){
     Memory.statistics.tick = Game.time;
     Memory.statistics.time = Date.now();
     Memory.statistics.bucket = Game.cpu.bucket;
+    Memory.statistics.credits = Game.market.credits;
 };
 mod.toTimeSpanString = function(dateA, dateB){
     let spanTicks = dateA.getTime() - dateB.getTime();
