@@ -1,7 +1,34 @@
 /* https://github.com/ScreepsOCS/screeps.behaviour-action-pattern */
 const cpuAtLoad = Game.cpu.getUsed();
+global.myDump = (arr,level) => {
+//function myDump(arr,level) {
+	var dumped_text = "";
+	if(!level) level = 0;
 
+	//The padding given at the beginning of the line.
+	var level_padding = "";
+	for(var j=0;j<level+1;j++) level_padding += "    ";
 
+    if(typeof(arr) == 'object') { //Array/Hashes/Objects
+        for(var item in arr) {
+            var value = arr[item];
+
+            if(typeof(value) == 'object') { //If it is an array,
+                if (value == null) {
+                    dumped_text += level_padding + "'" + item + "' => null\n";
+                } else {
+                    dumped_text += level_padding + "'" + item + "' ...\n";
+                }
+                dumped_text += myDump(value,level+1);
+            } else {
+                dumped_text += level_padding + "'" + item + "' => \"" + value + "\"\n";
+            }
+        }
+	} else { //Stings/Chars/Numbers etc.
+		dumped_text = "===>"+arr+"<===("+typeof(arr)+")";
+	}
+	return dumped_text;
+}
 
 // check if a path is valid
 global.validatePath = path => {
@@ -147,8 +174,8 @@ global.install = () => {
         /**
         * Extra "viral" items
         */
-        Future: load('util.futureturn'),
-        MarketOp: load('util.marketops'),
+        Future: load('util.futureturn'), // Future Commands modules
+        MarketOp: load('util.marketops'), // MarketOp modules
     });
     _.assign(global.Task, {
         guard: load("task.guard"),
@@ -239,15 +266,22 @@ global.install = () => {
 };
 global.install();
 require('traveler')({exportTraveler: false, installTraveler: true, installPrototype: true, defaultStuckValue: TRAVELER_STUCK_TICKS, reportThreshold: TRAVELER_THRESHOLD});
+// ensure up to date parameters
+//_.assign(global, load("parameter"));
 
-Future.reset();
+Util.Future.init(); // initialize, not clear
+Util.MarketOp.init(); // initialize
 let cpuAtFirstLoop;
 module.exports.loop = function () {
+    //console.log("start loop:",Game.time);
     const cpuAtLoop = Game.cpu.getUsed();
     let p = startProfiling('main', cpuAtLoop);
     p.checkCPU('deserialize memory', 0); // the profiler makes an access to memory on startup
-    Future.check();
-    p.checkCPU('FutureCheck', 0);
+    Util.Future.check();
+    p.checkCPU('Future.Check', 0);
+
+    Util.MarketOp.autoFind();
+    p.checkCPU('MarketOp.autoFind', 0);
     // let the cpu recover a bit above the threshold before disengaging to prevent thrashing
     Memory.CPU_CRITICAL = Memory.CPU_CRITICAL ? Game.cpu.bucket < CRITICAL_BUCKET_LEVEL + CRITICAL_BUCKET_OVERFILL : Game.cpu.bucket < CRITICAL_BUCKET_LEVEL;
     // if (false) {
@@ -273,8 +307,8 @@ module.exports.loop = function () {
     if (Memory.cloaked === undefined) {
         Memory.cloaked = {};
     }
-    // ensure up to date parameters
-    _.assign(global, load("parameter"));
+    // // ensure up to date parameters
+    // _.assign(global, load("parameter"));
 
     // Flush cache
     Events.flush();
