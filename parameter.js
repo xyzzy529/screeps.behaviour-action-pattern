@@ -54,11 +54,11 @@ let mod = { // (option) is default, so when you change them you can go back
         1: 2000,
         2: 2000,
         3: 2000,
-        4: 5000,
-        5: 10000,
-        6: 25000,
-        7: 50000,
-        8: 300000
+        4: 50000,
+        5: 100000,
+        6: 900000,
+        7: 900000,
+        8: 900000
     },
     MIN_STORAGE_ENERGY: { // prefer storing energy until reached
         1: 1000,
@@ -233,8 +233,8 @@ let mod = { // (option) is default, so when you change them you can go back
     ],
     // Don't attack. Must be a member of OCS for permanent whitelisting in git repository. But you can change your own copy... Please ask if you are interested in joining OCS :)
     DEFENSE_BLACKLIST: [], // Don't defend those rooms (add room names). Blocks spawning via defense task (will not prevent offensive actions at all)
-    CRITICAL_BUCKET_LEVEL: 1000, // take action when the bucket drops below this value to prevent the bucket from actually running out
-    CRITICAL_BUCKET_OVERFILL: 200, // Overfill the bucket by this amount before disabling CPU throttle, this can reduce thrashing because all creeps try to act at once
+    CRITICAL_BUCKET_LEVEL: 1500, // (1000) take action when the bucket drops below this value to prevent the bucket from actually running out
+    CRITICAL_BUCKET_OVERFILL: 500, // (200) Overfill the bucket by this amount before disabling CPU throttle, this can reduce thrashing because all creeps try to act at once
     CRITICAL_ROLES: [
         'melee',
         'ranger',
@@ -243,7 +243,7 @@ let mod = { // (option) is default, so when you change them you can go back
         'hauler',
         'upgrader'
     ], // when the bucket drops below the critical bucket level only these creep roles will be executed
-    ROBBER_REHOME: false, // (false) May robbers choose closer storage for delivery?
+    ROBBER_REHOME: true, // (false) May robbers choose closer storage for delivery?
     OBSERVER_OBSERVE_RANGE: 3, // the range for observers to look at
     OBSERVER_OBSERVE_HIGHWAYS_ONLY: true, // (true) the observers will only look at highways - changing this will require you to clear cached rooms
 };
