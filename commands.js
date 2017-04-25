@@ -5,9 +5,11 @@ console.log(JSON.stringify(Object) );
 Game.creeps['miner-250-3'].data.determinatedTarget ='source-mine-id'
 
 // Recycle a creep
-Creep.action.recycling.assign(Game.creeps['worker-400-2']);
+Creep.action.recycling.assign(Game.creeps[Memory._creep]);
 Creep.action.upgrading.assign(Game.creeps['defender-58f4e7bab96226e2355e7209-1']);
 Creep.action.healing.assign(Game.creeps['guard-W3S97g3-1']);
+
+
 // healer
 Game.creeps['guard-W3S97g3-1'].heal(Game.creeps['hauler-650-1']);
 Game.creeps['guard-W3S97g1-1'].heal(Game.creeps['guard-W3S97g2-1']);
@@ -63,14 +65,15 @@ _myRoom.spawnQueueMedium.length,
 _myRoom.spawnQueueHigh.length);
 
 // move Creep
-Game.creeps['hauler-650-1'].move(5);
+Game.creeps[Memory._creep].move(2);
 Game.creeps['worker-1200-1'].move(LEFT); // Temp for just 1 tick
-Game.creeps['hauler-650-1'].data.determinatedSpot.x = 37;
-Game.creeps['hauler-650-1'].data.determinatedSpot.y = 41;
-
+Game.creeps[Memory._creep].data.determinatedSpot.x = 37;
+Game.creeps[Memory._creep].data.determinatedSpot.y = 41;
+Game.creeps['remoteHauler-W2S96gb-4'].data.determinatedSpot
 // Path moves (not persistant, must be issued each turn)
 Game.creeps['worker-800-2'].moveTo(29,31,{visualizePathStyle: {fill:'transparent',stroke:'#fff',lineStyle:'dashed',strokeWidth: .15,opacity: .1}});
-
+Util.Future.cmd(+1,"Game.creeps['remoteHauler-W2S96gb-4'].data.idlePath[0] = {x:47, Y:14, roomName: 'W3S96'};");
+Util.Future.cmd(+1,"myDump(Game.creeps['remoteHauler-W2S96gb-4'].data.idlePath[0])");
 // force recycle a Creep
 Game.creeps['<creepName>'].data.creepType="recycler";
 Creep.action.recycling.assign(Game.creeps['reserver-Flag2-1']);
@@ -135,7 +138,6 @@ for (let i=0; i<allBuySort.length; i++) {
       console.log(`Buy[${i}]@${allBuySort[i].price} to Sell[${j}]@${allSellOrders[j].price} TrxEnergy=${TotalTrxCost} Credits=${CreditsEarned} E/C=${EnergyCostPer}`);
     }
   }
-
 }
 console.log(allSellOrders.length, allBuyOrders.length);
 //
@@ -146,6 +148,31 @@ Game.market.createOrder(ORDER_BUY, RESOURCE_GHODIUM, 0.01, 100, "W3S96");
 Game.market.calcTransactionCost(1000, 'E32N33', 'E32S78');
 Game.rooms.W3S96.terminal.store[RESOURCE_ENERGY];
 
+Memory._allSellSort = Game.market.getAllOrders({type: ORDER_SELL, resourceType: "O"});
+Memory._allBuySort = Game.market.getAllOrders({type: ORDER_BUY, resourceType: "O"});
+let mBBT = 0;
+for (let b = 0; b < Memory._allBuySort.length; b++) {
+    let aBSp = Memory._allBuySort[b].price;
+    if (mBBT < aBSp) {
+        mBBT = aBSp;
+    }
+}
+Memory._mBBT = mBBT;
+
+let mSBT = Infinity;
+for (let s = 0; s < Memory._allSellSort.length; s++) {
+    let aSSp = Memory._allSellSort[s].price;
+    if (mSBT > aSSp) {
+        mSBT = aSSp;
+    }
+}
+Memory._mSBT = mSBT;
+
+mSBT = Memory._mSBT;
+Memory._allBuySort = Memory._allBuySort.filter(idx => idx.price >= mSBT);
+mBBT = Memory._mBBT;
+Memory._allSellSort = Memory._allSellSort.filter(idx => idx.price <= mBBT);
+console.log(Memory._allBuySort.length, Memory._allSellSort.length )
 // ***** TODO ideas ******
 DRIVE_BY_REPAIR_RANGE: 2, // change from box search to line in front, then keep location as it passes
 //Add displays to Browser instead of browser console window.
