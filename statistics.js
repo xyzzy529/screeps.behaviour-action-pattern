@@ -65,6 +65,22 @@ mod.process = function(){
                         }
                         message += '</ul>';
                     }
+                    // terminal
+                    if( room.terminal && room.memory.statistics.terminal ){
+                        let memoryTerminalRecord = room.memory.statistics.terminal;
+                        let currentTerminalRecord = room.terminal.store;
+                        message += '<u>Terminal</u><ul>';
+                        for( let type in memoryTerminalRecord ){ // changed & depleted
+                            let termDiff = (currentTerminalRecord[type] ? currentTerminalRecord[type] - memoryTerminalRecord[type] : memoryTerminalRecord[type] * -1);
+                            message += '<li>' + type + ': ' + (currentTerminalRecord[type].toLocaleString() || 0) + ' (' + (termDiff > -1 ? '+' : '' ) + termDiff.toLocaleString() + ')</li>';
+                        }
+                        // new
+                        for( let type in currentTerminalRecord ){
+                            if(!memoryTerminalRecord[type])
+                                message += '<li>' + type + ': ' + currentTerminalRecord[type].toLocaleString() + ' (+' + currentTerminalRecord[type].toLocaleString() + ')</li>';
+                        }
+                        message += '</ul>';
+                    }
 
                     // invaders
                     if( room.memory.statistics.invaders && room.memory.statistics.invaders.length > 0 ){
@@ -91,6 +107,7 @@ mod.process = function(){
                 tick: Game.time,
                 time: Date.now(),
                 store: room.storage ? room.storage.store : null,
+                terminal: room.terminal ? room.terminal.store : null,
                 controllerProgress: room.controller.progress,
                 controllerProgressTotal: room.controller.progressTotal,
                 invaders: invaders
