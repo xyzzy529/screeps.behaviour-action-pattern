@@ -279,18 +279,12 @@ module.exports.loop = function () {
     p.checkCPU('deserialize memory', 0); // the profiler makes an access to memory on startup
     Util.Future.check();
     p.checkCPU('Future.Check', 0);
-
+	Util.MarketOp.buyToken();
     Util.MarketOp.autoFind();
     p.checkCPU('MarketOp.autoFind', 0);
     // let the cpu recover a bit above the threshold before disengaging to prevent thrashing
     Memory.CPU_CRITICAL = Memory.CPU_CRITICAL ? Game.cpu.bucket < CRITICAL_BUCKET_LEVEL + CRITICAL_BUCKET_OVERFILL : Game.cpu.bucket < CRITICAL_BUCKET_LEVEL;
-    // if (false) {
-    //     Memory.xGame = Game;
-    //     Memory.xTime = Game.time;
-    //     Memory.xCopy = true;
-    //     console.log(Game.time, Memory.xGame.time, Memory.xTime, Memory.xCopy);
-    //     p.checkCPU('myMemoryTest-copy', 0, 'myMemoryTest');
-    // }
+
     p.checkCPU('myMemoryTest-eval', 0, 'myMemoryTest');
     if (!cpuAtFirstLoop) cpuAtFirstLoop = cpuAtLoop;
 
@@ -374,14 +368,7 @@ module.exports.loop = function () {
     p.checkCPU('grafana', PROFILING.EXECUTE_LIMIT);
 
     Game.cacheTime = Game.time;
-    // if (false) {
-    //     p.checkCPU('myMemoryTest-anti-set',0, 'myMemoryTest');
-    //     Memory.xGame = JSON.stringify(Game);
-    //     Memory.xTime = Game.time;
-    //     Memory.xCopy = true;
-    //     p.checkCPU('myMemoryTest-post-set', 0, 'myMemoryTest');
-    //     console.log(Game.time, Memory.xGame.time, Memory.xTime, Memory.xCopy);
-    // }
+
 
     if( DEBUG && TRACE )
         trace('main', {cpuAtLoad, cpuAtFirstLoop, cpuAtLoop, cpuTick: Game.cpu.getUsed(), isNewServer: global.isNewServer, lastServerSwitch: Game.lastServerSwitch, main:'cpu'});
