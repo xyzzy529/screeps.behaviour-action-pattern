@@ -460,7 +460,8 @@ mod.loadProfiler = function (reset) {
 			totalCPU : 0,
 			totalTicks : 0,
 			types : {},
-			validTick : Game.time
+			validTick : Game.time,
+			cpuTrendTotal : 0,
 		};
 	}
 	mod.profiler = Memory.profiler;
@@ -529,10 +530,15 @@ mod.startProfiling = function (name, startCPU) {
 			}
 			// http://jsben.ch/#/hNTYe  addition of FULL check; no appreciable diff
 			let cpuDelta = (Game.gcl.level*10+20) - totalUsed - onLoad;
+			Memory.profiler.cpuTrendTotal += cpuDelta;
+			Memory.profiler.cpuTrendTotal -= Memory.profiler.cpuTrendTotal/10;
+			let cpuTrend = (Memory.profiler.cpuTrendTotal/10);
 			cpuDelta = (cpuDelta>=0?"+":'') +(cpuDelta<10.0&&cpuDelta>-10.0?' ':'') + cpuDelta.toFixed(1);
+			cpuTrend = (cpuTrend>=0?"+":'') +(cpuTrend<10.0&&cpuTrend>-10.0?' ':'') + cpuTrend.toFixed(1);
 			logSystem(name, '#' + Game.time + ' CPU:' + (Game.cpu.bucket>9999?'FULL':Game.cpu.bucket) +
 					' loop:' + totalUsed.toFixed(2) + ' other:' + onLoad.toFixed(2) +
-					' avg:' + avgCPU.toFixed(2) +	'  :' + cpuDelta);
+					' avg:' + avgCPU.toFixed(2) +	'  :' + cpuDelta +
+					' Trend: '+ cpuTrend );
 			if (PROFILE)
 				console.log('\n');
 			Memory.profiler = mod.profiler;
