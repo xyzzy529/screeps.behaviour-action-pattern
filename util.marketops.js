@@ -1,8 +1,8 @@
 //class marketOp {
 module.exports = {
 
-    init() {
-        if (Memory.market === undefined) { // define Memory.market on first use.
+    init(force = false) {
+        if (Memory.market === undefined || force) { // define Memory.market
             Memory.market = {
                 Ctx: []
             };
@@ -11,9 +11,29 @@ module.exports = {
             //     sellId: null
             // };
             Memory.market.autoFind = {
-                resource: null,
-                minValue: 80,
-                skipTicks: 2
+                resource: null, // null means all resources
+                minValue: 80
+            }
+        }
+    },
+    buyToken(testBuy = false) {
+        if (Game.cpu.bucket > 4000) {
+            // cpuB4 = Game.cpu.getUsed();
+            allSellSort = Game.market.getAllOrders({type: ORDER_SELL, resourceType: 'token'});
+            allSellSort = _.sortBy(allSellSort, 'price');
+            // cpuDelta = Game.cpu.getUsed() - cpuB4;
+            // console.log(`buyToken  time=${cpuDelta.toFixed(3)}`);
+            // for (let s = 0; s < allSellSort.length; s++) {
+            //     console.log(`Sell[${s}]=`, allSellSort[s].price.toLocaleString());
+            // }
+            if (allSellSort[0].price <= Game.market.credits || testBuy) {
+                console.log(`--- Game.market.deal("${allSellSort[0].id}", 1, "W3S96");`)
+                let ExecPart1 = Game.market.deal(allSellSort[0].id, 1, "W3S96");
+                if (ExecPart1 != 0) { // Not OK, some error
+                    console.log(`*** Game.market.deal("${allSellSort[0].id}", 1, "W3S96"); ExecPart1=${ExecPart1}: ${translateErrorCode(ExecPart1)}`);
+                } else {
+                    console.log('************************************** PURCHASED TOKEN!!!!!!!');
+                }
             }
         }
     },
@@ -50,67 +70,76 @@ module.exports = {
                 allBuySort = _.sortBy(allBuySort, 'price');
             }
             //cpuB4 = Game.cpu.getUsed();
+            let mBBT = 0;
             for (let b = 0; b < allBuySort.length; b++) {
-                //typeof maxBuyByType[allBuySort[b].resourceType] === "undefined" ||
-                if (maxBuyByType[allBuySort[b].resourceType] < allBuySort[b].price) {
-                    maxBuyByType[allBuySort[b].resourceType] = allBuySort[b].price;
+                let aBSp = allBuySort[b].price;
+                if (mBBT < aBSp) {
+                    maxBuyByType[resourceCode] = aBSp;
+                    mBBT = aBSp;
                 }
             }
             //cpuDelta = Game.cpu.getUsed() - cpuB4;
             // console.log(`maxBuyByType  time=${cpuDelta.toFixed(3)}`);
             //cpuB4 = Game.cpu.getUsed();
-            let calcTrx = 0;
+            let mSBT = Infinity;
             for (let s = 0; s < allSellSort.length; s++) {
-                //typeof minSellByType[allSellSort[s].resourceType] === "undefined" ||
-                if (minSellByType[allSellSort[s].resourceType] > allSellSort[s].price) {
-                    minSellByType[allSellSort[s].resourceType] = allSellSort[s].price;
+                let aSSp = allSellSort[s].price;
+                //typeof minSellByType[aSS.resourceType] === "undefined" ||
+                if (mSBT > aSSp) {
+                    minSellByType[resourceCode] = aSSp;
+                    mSBT = aSSp;
                 }
             }
             //cpuDelta = Game.cpu.getUsed() - cpuB4;
             //console.log(`minSellByType time=${cpuDelta.toFixed(3)}`);
             cpuB4 = Game.cpu.getUsed();
+            let calcTrx = 0;
             for (let b = 0; b < allBuySort.length; b++) {
+                let aBS = allBuySort[b];
                 // if (allBuySort[b].roomName === 'W3S96') {
                 //     continue;
                 // }
-                if (allBuySort[b].price <= minSellByType[allBuySort[b].resourceType]) {
-                    //console.log(`Buy **skip** ${b} ${allBuySort[b].resourceType} ${allBuySort[b].price}>${minSellByType[allBuySort[b].resourceType]}`);
+                if (aBS.price <= minSellByType[aBS.resourceType]) {
+                    //console.log(`Buy **skip** ${b} ${aBS.resourceType} ${aBS.price}>${minSellByType[aBS.resourceType]}`);
                     continue;
                 }
-                //console.log(`Buy loop ${b} ${allBuySort[b].resourceType} $${allBuySort[b].price}>${minSellByType[allBuySort[b].resourceType]} |${(allBuySort[b].price > minSellByType[allBuySort[b].resourceType])}|`);
+                //console.log(`Buy loop ${b} ${aBS.resourceType} $${aBS.price}>${minSellByType[aBS.resourceType]} |${(aBS.price > minSellByType[aBS.resourceType])}|`);
                 for (let s = 0; s < allSellSort.length; s++) {
-                    // if (allSellSort[s].roomName === 'W3S96') {
+                    let aSS = allSellSort[s];
+                    // if (aSS.roomName === 'W3S96') {
                     //     continue;
                     // }
-                    if (allSellSort[s].price >= maxBuyByType[allSellSort[s].resourceType]) {
-                        //console.log(`  Sell **skip** ${s} ${allSellSort[s].resourceType} ${allSellSort[s].price}>${maxBuyByType[allSellSort[s].resourceType]}`);
+                    if (aSS.price >= maxBuyByType[aSS.resourceType]) {
+                        //console.log(`  Sell **skip** ${s} ${aSS.resourceType} ${aSS.price}>${maxBuyByType[aSS.resourceType]}`);
                         continue;
                     }
-                    //console.log(`  Sell loop ${s} ${allSellSort[s].resourceType} $${allSellSort[s].price}`);
-                    //console.log(`    max/min good ${b}/${allBuySort[b].resourceType}/${allSellSort[s].price} & ${s}/${allSellSort[s].resourceType}/${allSellSort[s].price} `);
-                    if (allBuySort[b].price > allSellSort[s].price && allBuySort[b].resourceType == allSellSort[s].resourceType) {
+                    //console.log(`  Sell loop ${s} ${aSS.resourceType} $${aSS.price}`);
+                    //console.log(`    max/min good ${b}/${aBS.resourceType}/${aSS.price} & ${s}/${aSS.resourceType}/${aSS.price} `);
+                    if (aBS.price > aSS.price && aBS.resourceType == aSS.resourceType) {
                         //console.log(`    match to calcTrx ${b} & ${s} calcTrx=${calcTrx}`);
-                        if (allBuySort[b].roomName === 'W3S96' || allSellSort[s].roomName === 'W3S96') {
+                        if (aBS.roomName === 'W3S96' || aSS.roomName === 'W3S96') {
                             skipRoom++;
                             continue;
                         }
                         calcTrx++;
-                        buyTrxCost = Game.market.calcTransactionCost(100, 'W3S96', allBuySort[b].roomName);
-                        sellTrxCost = Game.market.calcTransactionCost(100, 'W3S96', allSellSort[s].roomName);
+                        buyTrxCost = Game.market.calcTransactionCost(100, 'W3S96', aBS.roomName);
+                        sellTrxCost = Game.market.calcTransactionCost(100, 'W3S96', aSS.roomName);
                         CentTrxCost = buyTrxCost + sellTrxCost;
-                        trxByCredits = Math.floor((Game.market.credits * MARKET.CREDIT_RISK) / allSellSort[s].price);
+                        trxByCredits = Math.floor((Game.market.credits * MARKET.CREDIT_RISK) / aSS.price);
                         trxByEnergy = Math.floor((Game.rooms.W3S96.terminal.store.energy * MARKET.ENERGY_RISK) / CentTrxCost * 100);
-                        trxAmount = Math.min(trxByCredits, trxByEnergy, allBuySort[b].remainingAmount, allSellSort[s].remainingAmount);
+                        trxAmount = Math.min(trxByCredits, trxByEnergy, aBS.remainingAmount, aSS.remainingAmount);
                         TotalTrxCost = _.round(trxAmount * (CentTrxCost / 100), 2);
-                        CreditsEarned = _.round((allBuySort[b].price - allSellSort[s].price) * trxAmount, 2);
+                        CreditsEarned = _.round((aBS.price - aSS.price) * trxAmount, 2);
                         EnergyCostPer = _.round(TotalTrxCost / CreditsEarned, 2);
 
                         if (EnergyCostPer < Best.EnergyCostPer) {
-                            Best.buyId = allBuySort[b].id;
-                            Best.sellId = allSellSort[s].id;
-                            Best.resourceType = allSellSort[s].resourceType;
-                            Best.sellPrice = allSellSort[s].price;
-                            Best.buyPrice = allBuySort[b].price;
+                            Best.buyId = aBS.id;
+                            Best.sellId = aSS.id;
+                            Best.sellName = aSS.roomName;
+                            Best.roomName = aBS.roomName;
+                            Best.resourceType = aSS.resourceType;
+                            Best.sellPrice = aSS.price;
+                            Best.buyPrice = aBS.price;
                             Best.trxAmount = trxAmount;
                             Best.buyTrxCost = buyTrxCost;
                             Best.sellTrxCost = sellTrxCost;
@@ -122,9 +151,9 @@ module.exports = {
                             Best.EnergyCostPer = EnergyCostPer;
                         }
                         if (Display && EnergyCostPer < EnergyValue) {
-                            resType = (allBuySort[b].resourceType + '      ').substr(0, 6);
-                            console.log(`${resType} Buy[${b}]@${allBuySort[b].price} to Sell[${s}]@${allSellSort[s].price} TrxEnergy=${TotalTrxCost}(${buyTrxCost}+${sellTrxCost}) Credits=${CreditsEarned} E/C=${EnergyCostPer}`);
-                            console.log(`--   Game.market.deal("${allSellSort[s].id}", ${trxAmount}, "W3S96"); Game.market.deal("${allBuySort[b].id}", ${trxAmount}, "W3S96");`);
+                            resType = (aBS.resourceType + '      ').substr(0, 6);
+                            console.log(`  ${resType} Buy[${b}-${aBS.roomName}]@${aBS.price} to Sell[${s}-${aSS.roomName}]@${aSS.price} TrxEnergy=${TotalTrxCost}(${buyTrxCost}+${sellTrxCost}) Credits=${CreditsEarned} E/C=${EnergyCostPer}`);
+                            console.log(`--   Game.market.deal("${aSS.id}", ${trxAmount}, "W3S96"); Game.market.deal("${aBS.id}", ${trxAmount}, "W3S96");`);
                             console.log('--');
                         }
                     }
@@ -135,46 +164,32 @@ module.exports = {
             // console.log(`Total ${resType} time=${cpuDelta.toFixed(3)} calcTrx=${calcTrx} avg=${ (cpuDelta / Math.max(calcTrx, 1)).toFixed(3)}`, ' -- sell, buy, matrix:', allSellSort.length, allBuySort.length, allSellSort.length * allBuySort.length);
             totalCalcTrx += calcTrx;
         } // **** End or resourceCode loop
-        if (Display) {
-            console.log(`*BEST* ${Best.resourceType} Buy@ ${Best.buyPrice} to Sell@ ${Best.sellPrice} TrxEnergy=${Best.TotalTrxCost}(${Best.buyTrxCost}+${Best.sellTrxCost}) Credits=${Best.CreditsEarned} E/C=${Best.EnergyCostPer}`);
+        // if (Display) {
+            console.log(`*BEST* ${Best.resourceType} Buy[${Best.roomName}] ${Best.buyPrice} to Sell[${Best.sellName}] ${Best.sellPrice} TrxEnergy=${Best.TotalTrxCost}(${Best.buyTrxCost}+${Best.sellTrxCost}) Credits=${Best.CreditsEarned} E/C=${Best.EnergyCostPer}`);
             //console.log(`--   Game.market.deal("${Best.sellId}", ${Best.trxAmount}, "W3S96"); Game.market.deal("${Best.buyId}", ${Best.trxAmount}, "W3S96");`);
-        }
+        // }
         if (ExecTrx && Best.EnergyCostPer < EnergyValue) {
-            if (Display || true) {
-                console.log(`*ExecTrx* ${Best.resourceType} Buy@ ${Best.buyPrice} to Sell@ ${Best.sellPrice} TrxEnergy=${Best.TotalTrxCost}(${Best.buyTrxCost}+${Best.sellTrxCost}) Credits=${Best.CreditsEarned} E/C=${Best.EnergyCostPer}`);
+            // if (Display || true) {
+                console.log(`*ExecTrx* ${Best.resourceType} Buy[${Best.roomName}] ${Best.buyPrice} to Sell[${Best.sellName}] ${Best.sellPrice} TrxEnergy=${Best.TotalTrxCost}(${Best.buyTrxCost}+${Best.sellTrxCost}) Credits=${Best.CreditsEarned} E/C=${Best.EnergyCostPer}`);
                 console.log(`--   Game.market.deal("${Best.sellId}", ${Best.trxAmount}, "W3S96"); Game.market.deal("${Best.buyId}", ${Best.trxAmount}, "W3S96");`);
-            }
+            // }
             ExecPart1 = Game.market.deal(Best.sellId, Best.trxAmount, "W3S96");
             if (ExecPart1 != 0) { // Not OK, some error
-                if (Display) {
+                // if (Display) {
                     console.log(`ExecPart1=${ExecPart1}: ${translateErrorCode(ExecPart1)}`);
-                }
+                // }
             } else { // Opened TrxContract, need to close it next turn
                 let CtxN = Memory.market.Ctx.length;
                 Memory.market.Ctx[CtxN] = Best;
                 Memory.market.Ctx[CtxN].open = true;
                 Memory.market.Ctx[CtxN].trxActalAmt = Best.trxAmount;
-                // let orderIdx = Infinity;
-                // for (let it = 0; it < Game.market.incomingTransactions.length && orderIdx == Infinity; it++) {
-                //     if (Game.market.incomingTransactions[it].order.id == Best.sellId) {
-                //         orderIdx = it;
-                //     }
-                // }
-                // if (orderIdx != Infinity) {
-                //     inTrx = Game.market.incomingTransactions[orderIdx];
-                //     Memory.market.Ctx[CtxN].trxActalAmt = inTrx.amount;
-                //     console.log(`orderId[${orderIdx}]=${inTrx.order.id} received Amount=${inTrx.amount} of ${trxAmount}  CtxN=${CtxN}`);
-                // } else {
-                //     console.log(`*** No matching orderID *** CtxN=${CtxN}`);
-                //     Memory.market.Ctx[CtxN].trxActalAmt = Best.trxAmount;
-                // }
 
-                // ExecPart2 = Game.market.deal(allBuySort[b].id, trxAmount, allBuySort[b].roomName);
+                // ExecPart2 = Game.market.deal(aBS.id, trxAmount, aBS.roomName);
                 cmd1 = `ExecPart2=Memory.FutureTurn[t].ExecPart2 = Game.market.deal("${Best.buyId}", ${Memory.market.Ctx[CtxN].trxActalAmt}, "W3S96");`;
                 cmd1 += `Memory.FutureTurn[t].CtxN = ${CtxN};`;
-                if (Display) {
+                // if (Display) {
                     cmd1 += "console.log('ExecPart2=|'+ExecPart2+'|: |'+translateErrorCode(ExecPart2)+'|');";
-                }
+                // }
                 let idx = Util.Future.cmd(+ 1, cmd1);
                 cmd2 = `Util.MarketOp.goodTrade(${idx},${CtxN},${Display},${Game.market.credits})`;
                 Util.Future.cmd(+ 2, cmd2);
@@ -197,7 +212,7 @@ module.exports = {
             }
         }
     },
-    sell(resourceCode, maxQty, EnergyValue, ExecTrx = false, Display = true) {
+    sell(resourceCode = 'energy', maxQty = 1000, EnergyValue = 50, ExecTrx = false, Display = true) {
 
         // Iterate through each ResourceType or just one that was Param1
         Best = {
@@ -233,6 +248,7 @@ module.exports = {
             buyTrxCost = Game.market.calcTransactionCost(1000, 'W3S96', allBuySort[b].roomName) / 1000;
             if (allBuySort[b].resourceType == RESOURCE_ENERGY) {
                 trxByEnergy = Math.floor((Game.rooms.W3S96.terminal.store.energy * MARKET.SELL_ENERGY) / buyTrxCost);
+                trxByStock = Infinity;
                 trxAmount = Math.min(trxByEnergy, allBuySort[b].remainingAmount, Math.floor(Game.rooms.W3S96.terminal.store.energy * 0.10));
                 TotalTrxCost = _.round((trxAmount * buyTrxCost) + trxAmount, 2);
             } else {
@@ -244,24 +260,23 @@ module.exports = {
             CreditsEarned = _.round(allBuySort[b].price * trxAmount, 2);
             EnergyCostPer = _.round(TotalTrxCost / CreditsEarned, 2);
 
-            if (EnergyCostPer < EnergyValue) {
-                if (EnergyCostPer < Best.EnergyCostPer) {
-                    Best.b = b;
-                    Best.buyId = allBuySort[b].id;
-                    Best.resourceType = allBuySort[b].resourceType;
-                    Best.trxAmount = trxAmount;
-                    Best.buyTrxCost = buyTrxCost;
-                    Best.trxByEnergy = trxByEnergy;
-                    Best.trxByStock = trxByStock;
-                    Best.TotalTrxCost = TotalTrxCost;
-                    Best.CreditsEarned = CreditsEarned;
-                    Best.EnergyCostPer = EnergyCostPer;
-                }
-                if (Display) {
-                    console.log(`${allBuySort[b].resourceType} Buy[${b}]@${allBuySort[b].price} TrxEnergy=${TotalTrxCost}(${buyTrxCost}) Credits=${CreditsEarned} E/C=${EnergyCostPer}`);
-                    console.log(`--   Game.market.deal("${allBuySort[b].id}", ${trxAmount}, "W3S96");`);
-                    console.log('--');
-                }
+            if (EnergyCostPer < Best.EnergyCostPer) {
+                Best.b = b;
+                Best.buyId = allBuySort[b].id;
+                Best.roomName = allBuySort[b].roomName;
+                Best.resourceType = allBuySort[b].resourceType;
+                Best.trxAmount = trxAmount;
+                Best.buyTrxCost = buyTrxCost;
+                Best.trxByEnergy = trxByEnergy;
+                Best.trxByStock = trxByStock;
+                Best.TotalTrxCost = TotalTrxCost;
+                Best.CreditsEarned = CreditsEarned;
+                Best.EnergyCostPer = EnergyCostPer;
+            }
+            if (Display && EnergyCostPer < EnergyValue) {
+                console.log(`${allBuySort[b].resourceType} Buy[${b}-${allBuySort[b].roomName}]@${allBuySort[b].price} TrxEnergy=${TotalTrxCost}(${buyTrxCost}) Credits=${CreditsEarned} E/C=${EnergyCostPer}`);
+                console.log(`--   Game.market.deal("${allBuySort[b].id}", ${trxAmount}, "W3S96");`);
+                console.log('--');
             }
         }
         if (Display) {
@@ -269,7 +284,7 @@ module.exports = {
         }
         if (Best.EnergyCostPer < Infinity) {
             if (Display) {
-                console.log(`*BEST* ${allBuySort[Best.b].resourceType} Buy[${Best.b}]@${allBuySort[Best.b].price} TrxEnergy=${Best.TotalTrxCost}(${Best.buyTrxCost}) Credits=${Best.CreditsEarned} E/C=${Best.EnergyCostPer}`);
+                console.log(`*BEST* ${allBuySort[Best.b].resourceType} Buy[${Best.b}-${Best.roomName}] @${allBuySort[Best.b].price} TrxEnergy=${Best.TotalTrxCost}(${Best.buyTrxCost}) Credits=${Best.CreditsEarned} E/C=${Best.EnergyCostPer}`);
                 console.log(`--   Game.market.deal("${allBuySort[Best.b].id}", ${Best.trxAmount}, "W3S96");`);
             }
             if (ExecTrx && Best.EnergyCostPer < EnergyValue) {
@@ -289,15 +304,21 @@ module.exports = {
         return Best;
     },
     autoFind() {
-        let resource = Memory.market.autoFind.resource;
-        let minValue = Memory.market.autoFind.minValue;
-        let skipTicks = Memory.market.autoFind.skipTicks;
-        if (Game.rooms.W3S96.terminal.store.energy > MARKET.SELL_RESERVE && Game.cpu.bucket > MARKET.MIN_CPU_BUCKET && (Game.time % skipTicks) == 0) {
-            let TrxContract = Util.MarketOp.find(resource, minValue, true, true);
+        if (Game.cpu.bucket > MARKET.MIN_CPU_BUCKET) {
+            let resource = Memory.market.autoFind.resource;
+            let minValue = Memory.market.autoFind.minValue;
+
+            let TrxBest = Util.MarketOp.find(resource, minValue, false, false);
+            let availableEnergy = Game.rooms.W3S96.terminal.store.energy;
+            if ((availableEnergy > MARKET.SELL_RESERVE) || (TrxBest.EnergyCostPer / minValue < availableEnergy / MARKET.SELL_RESERVE)) {
+                // TODO create makeTrade(Best) with will not search, just use Best object to execute trade
+                let TrxContract = Util.MarketOp.find(TrxBest.resourceType, TrxBest.EnergyCostPer + 1, true, true);
+            }
         }
     },
     saveResource(resourceCode) {
         let retVal = [];
+        /* beautify ignore:start */
         retVal = {
             "energy": 90000,
             "G": 0,
