@@ -1,5 +1,9 @@
 // useful commands
 
+// ***** TODO ideas ******
+DRIVE_BY_REPAIR_RANGE: 2, // change from box search to line in front, then keep location as it passes
+//Add displays to Browser instead of browser console window.
+
 console.log(JSON.stringify(Object) );
 
 Game.creeps['miner-250-3'].data.determinatedTarget ='source-mine-id'
@@ -74,6 +78,13 @@ Game.creeps['remoteHauler-W2S96gb-4'].data.determinatedSpot
 Game.creeps['worker-800-2'].moveTo(29,31,{visualizePathStyle: {fill:'transparent',stroke:'#fff',lineStyle:'dashed',strokeWidth: .15,opacity: .1}});
 Util.Future.cmd(+1,"Game.creeps['remoteHauler-W2S96gb-4'].data.idlePath[0] = {x:47, Y:14, roomName: 'W3S96'};");
 Util.Future.cmd(+1,"myDump(Game.creeps['remoteHauler-W2S96gb-4'].data.idlePath[0])");
+
+let cmdTxt;
+cmdTxt='';
+cmdTxt += "Memory._myTest = Game.rooms;";
+cmdTxt += "console.log('_myTest=',memoryUsage(Memory._myTest));";
+Util.Future.cmd(+1,cmdTxt);
+
 // force recycle a Creep
 Game.creeps['<creepName>'].data.creepType="recycler";
 Creep.action.recycling.assign(Game.creeps['reserver-Flag2-1']);
@@ -173,6 +184,18 @@ Memory._allBuySort = Memory._allBuySort.filter(idx => idx.price >= mSBT);
 mBBT = Memory._mBBT;
 Memory._allSellSort = Memory._allSellSort.filter(idx => idx.price <= mBBT);
 console.log(Memory._allBuySort.length, Memory._allSellSort.length )
-// ***** TODO ideas ******
-DRIVE_BY_REPAIR_RANGE: 2, // change from box search to line in front, then keep location as it passes
-//Add displays to Browser instead of browser console window.
+
+let startCpu; let startDate; let endCpu; let endDate; let x;
+startCpu = Game.cpu.getUsed();
+startDate = Date.now();
+x = 0;
+for (let i=0; i<80; i++) {
+  x = Game.cpu.getUsed();
+}
+endCpu = Game.cpu.getUsed();
+endDate = Date.now();
+console.log(`deltaCpu ${startCpu} & ${endCpu}=${endCpu-startCpu}`);
+console.log(`deltaDate ${startDate} & ${endDate}=${endDate-startDate}`);
+
+// move between rooms.
+Game.rooms['W3S97'].terminal.send("energy", 257, 'W3S96','xfer to main');
