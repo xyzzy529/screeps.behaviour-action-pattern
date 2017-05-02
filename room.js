@@ -1776,8 +1776,11 @@ mod.extend = function(){
             if( orders.length > 0 ){
                 let order = _.max(orders, 'ratio');
                 let result = Game.market.deal(order.id, order.transactionAmount, that.name);
-                if( DEBUG || SELL_NOTIFICATION ) logSystem(that.name, `Selling ${order.transactionAmount} ${mineral} for ${order.credits} (${order.price} ¢/${mineral}, ${order.transactionCost} e): ${translateErrorCode(result)}`);
-                if( SELL_NOTIFICATION ) Game.notify( `<h2>Room ${that.name} executed an order!</h2><br/>Result: ${translateErrorCode(result)}<br/>Details:<br/>${JSON.stringify(order).replace(',',',<br/>')}` );
+                let orderMessage = `Selling ${order.transactionAmount} ${mineral} for ${order.credits} (${order.price} ¢/${mineral}, ${order.transactionCost} e): ${translateErrorCode(result)}`;
+                if( DEBUG || SELL_NOTIFICATION )
+                    logSystem(that.name, orderMessage);
+                if( SELL_NOTIFICATION )
+                    Game.notify( `<h2>Room ${that.name} executed an order!</h2><br/>Message: ${orderMessage}<br/>Result: ${translateErrorCode(result)}<br/>Details:<br/>${JSON.stringify(order).replace(',',',<br/>')}` );
                 transacting = result == OK;
             }
         }
