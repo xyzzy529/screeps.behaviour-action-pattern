@@ -199,3 +199,15 @@ console.log(`deltaDate ${startDate} & ${endDate}=${endDate-startDate}`);
 
 // move between rooms.
 Game.rooms['W3S97'].terminal.send("energy", 257, 'W3S96','xfer to main');
+
+// test problem
+let memoryTerminalRecord = Game.rooms['W3S96'].memory.statistics.terminal;
+let currentTerminalRecord = Game.rooms['W3S96'].terminal.store;
+for( let type in memoryTerminalRecord ) {
+    try {
+        testText = currentTerminalRecord[type].toLocaleString();
+        console.log(`Terminal Store[${type}]=${testText}`);
+    } catch (e) {
+        console.log(`Terminal Store[${type}]=** ERROR **`);
+    }
+}
