@@ -71,13 +71,22 @@ mod.process = function(){
                         let currentTerminalRecord = room.terminal.store;
                         message += '<u>Terminal</u><ul>';
                         for( let type in memoryTerminalRecord ){ // changed & depleted
-                            let termDiff = (currentTerminalRecord[type] ? currentTerminalRecord[type] - memoryTerminalRecord[type] : memoryTerminalRecord[type] * -1);
-                            message += '<li>' + type + ': ' + (currentTerminalRecord[type].toLocaleString() || 0) + ' (' + (termDiff > -1 ? '+' : '' ) + termDiff.toLocaleString() + ')</li>';
+                            try {
+                                testCommas = currentTerminalRecord[type].toLocaleString();
+                                typeAmount = currentTerminalRecord[type];
+                                console.log(`Terminal Store[${type}]=${testCommas}`);
+                            } catch (e) { // statements to handle any exceptions
+                                console.log(`Terminal Store[${type}]=** ERROR **`);
+                                Game.notify(`<h2>Error in Terminal Storage</h2><br/>Message: Terminal Store[${type}]=** ERROR **<br/>`);
+                                typeAmount = 0;
+                            }
+                            let termDiff = (typeAmount ? typeAmount - memoryTerminalRecord[type] : memoryTerminalRecord[type] * -1);
+                            message += '<li>' + type + ': ' + (typeAmount.toLocaleString() || 0) + ' (' + (termDiff > -1 ? '+' : '' ) + termDiff.toLocaleString() + ')</li>';
                         }
                         // new
                         for( let type in currentTerminalRecord ){
                             if(!memoryTerminalRecord[type])
-                                message += '<li>' + type + ': ' + currentTerminalRecord[type].toLocaleString() + ' (+' + currentTerminalRecord[type].toLocaleString() + ')</li>';
+                                message += '<li>' + type + ': ' + currentTerminalRecord[type] + ' (+' + currentTerminalRecord[type] + ')</li>';
                         }
                         message += '</ul>';
                     }
