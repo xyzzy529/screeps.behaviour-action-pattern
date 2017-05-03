@@ -21,7 +21,12 @@ global.myDump = (arr,level) => {
                 }
                 dumped_text += myDump(value,level+1);
             } else {
-                dumped_text += level_padding + "'" + item + "' => \"" + value + "\"\n";
+                dumped_text += level_padding + "'" + item + "' => ";
+				if(typeof(value) == 'string') {
+					dumped_text +=  "\""+ value + "\"\n";
+				} else {
+					dumped_text +=  value + "\n";
+				}
             }
         }
 	} else { //Stings/Chars/Numbers etc.
@@ -269,8 +274,12 @@ require('traveler')({exportTraveler: false, installTraveler: true, installProtot
 // ensure up to date parameters
 //_.assign(global, load("parameter"));
 
+/* local setup items TODO move to my.module */
 Util.Future.init(); // initialize, not clear
 Util.MarketOp.init(); // initialize
+if (!Memory.my.tickOffset) Memory.my.tickOffset = Math.floor(Math.random() * (99 - 1)) + 1; /* max=99, min=1 */
+/*    end of Local Setup items */
+
 let cpuAtFirstLoop;
 module.exports.loop = function () {
     //console.log("start loop:",Game.time);
