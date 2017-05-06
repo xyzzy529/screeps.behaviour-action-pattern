@@ -1,50 +1,14 @@
 /* https://github.com/ScreepsOCS/screeps.behaviour-action-pattern */
 const cpuAtLoad = Game.cpu.getUsed();
-global.myDump = (arr,level) => {
-//function myDump(arr,level) {
-	var dumped_text = "";
-	if(!level) level = 0;
-
-	//The padding given at the beginning of the line.
-	var level_padding = "";
-	for(var j=0;j<level+1;j++) level_padding += "    ";
-
-    if(typeof(arr) == 'object') { //Array/Hashes/Objects
-        for(var item in arr) {
-            var value = arr[item];
-
-            if(typeof(value) == 'object') { //If it is an array,
-                if (value == null) {
-                    dumped_text += level_padding + "'" + item + "' => null\n";
-                } else {
-                    dumped_text += level_padding + "'" + item + "' ...\n";
-                }
-                dumped_text += myDump(value,level+1);
-            } else {
-                dumped_text += level_padding + "'" + item + "' => ";
-				if(typeof(value) == 'string') {
-					dumped_text +=  "\""+ value + "\"\n";
-				} else {
-					dumped_text +=  value + "\n";
-				}
-            }
-        }
-	} else { //Stings/Chars/Numbers etc.
-		dumped_text = "===>"+arr+"<===("+typeof(arr)+")";
-	}
-	return dumped_text;
-}
 
 // check if a path is valid
 global.validatePath = path => {
     let mod;
     try {
         mod = require(path);
-    }
-    catch (e) {
+    } catch (e) {
         if (global.DEBUG !== false && !(e.message && e.message.startsWith('Unknown module'))) {
-            console.log('<font style="color:FireBrick">Error loading ' + path
-                + ' caused by ' + (e.stack || e.toString()) + '</font>');
+            console.log('<font style="color:FireBrick">Error loading ' + path + ' caused by ' + (e.stack || e.toString()) + '</font>');
         }
         mod = null;
     }
@@ -53,39 +17,41 @@ global.validatePath = path => {
 // evaluate existing module overrides and store them to memory.
 // return current module path to use for require
 global.getPath = (modName, reevaluate = false) => {
-    if( reevaluate || !Memory.modules[modName] ){
+    if (reevaluate || !Memory.modules[modName]) {
         // find base file
         let path = './custom.' + modName;
-		// path = './' + modName + '.custom'; <= use this pattern for all files, better folder/filename placement?
-        if(!validatePath(path)) {
+        // path = './' + modName + '.custom'; <= use this pattern for all files, better folder/filename placement?
+        if (!validatePath(path)) {
             path = './internal.' + modName;
-            if(!validatePath(path))
+            if (!validatePath(path))
                 path = './' + modName;
-        }
+            }
         Memory.modules[modName] = path;
         // find viral file
         path = './internalViral.' + modName;
-        if(validatePath(path))
+        if (validatePath(path))
             Memory.modules.internalViral[modName] = true;
-        else if( Memory.modules.internalViral[modName] )
+        else if (Memory.modules.internalViral[modName])
             delete Memory.modules.internalViral[modName];
         path = './viral.' + modName;
-        if(validatePath(path))
+        if (validatePath(path))
             Memory.modules.viral[modName] = true;
-        else if( Memory.modules.viral[modName] )
+        else if (Memory.modules.viral[modName])
             delete Memory.modules.viral[modName];
-    }
+        }
     return Memory.modules[modName];
 };
 // try to require a module. Log errors.
 global.tryRequire = (path, silent = false) => {
     let mod;
-    try{
+    try {
         mod = require(path);
-    } catch(e) {
-        if( e.message && e.message.indexOf('Unknown module') > -1 ){
-            if(!silent) console.log(`Module "${path}" not found!`);
-        } else if(mod == null) {
+    } catch (e) {
+        if (e.message && e.message.indexOf('Unknown module') > -1) {
+            if (!silent)
+                console.log(`Module "${path}" not found!`);
+            }
+        else if (mod == null) {
             console.log(`Error loading module "${path}"!<br/>${e.stack || e.toString()}`);
         }
         mod = null;
@@ -99,13 +65,15 @@ global.inject = (base, alien, namespace) => {
         if (typeof alien[key] === "function") {
             if (namespace) {
                 let original = base[key];
-                if (!base.baseOf) base.baseOf = {};
-                if (!base.baseOf[namespace]) base.baseOf[namespace] = {};
-                if (!base.baseOf[namespace][key]) base.baseOf[namespace][key] = original;
-            }
+                if (!base.baseOf)
+                    base.baseOf = {};
+                if (!base.baseOf[namespace])
+                    base.baseOf[namespace] = {};
+                if (!base.baseOf[namespace][key])
+                    base.baseOf[namespace][key] = original;
+                }
             base[key] = alien[key].bind(base);
-        } else if (alien[key] !== null && typeof base[key] === 'object' && !Array.isArray(base[key]) &&
-            typeof alien[key] === 'object' && !Array.isArray(alien[key])) {
+        } else if (alien[key] !== null && typeof base[key] === 'object' && !Array.isArray(base[key]) && typeof alien[key] === 'object' && !Array.isArray(alien[key])) {
             global.inject(base[key], alien[key], namespace);
         } else {
             base[key] = alien[key]
@@ -114,17 +82,17 @@ global.inject = (base, alien, namespace) => {
 };
 // partially override a module using a registered viral file
 global.infect = (mod, namespace, modName) => {
-    if( Memory.modules[namespace][modName] ) {
+    if (Memory.modules[namespace][modName]) {
         // get module from stored viral override path
         let viralOverride = tryRequire(`./${namespace}.${modName}`);
-		// `./${modName}.${namespace}` ToDo
+        // `./${modName}.${namespace}` ToDo
         // override
-        if( viralOverride ) {
-            global.inject(mod, viralOverride, namespace);
+        if (viralOverride) {
+            global.inject(mod, viralOverride, namespace// cleanup
+            );
+        } else
+            delete Memory.modules[namespace][modName];
         }
-        // cleanup
-        else delete Memory.modules[namespace][modName];
-    }
     return mod;
 };
 // loads (require) a module. use this function anywhere you want to load a module.
@@ -134,13 +102,13 @@ global.load = (modName) => {
     let path = getPath(modName);
     // try to load module
     let mod = tryRequire(path, true);
-    if( !mod ) {
+    if (!mod) {
         // re-evaluate path
         path = getPath(modName, true);
         // try to load module. Log error to console.
         mod = tryRequire(path);
     }
-    if( mod ) {
+    if (mod) {
         // load viral overrides
         mod = infect(mod, 'internalViral', modName);
         mod = infect(mod, 'viral', modName);
@@ -150,7 +118,7 @@ global.load = (modName) => {
 // load code
 global.install = () => {
     // ensure required memory namespaces
-    if (Memory.modules === undefined)  {
+    if (Memory.modules === undefined) {
         Memory.modules = {
             viral: {},
             internalViral: {}
@@ -171,8 +139,12 @@ global.install = () => {
         Tower: load("tower"),
         Util: load('util'),
         Events: load('events'),
-        Grafana: GRAFANA ? load('grafana') : undefined,
-        Visuals: ROOM_VISUALS && !Memory.CPU_CRITICAL ? load('visuals') : undefined,
+        Grafana: GRAFANA
+            ? load('grafana')
+            : undefined,
+        Visuals: ROOM_VISUALS && !Memory.CPU_CRITICAL
+            ? load('visuals')
+            : undefined
     });
     _.assign(global.Util, {
         DiamondIterator: load('util.diamond.iterator'),
@@ -191,7 +163,7 @@ global.install = () => {
         pioneer: load("task.pioneer"),
         attackController: load("task.attackController"),
         robbing: load("task.robbing"),
-        reputation: load("task.reputation"),
+        reputation: load("task.reputation")
     });
     Creep.Action = load("creep.Action");
     Creep.Setup = load("creep.Setup");
@@ -215,16 +187,16 @@ global.install = () => {
             idle: load("creep.action.idle"),
             invading: load("creep.action.invading"),
             picking: load("creep.action.picking"),
-            reallocating:load("creep.action.reallocating"),
-            recycling:load("creep.action.recycling"),
+            reallocating: load("creep.action.reallocating"),
+            recycling: load("creep.action.recycling"),
             repairing: load("creep.action.repairing"),
             reserving: load("creep.action.reserving"),
-            robbing:load("creep.action.robbing"),
+            robbing: load("creep.action.robbing"),
             storing: load("creep.action.storing"),
             travelling: load("creep.action.travelling"),
             uncharging: load("creep.action.uncharging"),
             upgrading: load("creep.action.upgrading"),
-            withdrawing: load("creep.action.withdrawing"),
+            withdrawing: load("creep.action.withdrawing")
         },
         behaviour: {
             claimer: load("creep.behaviour.claimer"),
@@ -266,46 +238,168 @@ global.install = () => {
     FlagDir.extend();
     Task.populate();
     // custom extend
-    if( global.mainInjection.extend ) global.mainInjection.extend();
-    if (DEBUG) logSystem('Global.install', 'Code reloaded. ====================================================');
-};
+    if (global.mainInjection.extend)
+        global.mainInjection.extend();
+    if (DEBUG)
+        logSystem('Global.install', 'Code reloaded. ====================================================');
+    };
 global.install();
 require('traveler')({exportTraveler: false, installTraveler: true, installPrototype: true, defaultStuckValue: TRAVELER_STUCK_TICKS, reportThreshold: TRAVELER_THRESHOLD});
 // ensure up to date parameters
 //_.assign(global, load("parameter"));
 
 /* local setup items TODO move to my.module */
+/* Local Definitions TODO move to my.module */
+global.myDump = (arr, level) => {
+    var dumped_text = "";
+    if (!level)
+        level = 0;
+
+    //The padding given at the beginning of the line.
+    var level_padding = "";
+    for (var j = 0; j < level + 1; j++)
+        level_padding += "    ";
+
+    if (typeof(arr) == 'object') { //Array/Hashes/Objects
+        for (var item in arr) {
+            var value = arr[item];
+
+            if (typeof(value) == 'object') { //If it is an array,
+                if (value == null) {
+                    dumped_text += level_padding + "'" + item + "' => null\n";
+                } else {
+                    dumped_text += level_padding + "'" + item + "' ...\n";
+                }
+                dumped_text += myDump(value, level + 1);
+            } else {
+                dumped_text += level_padding + "'" + item + "' => ";
+                if (typeof(value) == 'string') {
+                    dumped_text += "\"" + value + "\"\n";
+                } else {
+                    dumped_text += value + "\n";
+                }
+            }
+        }
+    } else { //Stings/Chars/Numbers etc.
+        dumped_text = "===>" + arr + "<===(" + typeof(arr) + ")";
+    }
+    return dumped_text;
+}
+
+global.MemoryTasksCleaner = (doClean = false, Display = true) => {
+    let memUse = memoryUsage(Memory.tasks);
+    console.log(memUse.table);
+    console.log(`Memory.tasks Before size=${memUse.total}`);
+    let countNot = 0;
+    let countIs = 0;
+    for (let itemKey in Memory.tasks.mining) {
+        if (!(itemKey in Game.rooms)) {
+            countNot++;
+            if (Display)
+                console.log(`task.mining[${itemKey}] NOT in Game.rooms`);
+            if (doClean)
+                delete Memory.tasks.mining[itemKey];
+        } else {
+            countIs++;
+        }
+    }
+    console.log(`  mining items NOT=${countNot} IS=${countIs}`);
+    countNot = 0;
+    countIs = 0;
+    for (let itemKey in Memory.tasks.defense) {
+        if (Game.getObjectById(itemKey) === null) {
+            countNot++;
+            messageText = `task.defense[${itemKey}] NOT in Game.getObjectById`;
+            if (Display)
+                console.log(messageText);
+            if (doClean)
+                delete Memory.tasks.defense[itemKey];
+            }
+        else {
+            countIs++;
+            if (Display) {
+                console.log(`task.defense[${itemKey}] found myDump:`);
+                myDump(Game.getObjectById(itemKey));
+            }
+        }
+    }
+    console.log(`  defense items NOT=${countNot} IS=${countIs}`);
+    memUse = memoryUsage(Memory.tasks);
+    console.log(memUse.table);
+    console.log(`Memory.tasks Before size=${memUse.total}`);
+};
+/*  }  end of Local module defines TODO move to my.module */
+
 Util.Future.init(); // initialize, not clear
 Util.MarketOp.init(); // initialize
-if (!Memory.my.tickOffset) Memory.my.tickOffset = Math.floor(Math.random() * (99 - 1)) + 1; /* max=99, min=1 */
+if (!Memory.my.tickOffset)
+    Memory.my.tickOffset = Math.floor(Math.random() * (99 - 1)) + 1;
+/* max=99, min=1 */
+if (Memory.my.engineTimestamp != require.timestamp) {
+    // this is updated each time the engine code has a commit
+    Memory.my.engineTimestamp = require.timestamp;
+    Game.notify(`<h2>New Engine Timestamp</h2><br>require.timestamp=${require.timestamp}`);
+}
 /*    end of Local Setup items */
-
 let cpuAtFirstLoop;
-module.exports.loop = function () {
-    //console.log("start loop:",Game.time);
+let tickCycle = Game.time + Memory.my.tickOffset;
+// let myMemory = {};
+// myMemory.lastTime = Game.time;
+// MemoryTasksCleaner();
+module.exports.loop = function() {
     const cpuAtLoop = Game.cpu.getUsed();
     let p = startProfiling('main', cpuAtLoop);
     p.checkCPU('deserialize memory', 0); // the profiler makes an access to memory on startup
+
+    tickCycle = Game.time + Memory.my.tickOffset;
+    // if (Memory.my.lastTime != Game.time-1) {
+    //     console.log(`*** ERROR in Memory.my.lastTime=${Memory.my.lastTime}`);
+    // }
+    // if (myMemory.lastTime != Game.time-1) {
+    //     console.log(`*** ERROR in myMemory.lastTime=${myMemory.lastTime}`);
+    // }
+    // Memory.my.lastTime = Game.time;
+    // myMemory.lastTime = Game.time;
+    //console.log("start loop:",Game.time);
+
     Util.Future.check();
     p.checkCPU('Future.Check', 0);
-	Util.MarketOp.buyToken();
+    Util.MarketOp.buyToken();
     Util.MarketOp.autoFind();
     p.checkCPU('MarketOp.autoFind', 0);
+    if (tickCycle % 100 === 10) {
+        Util.Future.init(true); // clean out old items
+        p.checkCPU('Future.init', 0);
+    }
+    if (tickCycle % 100 === 20) {
+        Util.MarketOp.init(true); // clean out old items
+        p.checkCPU('MarketOp.init', 0);
+    }
+    if (tickCycle % 100 === 30) {
+        MemoryTasksCleaner(true); // clean out old items
+        p.checkCPU('MemoryTasksCleaner', 0);
+    }
     // let the cpu recover a bit above the threshold before disengaging to prevent thrashing
-    Memory.CPU_CRITICAL = Memory.CPU_CRITICAL ? Game.cpu.bucket < CRITICAL_BUCKET_LEVEL + CRITICAL_BUCKET_OVERFILL : Game.cpu.bucket < CRITICAL_BUCKET_LEVEL;
+    Memory.CPU_CRITICAL = Memory.CPU_CRITICAL
+        ? Game.cpu.bucket < CRITICAL_BUCKET_LEVEL + CRITICAL_BUCKET_OVERFILL
+        : Game.cpu.bucket < CRITICAL_BUCKET_LEVEL;
 
     p.checkCPU('myMemoryTest-eval', 0, 'myMemoryTest');
-    if (!cpuAtFirstLoop) cpuAtFirstLoop = cpuAtLoop;
+    if (!cpuAtFirstLoop)
+        cpuAtFirstLoop = cpuAtLoop;
 
     // ensure required memory namespaces
-    if (Memory.modules === undefined)  {
+    if (Memory.modules === undefined) {
         Memory.modules = {
             viral: {},
             internalViral: {}
         };
     }
     if (Memory.debugTrace === undefined) {
-        Memory.debugTrace = {error:true, no:{}};
+        Memory.debugTrace = {
+            error: true,
+            no: {}
+        };
     }
     if (Memory.cloaked === undefined) {
         Memory.cloaked = {};
@@ -320,7 +414,8 @@ module.exports.loop = function () {
     Room.flush();
     Task.flush();
     // custom flush
-    if( global.mainInjection.flush ) global.mainInjection.flush();
+    if (global.mainInjection.flush)
+        global.mainInjection.flush();
     p.checkCPU('flush', PROFILING.FLUSH_LIMIT);
 
     // analyze environment, wait a tick if critical failure
@@ -334,14 +429,16 @@ module.exports.loop = function () {
     Population.analyze();
     p.checkCPU('Population.analyze', PROFILING.ANALYZE_LIMIT);
     // custom analyze
-    if( global.mainInjection.analyze ) global.mainInjection.analyze();
+    if (global.mainInjection.analyze)
+        global.mainInjection.analyze();
 
     // Register event hooks
     Creep.register();
     Spawn.register();
     Task.register();
     // custom register
-    if( global.mainInjection.register ) global.mainInjection.register();
+    if (global.mainInjection.register)
+        global.mainInjection.register();
     p.checkCPU('register', PROFILING.REGISTER_LIMIT);
 
     // Execution
@@ -356,10 +453,11 @@ module.exports.loop = function () {
     Spawn.execute();
     p.checkCPU('spawn.execute', PROFILING.EXECUTE_LIMIT);
     // custom execute
-    if( global.mainInjection.execute ) global.mainInjection.execute();
+    if (global.mainInjection.execute)
+        global.mainInjection.execute();
 
     // Postprocessing
-    if( !Memory.statistics || ( Memory.statistics.tick && Memory.statistics.tick + TIME_REPORT <= Game.time ))
+    if (!Memory.statistics || (Memory.statistics.tick && Memory.statistics.tick + TIME_REPORT <= Game.time))
         load("statistics").process();
     processReports();
     p.checkCPU('processReports', PROFILING.ANALYZE_LIMIT);
@@ -368,18 +466,28 @@ module.exports.loop = function () {
     Population.cleanup();
     p.checkCPU('Population.cleanup', PROFILING.ANALYZE_LIMIT);
     // custom cleanup
-    if( global.mainInjection.cleanup ) global.mainInjection.cleanup();
+    if (global.mainInjection.cleanup)
+        global.mainInjection.cleanup();
 
-    if ( ROOM_VISUALS && !Memory.CPU_CRITICAL && Visuals ) Visuals.run(); // At end to correctly display used CPU.
+    if (ROOM_VISUALS && !Memory.CPU_CRITICAL && Visuals)
+        Visuals.run(); // At end to correctly display used CPU.
     p.checkCPU('visuals', PROFILING.EXECUTE_LIMIT);
 
-    if ( GRAFANA && Game.time % GRAFANA_INTERVAL === 0 ) Grafana.run();
+    if (GRAFANA && Game.time % GRAFANA_INTERVAL === 0)
+        Grafana.run();
     p.checkCPU('grafana', PROFILING.EXECUTE_LIMIT);
 
     Game.cacheTime = Game.time;
 
-
-    if( DEBUG && TRACE )
-        trace('main', {cpuAtLoad, cpuAtFirstLoop, cpuAtLoop, cpuTick: Game.cpu.getUsed(), isNewServer: global.isNewServer, lastServerSwitch: Game.lastServerSwitch, main:'cpu'});
+    if (DEBUG && TRACE)
+        trace('main', {
+            cpuAtLoad,
+            cpuAtFirstLoop,
+            cpuAtLoop,
+            cpuTick: Game.cpu.getUsed(),
+            isNewServer: global.isNewServer,
+            lastServerSwitch: Game.lastServerSwitch,
+            main: 'cpu'
+        });
     p.totalCPU();
 };
