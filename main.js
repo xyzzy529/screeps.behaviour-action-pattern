@@ -290,25 +290,25 @@ global.MemoryTasksCleaner = (doClean = false, Display = true) => {
     let memUse = memoryUsage(Memory.tasks);
     console.log(memUse.table);
     console.log(`Memory.tasks Before size=${memUse.total}`);
-    let countNot = 0;
-    let countIs = 0;
+    let countClean = 0;
+    let countKeep = 0;
     for (let itemKey in Memory.tasks.mining) {
         if (!(itemKey in Game.rooms)) {
-            countNot++;
+            countClean++;
             if (Display)
                 console.log(`task.mining[${itemKey}] NOT in Game.rooms`);
             if (doClean)
                 delete Memory.tasks.mining[itemKey];
         } else {
-            countIs++;
+            countKeep++;
         }
     }
-    console.log(`  mining items NOT=${countNot} IS=${countIs}`);
-    countNot = 0;
-    countIs = 0;
+    console.log(`  mining  items NOT=${countClean} IS=${countKeep}`);
+    countClean = 0;
+    countKeep = 0;
     for (let itemKey in Memory.tasks.defense) {
         if (Game.getObjectById(itemKey) === null) {
-            countNot++;
+            countClean++;
             messageText = `task.defense[${itemKey}] NOT in Game.getObjectById`;
             if (Display)
                 console.log(messageText);
@@ -316,17 +316,17 @@ global.MemoryTasksCleaner = (doClean = false, Display = true) => {
                 delete Memory.tasks.defense[itemKey];
             }
         else {
-            countIs++;
+            countKeep++;
             if (Display) {
                 console.log(`task.defense[${itemKey}] found myDump:`);
                 myDump(Game.getObjectById(itemKey));
             }
         }
     }
-    console.log(`  defense items NOT=${countNot} IS=${countIs}`);
+    console.log(`  defense items Clean=${countClean} Keep=${countKeep}`);
     memUse = memoryUsage(Memory.tasks);
     console.log(memUse.table);
-    console.log(`Memory.tasks Before size=${memUse.total}`);
+    console.log(`Memory.tasks  After size=${memUse.total}`);
 };
 /*  }  end of Local module defines TODO move to my.module */
 
@@ -367,15 +367,16 @@ module.exports.loop = function() {
     Util.MarketOp.buyToken();
     Util.MarketOp.autoFind();
     p.checkCPU('MarketOp.autoFind', 0);
-    if (tickCycle % 100 === 10) {
+    let cleanCycle = 200;
+    if (tickCycle % cleanCycle === 10) {
         Util.Future.init(true); // clean out old items
         p.checkCPU('Future.init', 0);
     }
-    if (tickCycle % 100 === 20) {
+    if (tickCycle % cleanCycle === 20) {
         Util.MarketOp.init(true); // clean out old items
         p.checkCPU('MarketOp.init', 0);
     }
-    if (tickCycle % 100 === 30) {
+    if (tickCycle % cleanCycle === 30) {
         MemoryTasksCleaner(true); // clean out old items
         p.checkCPU('MemoryTasksCleaner', 0);
     }
