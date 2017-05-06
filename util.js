@@ -422,7 +422,7 @@ module.exports = {
      * List the current memory usage of a given path in memory in kb
      * @param {string} key - The location in memory to check eg 'rooms.E1S1.statistics'
      * @returns {string}
-     */
+     * /
     memoryUsage(key) {
         const mem = key
             ? Memory[key]
@@ -437,6 +437,7 @@ module.exports = {
         string += `<tr><td>Total</td><td>${_.round(total, 2)}</td></tr></table>`;
         return string;
     },
+    /* */
 
     /**
      * Reset all profiling data
