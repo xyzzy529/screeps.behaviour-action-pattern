@@ -1,17 +1,39 @@
 //class marketOp {
 module.exports = {
-    init(force = false) {
-        if (Memory.market === undefined || force) { // define Memory.market
-            Memory.market = {
-                Ctx: []
+    init(clean = false, force = false) {
+        let cpuB4 = Game.cpu.getUsed();
+        if (Memory.MarketOp === undefined || force) {
+            Memory.MarketOp = {
+                Ctx: [],
             };
-            // Memory.market.Ctx[0] = {
+            // Memory.MarketOp.Ctx[0] = {
             //     open: false,
             //     sellId: null
             // };
-            Memory.market.autoFind = {
+            Memory.MarketOp.autoFind = { // Params for .autoFind()
                 resource: null, // null means all resources
-                minValue: 80
+                minValue: 80,
+            }
+        }
+        if (clean) {
+            let original = Memory.MarketOp.Ctx.length;
+            let keptItems = [];
+            let tooOld = Game.time - 10000; // about 12 hours
+            for (let i in Memory.MarketOp.Ctx) {
+                Ctx = Memory.MarketOp.Ctx[i];
+                if (Ctx.open && Ctx.exeTick > tooOld) {
+                    keptItems[keptItems.length] = Ctx;
+                }
+            }
+            Memory.MarketOp.Ctx = keptItems;
+            let cpuDelta = (Game.cpu.getUsed() - cpuB4).toFixed(3);
+            let messageText = `MarketOp cleanup original=${original} kept=${keptItems.length} &#916;=${keptItems.length - original} &#937;=${cpuDelta}`;
+            console.log(messageText);
+            if (keptItems.length > 150) {
+                Memory.MarketOp.notify++;
+                Game.notify(`<h2>MarketOp Cleanup</h2><br>${messageText}`, Memory.MarketOp.notify);
+            } else {
+                Memory.MarketOp.notify = 0;
             }
         }
     },
@@ -149,7 +171,7 @@ module.exports = {
                         }
                         calcTrx++;
                         const totalStore = _.sum(Game.rooms['W3S96'].terminal.store);
-                        trxByStorage = Game.rooms['W3S96'].terminal.storeCapacity - totalStore -2;
+                        trxByStorage = Game.rooms['W3S96'].terminal.storeCapacity - totalStore - 2;
                         buyTrxCost = Game.market.calcTransactionCost(100, 'W3S96', aBS.roomName);
                         sellTrxCost = Game.market.calcTransactionCost(100, 'W3S96', aSS.roomName);
 
@@ -203,9 +225,9 @@ module.exports = {
             console.log(`** NO RESULT ** calcTrx=${totalCalcTrx} `);
         }
 
-// if ( Game.rooms['W3S96'].terminal.storeCapacity - totalStore < Best.trxAmount ) {
-//     console.log(`** Terminal Too Full ** totalStore=${totalStore} `);
-// } else
+        // if ( Game.rooms['W3S96'].terminal.storeCapacity - totalStore < Best.trxAmount ) {
+        //     console.log(`** Terminal Too Full ** totalStore=${totalStore} `);
+        // } else
         if (ExecTrx && Best.EnergyCostPer < EnergyValue) {
             // if (Display || true) {
             console.log(`*ExecTrx* ${Best.resourceType} Buy[${Best.roomName}] ${Best.buyPrice} to Sell[${Best.sellName}] ${Best.sellPrice} TrxEnergy=${Best.TotalTrxCost}(${Best.buyTrxCost}+${Best.sellTrxCost}) Credits=${Best.CreditsEarned} E/C=${Best.EnergyCostPer}`);
@@ -240,13 +262,14 @@ module.exports = {
                     // }
                 } else { // Opened TrxContract, need to close it next turn
                     console.log(`Good Purchase trxToPurchase=${trxToPurchase}  ExecPart1=${ExecPart1}: ${translateErrorCode(ExecPart1)}`);
-                    let CtxN = Memory.market.Ctx.length;
-                    Memory.market.Ctx[CtxN] = Best;
-                    Memory.market.Ctx[CtxN].open = true;
-                    Memory.market.Ctx[CtxN].trxActalAmt = trxToPurchase;
+                    let CtxN = Memory.MarketOp.Ctx.length;
+                    Memory.MarketOp.Ctx[CtxN] = Best;
+                    Memory.MarketOp.Ctx[CtxN].open = true;
+                    Memory.MarketOp.Ctx[CtxN].exeTick = Game.time;
+                    Memory.MarketOp.Ctx[CtxN].trxActalAmt = trxToPurchase;
 
                     // ExecPart2 = Game.market.deal(aBS.id, trxAmount, aBS.roomName);
-                    cmd1 = `ExecPart2=Memory.FutureTurn[t].ExecPart2 = Game.market.deal("${Best.buyId}", ${Memory.market.Ctx[CtxN].trxActalAmt}, "W3S96");`;
+                    cmd1 = `ExecPart2=Memory.FutureTurn[t].ExecPart2 = Game.market.deal("${Best.buyId}", ${Memory.MarketOp.Ctx[CtxN].trxActalAmt}, "W3S96");`;
                     cmd1 += `Memory.FutureTurn[t].CtxN = ${CtxN};`;
                     // if (Display) {
                     cmd1 += "console.log('ExecPart2=|'+ExecPart2+'|: |'+translateErrorCode(ExecPart2)+'|');";
@@ -266,9 +289,9 @@ module.exports = {
                 console.log(`Trade Success -- ${ (xProfit > 0
                     ? 'Good'
                     : '*BAD*')} PROFIT=${xProfit}`);
-                Memory.market.Ctx[CtxN].open = false;
+                Memory.MarketOp.Ctx[CtxN].open = false;
             } else {
-                //  --> Memory.market.Ctx[CtxN].open remains TRUE ... TODO clean up "open=true"
+                //  --> Memory.MarketOp.Ctx[CtxN].open remains TRUE ... TODO clean up "open=true"
                 let eCode = Memory.FutureTurn[idx].ExecPart2;
                 console.log("Trade **FALURE** Trade PROFIT=" + xProfit + `Error=|${eCode}|-${translateErrorCode(eCode)}`);
             }
@@ -375,10 +398,10 @@ module.exports = {
         }
         return Best;
     },
-    autoFind(Display=false) {
-        if (Game.cpu.bucket > MARKET.MIN_CPU_BUCKET || Display ) {
-            let resource = Memory.market.autoFind.resource;
-            let minValue = Memory.market.autoFind.minValue;
+    autoFind(Display = false) {
+        if (Game.cpu.bucket > MARKET.MIN_CPU_BUCKET || Display) {
+            let resource = Memory.MarketOp.autoFind.resource;
+            let minValue = Memory.MarketOp.autoFind.minValue;
 
             let TrxBest = Util.MarketOp.find(resource, minValue, false, false);
 
@@ -389,7 +412,7 @@ module.exports = {
             if (Display) {
                 console.log(`autoFind ValueRatio=${ecValueRatio} < availbleRatio=${availbleRatio} goodDeal=${goodDeal}`);
             }
-            if ( (availableEnergy > MARKET.SELL_RESERVE) || goodDeal ) {
+            if ((availableEnergy > MARKET.SELL_RESERVE) || goodDeal) {
                 // TODO create makeTrade(Best) with will not search, just use Best object to execute trade
                 let TrxContract = Util.MarketOp.find(TrxBest.resourceType, TrxBest.EnergyCostPer + 1, true, true);
             }
