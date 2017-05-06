@@ -214,13 +214,14 @@ for( let type in memoryTerminalRecord ) {
 Memory.my.xcreep = '';
 Util.Future.cmd(1,`_storage=Game.getObjectById('58f6f86792bbcbb76cd89f67'); Game.creeps[${Memory.my.xcreep}].moveTo(_storage)`,true,5);
 storage=Game.getObjectById('58f6f86792bbcbb76cd89f67'); creep=Game.creeps['upgrader-1000-3']; creep.withdraw(storage, RESOURCE_ENERGY);
-Util.Future.cmd(1,"Game.creeps['upgrader-1000-3'].moveTo(28,33)",true,10)
+Util.Future.cmd(1,"Game.creeps['remoteHauler-W5S98gbr-2'].moveTo(28,33)",true,6)
+Util.Future.cmd(1,"Game.creeps['remoteHauler-W5S98gbr-2'].move(2)",true,6)
 Util.Future.cmd(1,"creep=Game.creeps['upgrader-1000-3']; creep.upgradeController(creep.room.controller);",true,10);
 
 // Structures around the edge
 Game.rooms[roomName].find(FIND_STRUCTURES, {filter:i=>i.pos.x===0||i.pos.x===49||i.pos.y===0||i.pos.y===49})
 
 // Engine code with some "hidden variables"
-// 
+//
 // Engine code for Cost Matrix
 https://github.com/screeps/engine/blob/c318a920e3c04c1285c885e328d89ef748d7004c/src/game/rooms.js#L58
